@@ -6,3 +6,8 @@ This product is licensed under the Apache License, Version 2.0 (see LICENSE).
 saidby does not distribute model weights. The models it can download, and their
 licenses, are listed in MODEL_LICENSES.md. Notices for third-party software are
 in THIRD_PARTY_NOTICES.md.
+
+This product includes a model definition derived from WeSpeaker
+(https://github.com/wenet-e2e/wespeaker), Copyright (c) 2021 Shuai Wang, 2022 Zhengyang Chen,
+2023 Bing Han, as packaged in pyannote.audio (Copyright (c) 2023 CNRS), licensed under the
+Apache License, Version 2.0. See src/saidby/engines/embed/_wespeaker_resnet.py.

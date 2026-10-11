@@ -3,6 +3,7 @@
 
 from saidby.errors import UsageError
 from saidby.ports.diarizer import Diarizer
+from saidby.ports.embedder import Embedder
 from saidby.ports.transcriber import Transcriber
 from saidby.runtime.device import DeviceInfo
 
@@ -40,3 +41,18 @@ def make_diarizer(name: str, *, device: DeviceInfo) -> Diarizer:
 
         return FakeDiarizer()
     raise UsageError(f"unknown diarizer {name!r}; valid: {', '.join(DIARIZERS)}")
+
+
+EMBEDDERS = ("wespeaker-resnet34", "fake")
+
+
+def make_embedder(name: str, *, device: DeviceInfo) -> Embedder:
+    if name == "wespeaker-resnet34":
+        from saidby.engines.embed.wespeaker_resnet34 import WeSpeakerResNet34Embedder
+
+        return WeSpeakerResNet34Embedder(device)
+    if name == "fake":
+        from saidby.engines.embed.fake import FakeEmbedder
+
+        return FakeEmbedder()
+    raise UsageError(f"unknown embedder {name!r}; valid: {', '.join(EMBEDDERS)}")
