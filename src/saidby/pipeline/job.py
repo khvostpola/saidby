@@ -4,7 +4,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from saidby.schema.manifest import StageRecord
 from saidby.telemetry.runlog import RunLog
@@ -30,6 +30,7 @@ class Recording:
     size_bytes: int = 0
     duration_s: float = 0.0
     created_at: datetime | None = None
+    glossary: dict[str, Any] = field(default_factory=dict)
 
     @property
     def work_dir(self) -> Path:
@@ -51,3 +52,9 @@ class RecordingResult:
     status: str
     exit_code: int
     error_type: str | None = None
+
+
+@dataclass(frozen=True)
+class TextArtifact:
+    path: Path
+    key: str

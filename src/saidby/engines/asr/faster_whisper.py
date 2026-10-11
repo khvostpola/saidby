@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
+from typing import Any
+
 import faster_whisper
 import numpy as np
 
@@ -25,6 +27,7 @@ class FasterWhisperTranscriber:
         )
         self.beam_size = beam_size
         self._model: faster_whisper.WhisperModel | None = None
+        self._tokenizer: Any = None
         self.info = EngineInfo(
             kind="asr",
             name="faster-whisper",
@@ -49,6 +52,13 @@ class FasterWhisperTranscriber:
     def unload(self) -> None:
         self._model = None
         release_memory()
+
+    def count_tokens(self, text: str) -> int:
+        if self._tokenizer is None:
+            from tokenizers import Tokenizer
+
+            self._tokenizer = Tokenizer.from_file(str(self.path / "tokenizer.json"))
+        return len(self._tokenizer.encode(" " + text.strip(), add_special_tokens=False).ids)
 
     def transcribe(
         self,

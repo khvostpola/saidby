@@ -16,6 +16,8 @@ class Transcriber(Protocol):
 
     def unload(self) -> None: ...
 
+    def count_tokens(self, text: str) -> int: ...
+
     def transcribe(
         self,
         audio: np.ndarray,

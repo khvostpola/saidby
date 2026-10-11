@@ -28,6 +28,15 @@ class Settings(BaseModel):
     identify_threshold: float = 0.5
     identify_min_speech: float = 3.0
     embedder: str = "wespeaker-resnet34"
+    bias: bool = True
+    transplant: bool = True
+    correct: bool = False
+    llm_url: str | None = None
+    llm_binary: str | None = None
+    llm_model: str = "qwen3.5-9b-q4"
+    llm_context: int = 8192
+    chunk_words: int = 90
+    allow_remote_llm: bool = False
     keep_intermediates: bool = False
     force: bool = False
     fail_fast: bool = False

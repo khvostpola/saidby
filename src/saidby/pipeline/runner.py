@@ -17,13 +17,16 @@ from saidby.cli.progress import Progress, fmt_clock
 from saidby.config.settings import Settings
 from saidby.errors import InputError, SaidbyError, StageError
 from saidby.formats.audio import SAMPLE_RATE, read_audio
+from saidby.formats.corrections_log import read_corrections, write_corrections
 from saidby.formats.directory_yaml import load_directory
 from saidby.formats.manifest import read_manifest, write_manifest
 from saidby.formats.rttm import write_rttm
 from saidby.formats.transcripts import render_txt, render_vtt
 from saidby.formats.words_json import read_transcript, write_transcript
 from saidby.pipeline import cache
-from saidby.pipeline.job import Recording, RecordingResult
+from saidby.pipeline.glossary_stages import GlossaryStages
+from saidby.pipeline.job import Recording, RecordingResult, TextArtifact
+from saidby.ports.corrector import LlmClient
 from saidby.ports.diarizer import Diarizer
 from saidby.ports.embedder import Embedder
 from saidby.ports.registry import make_diarizer, make_embedder, make_transcriber
@@ -53,8 +56,11 @@ if TYPE_CHECKING:
 STAGES: tuple[StageName, ...] = (
     "ingest",
     "asr",
+    "asr_bias",
+    "transplant",
     "diarize",
     "identify",
+    "correct",
     "align",
     "tracks",
     "outputs",
@@ -69,6 +75,7 @@ class Pipeline:
         transcriber: Transcriber | None = None,
         diarizer: Diarizer | None = None,
         embedder: Embedder | None = None,
+        llm: LlmClient | None = None,
         progress: Progress | None = None,
     ) -> None:
         self.settings = settings
@@ -76,6 +83,8 @@ class Pipeline:
         self._transcriber = transcriber
         self._diarizer = diarizer
         self._embedder = embedder
+        self.text: dict[str, TextArtifact] = {}
+        self.glossary = GlossaryStages(self, llm)
         self._directory: Directory | None = None
         self.run_id = str(uuid.uuid4())
         self.device: DeviceInfo = DeviceInfo("cpu")
@@ -87,10 +96,16 @@ class Pipeline:
     def run(self, inputs: list[Path], out_root: Path) -> list[RecordingResult]:
         self.device = resolve_device(self.settings.device)
         prepare(offline=True, want_cuda=self.device.kind == "cuda")
-        if self.settings.strict_offline:
-            with guard_network():
-                return self._run(inputs, out_root)
-        return self._run(inputs, out_root)
+        if self.settings.directory is not None:
+            self._directory, _ = load_directory(self.settings.directory)
+        self.glossary.preflight()
+        try:
+            if self.settings.strict_offline:
+                with guard_network():
+                    return self._run(inputs, out_root)
+            return self._run(inputs, out_root)
+        finally:
+            self.glossary.release_llm()
 
     def _recordings(self, inputs: list[Path], out_root: Path) -> list[Recording]:
         slugs = unique_slugs([p.stem for p in inputs])
@@ -112,8 +127,6 @@ class Pipeline:
         return recs
 
     def _run(self, inputs: list[Path], out_root: Path) -> list[RecordingResult]:
-        if self.settings.directory is not None:
-            self._directory, _ = load_directory(self.settings.directory)
         recs = self._recordings(inputs, out_root)
         total = len(recs)
         for rec in recs:
@@ -128,8 +141,11 @@ class Pipeline:
             handlers: dict[StageName, Callable[[Recording], dict[str, Any]]] = {
                 "ingest": self._ingest,
                 "asr": self._asr,
+                "asr_bias": self.glossary.asr_bias,
+                "transplant": self.glossary.transplant,
                 "diarize": self._diarize,
                 "identify": self._identify,
+                "correct": self.glossary.correct,
                 "align": self._align,
                 "tracks": self._tracks,
                 "outputs": self._outputs,
@@ -207,6 +223,14 @@ class Pipeline:
                 "identified",
                 "unidentified",
                 "voiceprints_skipped",
+                "hotwords_tokens",
+                "hotwords_truncated",
+                "transplant_swaps",
+                "dialect_swaps",
+                "llm_chunks",
+                "llm_accepted",
+                "llm_rejected",
+                "llm_truncated",
             }
         }
         audio_s = fields.get("audio_s")
@@ -286,15 +310,20 @@ class Pipeline:
         }
 
     def _release(self, stage: str) -> None:
-        engines: dict[str, Transcriber | Diarizer | Embedder | None] = {
-            "asr": self._transcriber,
-            "diarize": self._diarizer,
-            "identify": self._embedder,
-        }
-        engine = engines.get(stage)
-        if engine is not None:
-            engine.unload()
-            self._loaded.discard(stage)
+        bias_on = self._directory is not None and self.settings.bias
+        if stage == "asr" and bias_on:
+            return
+        if stage in {"asr", "asr_bias"} and self._transcriber is not None:
+            self._transcriber.unload()
+            self._loaded.discard("asr")
+        elif stage == "diarize" and self._diarizer is not None:
+            self._diarizer.unload()
+            self._loaded.discard("diarize")
+        elif stage == "identify" and self._embedder is not None:
+            self._embedder.unload()
+            self._loaded.discard("identify")
+        elif stage == "correct":
+            self.glossary.release_llm()
 
     def _load_once(self, name: str, engine: Transcriber | Diarizer | Embedder) -> float:
         if name in self._loaded:
@@ -321,6 +350,7 @@ class Pipeline:
             options={"language": self.settings.language},
         )
         artifact = rec.work_dir / "transcript.asr.json"
+        self.text[rec.slug] = TextArtifact(artifact, key)
         parts = [engine.info.name, engine.info.model, engine.info.device or "cpu"]
         if cache.is_fresh(rec.work_dir, "asr", key, [artifact]):
             transcript = read_transcript(artifact)
@@ -334,8 +364,7 @@ class Pipeline:
             }
         audio = read_audio(rec.wav)
         with VramPeak(self.device.kind == "cuda") as vram:
-            load_s = engine.load() if not getattr(engine, "_loaded_once", False) else 0.0
-            engine._loaded_once = True  # type: ignore[attr-defined]
+            load_s = self._load_once("asr", engine)
             transcript = engine.transcribe(audio, language=self.settings.language)
         write_transcript(artifact, transcript)
         cache.write_marker(rec.work_dir, "asr", key)
@@ -378,8 +407,7 @@ class Pipeline:
             }
         audio = read_audio(rec.wav)
         with VramPeak(self.device.kind == "cuda") as vram:
-            load_s = engine.load() if not getattr(engine, "_loaded_once", False) else 0.0
-            engine._loaded_once = True  # type: ignore[attr-defined]
+            load_s = self._load_once("diarize", engine)
             diar = engine.diarize(audio, uri=rec.slug, num_speakers=self.settings.num_speakers)
         artifact.write_text(diar.model_dump_json(by_alias=True), encoding="utf-8")
         cache.write_marker(rec.work_dir, "diarize", key)
@@ -463,11 +491,11 @@ class Pipeline:
         }
 
     def _align(self, rec: Recording) -> dict[str, Any]:
-        asr_key = (cache.read_marker(rec.work_dir, "asr") or {})["key"]
+        text = self.text[rec.slug]
         diar_key = (cache.read_marker(rec.work_dir, "diarize") or {})["key"]
         ident_key = (cache.read_marker(rec.work_dir, "identify") or {}).get("key", "")
         key = cache.stage_key(
-            "align", inputs={"asr": asr_key, "diarize": diar_key, "identify": ident_key}
+            "align", inputs={"text": text.key, "diarize": diar_key, "identify": ident_key}
         )
         artifact = rec.work_dir / "transcript.aligned.json"
         if cache.is_fresh(rec.work_dir, "align", key, [artifact]):
@@ -478,7 +506,7 @@ class Pipeline:
                 "speakers": len(aligned.speakers),
                 "parts": ["word-to-speaker"],
             }
-        transcript = read_transcript(rec.work_dir / "transcript.asr.json")
+        transcript = read_transcript(text.path)
         diar = Diarization.model_validate_json(
             (rec.work_dir / "diarization.json").read_text(encoding="utf-8")
         )
@@ -566,8 +594,23 @@ class Pipeline:
             rec.slug,
             [t.model_copy(update={"label": ids.get(t.label, t.label)}) for t in diar.turns],
         )
+        self._write_corrections(rec)
         self._speakers[rec.slug] = speakers
         return {"parts": ["txt", "vtt", "words.json", "rttm"], "speakers": len(speakers)}
+
+    def _write_corrections(self, rec: Recording) -> None:
+        if self._directory is None:
+            return
+        merged = [
+            *read_corrections(rec.work_dir / "corrections.glossary.jsonl"),
+            *read_corrections(rec.work_dir / "corrections.llm.jsonl"),
+        ]
+        write_corrections(rec.out_dir / "corrections.jsonl", merged)
+
+    def _glossary_record(self, rec: Recording) -> dict[str, Any] | None:
+        if self._directory is None:
+            return None
+        return {"bias": self.settings.bias, **rec.glossary}
 
     def _directory_record(self) -> dict[str, Any] | None:
         if self._directory is None or self.settings.directory is None:
@@ -615,6 +658,7 @@ class Pipeline:
                 "telemetry": "logs/telemetry.jsonl",
             },
             directory=self._directory_record(),
+            glossary=self._glossary_record(rec),
             warnings=rec.warnings,
             failed_stage=rec.failed_stage,
             error_type=rec.error_type,

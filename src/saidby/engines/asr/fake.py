@@ -19,6 +19,9 @@ class FakeTranscriber:
     def unload(self) -> None:
         return None
 
+    def count_tokens(self, text: str) -> int:
+        return len(text.split())
+
     def transcribe(
         self,
         audio: np.ndarray,
