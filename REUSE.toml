@@ -21,3 +21,9 @@ path = ["CODE_OF_CONDUCT.md"]
 precedence = "override"
 SPDX-FileCopyrightText = "Contributor Covenant authors"
 SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["fixtures/conversations/**", "fixtures/MANIFEST.json", "fixtures/ATTRIBUTION.md"]
+precedence = "override"
+SPDX-FileCopyrightText = "Multilingual LibriSpeech authors and LibriVox readers"
+SPDX-License-Identifier = "CC-BY-4.0"
