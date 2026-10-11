@@ -1,0 +1,108 @@
+[project]
+name = "saidby"
+version = "0.0.1"
+description = "Offline-first diarized transcription: CLI and Python library"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "devEstivenValencia", email = "dev@estivenvalencia.co" }]
+requires-python = ">=3.12"
+keywords = ["speech-to-text", "diarization", "whisper", "offline", "spanish"]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Environment :: Console",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia :: Sound/Audio :: Speech",
+  "Typing :: Typed",
+]
+dependencies = [
+  "faster-whisper>=1.2.1,<2",
+  "ctranslate2>=4.8,<5",
+  "torch>=2.8",
+  "torchaudio>=2.8",
+  "transformers>=5.19,<6",
+  "huggingface-hub>=1.0",
+  "numpy>=2.0",
+  "scipy>=1.13",
+  "soundfile>=0.13",
+  "pydantic>=2.7,<3",
+  "ruamel.yaml>=0.18",
+  "typer>=0.12",
+  "nvidia-cublas-cu12>=12.9; sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
+
+[project.optional-dependencies]
+pyannote = ["pyannote-audio>=4.0.7,<4.1"]
+eval = ["jiwer>=4.0", "pyannote-metrics>=4.1", "pyannote-core>=6.0"]
+
+[project.urls]
+Homepage = "https://github.com/khvostpola/saidby"
+Changelog = "https://github.com/khvostpola/saidby/blob/main/CHANGELOG.md"
+Issues = "https://github.com/khvostpola/saidby/issues"
+
+[project.scripts]
+saidby = "saidby.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.8,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "saidby"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3",
+  "pytest-cov>=6",
+  "pytest-socket>=0.7",
+  "ruff>=0.11",
+  "mypy>=1.15",
+  "types-PyYAML",
+  "reuse>=5",
+  "twine>=6",
+]
+tools = ["datasets>=3", "pyarrow>=17", "remotezip>=0.12"]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests", "tools"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "PL", "RUF", "PT", "N", "TC"]
+ignore = ["PLR0913", "PLR2004", "PLC0415"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src", "tests", "tools"]
+
+[[tool.mypy.overrides]]
+module = ["faster_whisper.*", "pyannote.*", "transformers.*", "soundfile", "jiwer", "ruamel.*", "scipy.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config --disable-socket --allow-unix-socket --allow-hosts=127.0.0.1,::1 -m 'not gpu'"
+markers = [
+  "gpu: needs a CUDA device (run with -m gpu)",
+  "models: needs pre-pulled model weights in the local HF cache",
+  "slow: longer than about 10 seconds",
+]
+
+[tool.coverage.run]
+source = ["saidby"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
