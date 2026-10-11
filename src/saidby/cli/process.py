@@ -24,6 +24,11 @@ def process(
         str | None, typer.Option(help="nemotron3, pyannote-community1 or fake")
     ] = None,
     num_speakers: Annotated[int | None, typer.Option(min=1)] = None,
+    directory: Annotated[
+        Path | None, typer.Option(help="Directory YAML with people and terms")
+    ] = None,
+    no_identify: Annotated[bool, typer.Option("--no-identify")] = False,
+    identify_threshold: Annotated[float | None, typer.Option()] = None,
     keep_intermediates: Annotated[bool, typer.Option("--keep-intermediates")] = False,
     force: Annotated[bool, typer.Option("--force")] = False,
     fail_fast: Annotated[bool, typer.Option("--fail-fast")] = False,
@@ -40,6 +45,9 @@ def process(
             "compute_type": compute_type,
             "diarizer": diarizer,
             "num_speakers": num_speakers,
+            "directory": directory,
+            "identify": False if no_identify else None,
+            "identify_threshold": identify_threshold,
             "keep_intermediates": keep_intermediates or None,
             "force": force or None,
             "fail_fast": fail_fast or None,
