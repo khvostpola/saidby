@@ -1,0 +1,9 @@
+* text=auto eol=lf
+*.py text diff=python
+*.flac binary
+*.wav binary
+*.amr binary
+*.opus binary
+*.ogg binary
+uv.lock -diff linguist-generated=true
+THIRD_PARTY_NOTICES.md linguist-generated=true
