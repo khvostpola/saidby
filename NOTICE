@@ -1,0 +1,8 @@
+saidby
+Copyright 2026 the saidby authors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+saidby does not distribute model weights. The models it can download, and their
+licenses, are listed in MODEL_LICENSES.md. Notices for third-party software are
+in THIRD_PARTY_NOTICES.md.
