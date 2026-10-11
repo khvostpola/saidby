@@ -24,6 +24,7 @@ from saidby.formats.rttm import write_rttm
 from saidby.formats.transcripts import render_txt, render_vtt
 from saidby.formats.words_json import read_transcript, write_transcript
 from saidby.pipeline import cache
+from saidby.pipeline.compare_stage import CompareStage
 from saidby.pipeline.glossary_stages import GlossaryStages
 from saidby.pipeline.job import Recording, RecordingResult, TextArtifact
 from saidby.ports.corrector import LlmClient
@@ -59,6 +60,7 @@ STAGES: tuple[StageName, ...] = (
     "asr_bias",
     "transplant",
     "diarize",
+    "compare",
     "identify",
     "correct",
     "align",
@@ -76,6 +78,7 @@ class Pipeline:
         diarizer: Diarizer | None = None,
         embedder: Embedder | None = None,
         llm: LlmClient | None = None,
+        compare_diarizer: Diarizer | None = None,
         progress: Progress | None = None,
     ) -> None:
         self.settings = settings
@@ -85,6 +88,7 @@ class Pipeline:
         self._embedder = embedder
         self.text: dict[str, TextArtifact] = {}
         self.glossary = GlossaryStages(self, llm)
+        self.compare = CompareStage(self, compare_diarizer)
         self._directory: Directory | None = None
         self.run_id = str(uuid.uuid4())
         self.device: DeviceInfo = DeviceInfo("cpu")
@@ -144,6 +148,7 @@ class Pipeline:
                 "asr_bias": self.glossary.asr_bias,
                 "transplant": self.glossary.transplant,
                 "diarize": self._diarize,
+                "compare": self.compare.run,
                 "identify": self._identify,
                 "correct": self.glossary.correct,
                 "align": self._align,
@@ -225,12 +230,18 @@ class Pipeline:
                 "voiceprints_skipped",
                 "hotwords_tokens",
                 "hotwords_truncated",
+                "bias_windows",
+                "bias_window_s",
                 "transplant_swaps",
                 "dialect_swaps",
                 "llm_chunks",
                 "llm_accepted",
                 "llm_rejected",
                 "llm_truncated",
+                "compare_engine",
+                "agreement",
+                "disagreement_s",
+                "disagreement_spans",
             }
         }
         audio_s = fields.get("audio_s")
@@ -319,6 +330,8 @@ class Pipeline:
         elif stage == "diarize" and self._diarizer is not None:
             self._diarizer.unload()
             self._loaded.discard("diarize")
+        elif stage == "compare":
+            self.compare.release()
         elif stage == "identify" and self._embedder is not None:
             self._embedder.unload()
             self._loaded.discard("identify")
@@ -659,6 +672,7 @@ class Pipeline:
             },
             directory=self._directory_record(),
             glossary=self._glossary_record(rec),
+            compare=self.compare.results.get(rec.slug),
             warnings=rec.warnings,
             failed_stage=rec.failed_stage,
             error_type=rec.error_type,

@@ -37,6 +37,8 @@ class Settings(BaseModel):
     llm_context: int = 8192
     chunk_words: int = 90
     allow_remote_llm: bool = False
+    compare: str | None = None
+    bias_mode: Literal["full", "windows"] = "full"
     keep_intermediates: bool = False
     force: bool = False
     fail_fast: bool = False

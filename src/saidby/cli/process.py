@@ -27,6 +27,8 @@ def process(
     directory: Annotated[
         Path | None, typer.Option(help="Directory YAML with people and terms")
     ] = None,
+    compare: Annotated[str | None, typer.Option(help="Second diarizer to compare against")] = None,
+    bias_mode: Annotated[str | None, typer.Option(help="full or windows")] = None,
     no_identify: Annotated[bool, typer.Option("--no-identify")] = False,
     no_bias: Annotated[bool, typer.Option("--no-bias")] = False,
     no_transplant: Annotated[bool, typer.Option("--no-transplant")] = False,
@@ -53,6 +55,8 @@ def process(
             "num_speakers": num_speakers,
             "directory": directory,
             "identify": False if no_identify else None,
+            "compare": compare,
+            "bias_mode": bias_mode,
             "bias": False if no_bias else None,
             "transplant": False if no_transplant else None,
             "correct": correct or None,
