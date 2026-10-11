@@ -1,0 +1,178 @@
+{
+ "schema": "saidby.fixtures/1",
+ "attribution": "Multilingual LibriSpeech (Pratap et al., 2020), derived from LibriVox public-domain recordings, licensed CC BY 4.0: https://huggingface.co/datasets/facebook/multilingual_librispeech",
+ "license": "CC-BY-4.0",
+ "conversations": [
+  {
+   "id": "dev-conv-01",
+   "partition": "dev",
+   "speakers": [
+    "spk_11670",
+    "spk_2592"
+   ],
+   "duration_s": 49.034,
+   "files": {
+    "conversations/dev/dev-conv-01.flac": {
+     "sha256": "07314acd32ce585bf707b6d7405b0b44fbfad616c998f931481c9121333f649b",
+     "bytes": 768049
+    },
+    "conversations/dev/dev-conv-01.phone-pstn.wav": {
+     "sha256": "84ddc326bd8edc3ccaaec4faa6e3d9536a4f7ee7bfc8df9abf147e7bf2861363",
+     "bytes": 392366
+    },
+    "conversations/dev/dev-conv-01.phone-mobile.amr": {
+     "sha256": "cdb5ada68d0504d1166e467fc482920b3c726871bc634ec042d05fbea246d99d",
+     "bytes": 49066
+    },
+    "conversations/dev/dev-conv-01.voip-app.opus": {
+     "sha256": "d233b16765e4d57a83301ea700ae70872a1d17e16e54cc7e1e8b5c8559dc31e5",
+     "bytes": 71866
+    },
+    "conversations/dev/dev-conv-01.room-recorder.opus": {
+     "sha256": "7afe0805e0f831b9e7aca96ee03a45b4726de5bff11b48e984b04ed25966d668",
+     "bytes": 194727
+    },
+    "conversations/dev/dev-conv-01.rttm": {
+     "sha256": "1138bfcd40964a8f5025e6b902e9281e3a94476c93f6b113a4e2af838ed569f1",
+     "bytes": 261
+    },
+    "conversations/dev/dev-conv-01.expected.json": {
+     "sha256": "89b9e45a7129d3d4e93509e06dc9d1454187b241bfb426747e681ffcf4ccedac",
+     "bytes": 1814
+    }
+   }
+  },
+  {
+   "id": "dev-conv-02",
+   "partition": "dev",
+   "speakers": [
+    "spk_7331",
+    "spk_1075"
+   ],
+   "duration_s": 46.058,
+   "files": {
+    "conversations/dev/dev-conv-02.flac": {
+     "sha256": "00ffead771256ed730bcf923d0c2434f02eec4c8673511ea04f127ab7bc68b03",
+     "bytes": 617182
+    },
+    "conversations/dev/dev-conv-02.phone-pstn.wav": {
+     "sha256": "a126f5d78e4b8c144d502c8945ad60deb0fd5286caa440d2e07e8e99e11664a7",
+     "bytes": 368556
+    },
+    "conversations/dev/dev-conv-02.phone-mobile.amr": {
+     "sha256": "42a8174308a9b2d60f8892eccf7aa870282ef728cbe406d9c7b9b1d16766d271",
+     "bytes": 46086
+    },
+    "conversations/dev/dev-conv-02.voip-app.opus": {
+     "sha256": "be845c98f71c701fd0e13e2d81153818ad4c85892a4da395505acb61da869efb",
+     "bytes": 65364
+    },
+    "conversations/dev/dev-conv-02.room-recorder.opus": {
+     "sha256": "17a339e2b3f37f6b13ae719bf03903e405ba5f7e3d79be2115374da47970b516",
+     "bytes": 179706
+    },
+    "conversations/dev/dev-conv-02.rttm": {
+     "sha256": "cd8269e50df5fdede284bffdce776c9d7e40d78d6200c5cb821b1b7e3eae58a1",
+     "bytes": 259
+    },
+    "conversations/dev/dev-conv-02.expected.json": {
+     "sha256": "d35f688f1c9c1a64839827e6a922d546f131a49f3bdfd590cd4cec2e47250790",
+     "bytes": 1610
+    }
+   }
+  },
+  {
+   "id": "test-conv-01",
+   "partition": "test",
+   "speakers": [
+    "spk_10667",
+    "spk_6306"
+   ],
+   "duration_s": 43.374,
+   "files": {
+    "conversations/test/test-conv-01.flac": {
+     "sha256": "3fe4eb4c8192899197d57a6800429699415d063f944ba9b49a2b966e35182cdc",
+     "bytes": 691298
+    },
+    "conversations/test/test-conv-01.phone-pstn.wav": {
+     "sha256": "5b093a4b0e2561e558db75889bd66de1b8358811dd052444ee7c4b734b938688",
+     "bytes": 347086
+    },
+    "conversations/test/test-conv-01.phone-mobile.amr": {
+     "sha256": "885306676ef461c2630f2365a060f30450aa00f7bdbb808d311908f40de74de2",
+     "bytes": 43406
+    },
+    "conversations/test/test-conv-01.voip-app.opus": {
+     "sha256": "0482d1ebab9c89b410d2ded16a3c33b35637888ab723032944a51c10746dce62",
+     "bytes": 63888
+    },
+    "conversations/test/test-conv-01.room-recorder.opus": {
+     "sha256": "ea4cb00b2a286387125580050ad89ee96872af974c32710d9db8d0081efdc39a",
+     "bytes": 171991
+    },
+    "conversations/test/test-conv-01.rttm": {
+     "sha256": "f11c884df67d9d1834073e8d0b59595cf8c0259ab03a224938eaf833c03015bf",
+     "bytes": 265
+    },
+    "conversations/test/test-conv-01.expected.json": {
+     "sha256": "3e528487f0759d2c774f3c60ea27b1c6a42bf5f2025fcebc0218eaf28866eaa1",
+     "bytes": 1652
+    }
+   }
+  },
+  {
+   "id": "test-conv-02",
+   "partition": "test",
+   "speakers": [
+    "spk_7678",
+    "spk_1448"
+   ],
+   "duration_s": 46.78,
+   "files": {
+    "conversations/test/test-conv-02.flac": {
+     "sha256": "2656ac82efc8d318d27ee5325f2ef470ae2afe9189584c0f05e16c037ec6774a",
+     "bytes": 734820
+    },
+    "conversations/test/test-conv-02.phone-pstn.wav": {
+     "sha256": "2dd356e322f07dffa138351fc43bc82ac2f460b8f7363a285b4820d5aebfec0b",
+     "bytes": 374330
+    },
+    "conversations/test/test-conv-02.phone-mobile.amr": {
+     "sha256": "76e5dac22c184e0093cce76dbf755bcc73b7800c5f5e31eabc8660b587a24715",
+     "bytes": 46806
+    },
+    "conversations/test/test-conv-02.voip-app.opus": {
+     "sha256": "1073902a16aaf9b7c4ce76c1e5a752198a6990979dea977ab97fa64512681b4e",
+     "bytes": 66410
+    },
+    "conversations/test/test-conv-02.room-recorder.opus": {
+     "sha256": "2de1e7d74d2aacb4546deb96eab4263c93bb3d8c3954e445ee63203aa4aebb93",
+     "bytes": 179745
+    },
+    "conversations/test/test-conv-02.rttm": {
+     "sha256": "b90e5e154600ce8012b92dc40bb5b81b150a0ae686117777f658f93d9210c327",
+     "bytes": 263
+    },
+    "conversations/test/test-conv-02.expected.json": {
+     "sha256": "d4399ad886ff64c2d9885ea01977455fea9fa953dc0f4d05b1ea6facf2f44e03",
+     "bytes": 1686
+    }
+   }
+  }
+ ],
+ "speakers": {
+  "dev": [
+   "11670",
+   "2592",
+   "7331",
+   "1075"
+  ],
+  "test": [
+   "10667",
+   "6306",
+   "7678",
+   "1448"
+  ]
+ },
+ "total_bytes": 5480558
+}

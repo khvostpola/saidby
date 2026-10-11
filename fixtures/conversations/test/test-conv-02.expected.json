@@ -1,0 +1,36 @@
+{
+ "id": "test-conv-02",
+ "partition": "test",
+ "duration_s": 46.78,
+ "turns": [
+  {
+   "speaker": "spk_7678",
+   "start": 0.826,
+   "end": 11.726,
+   "text": "vezzera insistió irritándose con mi orgullo no sé qué tiene que ver el orgullo con esto le observé",
+   "source_id": "7678_7613_000082"
+  },
+  {
+   "speaker": "spk_1448",
+   "start": 12.87,
+   "end": 25.18,
+   "text": "aunque si yo les pidiese a dos o tres oficiales amigos yo sé que me los darían y tales que no les igualasen los de aquellos que tienen más nombre en nuestra españa",
+   "source_id": "1448_567_000077"
+  },
+  {
+   "speaker": "spk_7678",
+   "start": 25.5,
+   "end": 35.9,
+   "text": "al día siguiente vezzera entró al anochecer en mi cuarto llovía desde la mañana con fuerte temporal y la humedad y el frío me agobiaban",
+   "source_id": "7678_7613_000038"
+  },
+  {
+   "speaker": "spk_1448",
+   "start": 35.5,
+   "end": 46.78,
+   "text": "ya la azada o la hoz poco repugna al andante ejercicio ya está en uso la llaneza escudera con que acuso al soberbio que intenta hollar la luna",
+   "source_id": "1448_567_000069"
+  }
+ ],
+ "text": "vezzera insistió irritándose con mi orgullo no sé qué tiene que ver el orgullo con esto le observé aunque si yo les pidiese a dos o tres oficiales amigos yo sé que me los darían y tales que no les igualasen los de aquellos que tienen más nombre en nuestra españa al día siguiente vezzera entró al anochecer en mi cuarto llovía desde la mañana con fuerte temporal y la humedad y el frío me agobiaban ya la azada o la hoz poco repugna al andante ejercicio ya está en uso la llaneza escudera con que acuso al soberbio que intenta hollar la luna"
+}

@@ -1,0 +1,36 @@
+{
+ "id": "dev-conv-02",
+ "partition": "dev",
+ "duration_s": 46.058,
+ "turns": [
+  {
+   "speaker": "spk_7331",
+   "start": 0.82,
+   "end": 11.76,
+   "text": "los coatís comprendieron enseguida que el coaticito había sido mordido al entrar y no había respondido a su llamado porque acaso estaba ya muerto",
+   "source_id": "7331_6706_000140"
+  },
+  {
+   "speaker": "spk_1075",
+   "start": 12.904,
+   "end": 24.734,
+   "text": "no más que para defensa de las inclemencias del cielo todo era paz entonces todo amistad todo concordia",
+   "source_id": "1075_567_000020"
+  },
+  {
+   "speaker": "spk_7331",
+   "start": 25.728,
+   "end": 36.358,
+   "text": "el hombre enfermo aceptó y se fue a vivir al monte lejos más lejos que misiones todavía y hacía allá mucho calor y eso le hacía bien",
+   "source_id": "7331_6706_000102"
+  },
+  {
+   "speaker": "spk_1075",
+   "start": 35.958,
+   "end": 46.058,
+   "text": "para cuya seguridad andando más los tiempos y creciendo más la malicia se instituyó la orden de los caballeros andantes",
+   "source_id": "1075_567_000003"
+  }
+ ],
+ "text": "los coatís comprendieron enseguida que el coaticito había sido mordido al entrar y no había respondido a su llamado porque acaso estaba ya muerto no más que para defensa de las inclemencias del cielo todo era paz entonces todo amistad todo concordia el hombre enfermo aceptó y se fue a vivir al monte lejos más lejos que misiones todavía y hacía allá mucho calor y eso le hacía bien para cuya seguridad andando más los tiempos y creciendo más la malicia se instituyó la orden de los caballeros andantes"
+}

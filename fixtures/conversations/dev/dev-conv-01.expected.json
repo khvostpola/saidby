@@ -1,0 +1,36 @@
+{
+ "id": "dev-conv-01",
+ "partition": "dev",
+ "duration_s": 49.034,
+ "turns": [
+  {
+   "speaker": "spk_11670",
+   "start": 0.921,
+   "end": 12.701,
+   "text": "lo que es en mí dolor en ti es delicia mi desgracia tu triunfo mientras tu corvo pico me acaricia con lo que sufro gozas para henchirte de vida me destrozas",
+   "source_id": "11670_10604_000002"
+  },
+  {
+   "speaker": "spk_2592",
+   "start": 13.164,
+   "end": 25.614,
+   "text": "alegróse algún tanto don quijote y dijo en verdad que estoy por decir que me holgara que hubiera sucedido todo del revés porque me obligara a pasar en berbería",
+   "source_id": "2592_1378_000042"
+  },
+  {
+   "speaker": "spk_11670",
+   "start": 26.324,
+   "end": 37.634,
+   "text": "cogió un tablón con restos de pintura y echolo al fuego que subió de pronto al sentir del aceite que aún vivía deshacerse en su seno la dulce lágrima",
+   "source_id": "11670_10604_000051"
+  },
+  {
+   "speaker": "spk_2592",
+   "start": 37.234,
+   "end": 49.034,
+   "text": "y pues deste suceso vuestra merced tiene la culpa castíguese a sí mesmo y no revienten sus iras por las ya rotas y sangrientas armas",
+   "source_id": "2592_1378_000012"
+  }
+ ],
+ "text": "lo que es en mí dolor en ti es delicia mi desgracia tu triunfo mientras tu corvo pico me acaricia con lo que sufro gozas para henchirte de vida me destrozas alegróse algún tanto don quijote y dijo en verdad que estoy por decir que me holgara que hubiera sucedido todo del revés porque me obligara a pasar en berbería cogió un tablón con restos de pintura y echolo al fuego que subió de pronto al sentir del aceite que aún vivía deshacerse en su seno la dulce lágrima y pues deste suceso vuestra merced tiene la culpa castíguese a sí mesmo y no revienten sus iras por las ya rotas y sangrientas armas"
+}

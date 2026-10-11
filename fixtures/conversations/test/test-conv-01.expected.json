@@ -1,0 +1,36 @@
+{
+ "id": "test-conv-01",
+ "partition": "test",
+ "duration_s": 43.374,
+ "turns": [
+  {
+   "speaker": "spk_10667",
+   "start": 0.595,
+   "end": 11.105,
+   "text": "morir de gusto cuando lo vieron bien vivo y con lindísimas plumas pedrito lorito le decían qué te pasó pedrito qué plumas brillantes que tiene el lorito",
+   "source_id": "10667_6706_000043"
+  },
+  {
+   "speaker": "spk_6306",
+   "start": 11.946,
+   "end": 22.136,
+   "text": "ese animal puede más que nosotros que se vaya y demos gracias porque ha roto el anzuelo por poco más vamos al fondo",
+   "source_id": "6306_4006_000058"
+  },
+  {
+   "speaker": "spk_10667",
+   "start": 23.074,
+   "end": 33.444,
+   "text": "de madrugada descendía de nuevo muy ligero iba a mirarse en el espejo de la cocinera siempre muy triste porque las plumas tardaban mucho en crecer",
+   "source_id": "10667_6706_000016"
+  },
+  {
+   "speaker": "spk_6306",
+   "start": 33.044,
+   "end": 43.374,
+   "text": "antonio enrojeció de emoción y apresuradamente echó al mar el aparejo con un anzuelo grueso como un dedo",
+   "source_id": "6306_4006_000020"
+  }
+ ],
+ "text": "morir de gusto cuando lo vieron bien vivo y con lindísimas plumas pedrito lorito le decían qué te pasó pedrito qué plumas brillantes que tiene el lorito ese animal puede más que nosotros que se vaya y demos gracias porque ha roto el anzuelo por poco más vamos al fondo de madrugada descendía de nuevo muy ligero iba a mirarse en el espejo de la cocinera siempre muy triste porque las plumas tardaban mucho en crecer antonio enrojeció de emoción y apresuradamente echó al mar el aparejo con un anzuelo grueso como un dedo"
+}
