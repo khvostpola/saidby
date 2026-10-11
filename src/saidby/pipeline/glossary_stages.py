@@ -19,6 +19,7 @@ from saidby.stages.glossary.bias import Hotwords, build_hotwords
 from saidby.stages.glossary.dialect import apply_dialect, dialect_map
 from saidby.stages.glossary.prompts import PROMPT_VERSION
 from saidby.stages.glossary.transplant import transplant, vocabulary
+from saidby.stages.glossary.windows import find_windows, total_seconds
 from saidby.telemetry.vram import VramPeak
 
 if TYPE_CHECKING:
@@ -86,40 +87,63 @@ class GlossaryStages:
         return self.hotwords_cache
 
     def asr_bias(self, rec: Recording) -> dict[str, Any]:
-        if self.p._directory is None or not self.p.settings.bias:
+        directory = self.p._directory
+        if directory is None or not self.p.settings.bias:
             return {"skipped": True}
         hot = self.hotwords()
         if not hot.text:
             return {"skipped": True}
+        windows: list[tuple[float, float]] | None = None
+        if self.p.settings.bias_mode == "windows":
+            windows = find_windows(read_transcript(self.p.text[rec.slug].path), directory)
+            rec.glossary.update(bias_windows=len(windows), bias_window_s=total_seconds(windows))
+            if not windows:
+                return {"skipped": True}
         engine = self.p._transcriber_engine()
+        window_part = json.dumps(windows) if windows is not None else "full"
         key = cache.stage_key(
             "asr_bias",
-            inputs={"audio": self.p._audio_sha[rec.slug], "hotwords": _sha(hot.text)},
+            inputs={
+                "audio": self.p._audio_sha[rec.slug],
+                "hotwords": _sha(hot.text),
+                "windows": _sha(window_part),
+            },
             engine=engine.info,
             options={"language": self.p.settings.language},
         )
         artifact = rec.work_dir / "transcript.bias.json"
-        rec.glossary.update(hotwords_tokens=hot.tokens, hotwords_truncated=hot.truncated)
+        rec.glossary.update(
+            bias_mode=self.p.settings.bias_mode,
+            hotwords_tokens=hot.tokens,
+            hotwords_truncated=hot.truncated,
+        )
         if hot.truncated:
             rec.warnings.append(
                 "glossary is larger than the hotword budget; some terms were left out"
             )
-        self.bias[rec.slug] = TextArtifact(artifact, key)
-        parts = [engine.info.name, engine.info.model, "with hotwords"]
-        common = {
+        self.bias[rec.slug] = TextArtifact(
+            artifact, key, tuple(windows) if windows is not None else None
+        )
+        common: dict[str, Any] = {
             "engine": engine.info,
             "audio_s": rec.duration_s,
             "hotwords_tokens": hot.tokens,
             "hotwords_truncated": hot.truncated,
-            "parts": parts,
+            "parts": [
+                engine.info.name,
+                engine.info.model,
+                f"hotwords in {len(windows)} windows" if windows is not None else "with hotwords",
+            ],
         }
+        if windows is not None:
+            common.update(bias_windows=len(windows), bias_window_s=total_seconds(windows))
         if cache.is_fresh(rec.work_dir, "asr_bias", key, [artifact]):
             return {**common, "cached": True}
         audio = read_audio(rec.wav)
         with VramPeak(self.p.device.kind == "cuda") as vram:
             load_s = self.p._load_once("asr", engine)
             transcript = engine.transcribe(
-                audio, language=self.p.settings.language, hotwords=hot.text
+                audio, language=self.p.settings.language, hotwords=hot.text, clip_windows=windows
             )
         write_transcript(artifact, transcript)
         cache.write_marker(rec.work_dir, "asr_bias", key)
@@ -155,7 +179,12 @@ class GlossaryStages:
             current = read_transcript(base.path)
             log = []
             if bias is not None:
-                current, swaps = transplant(current, read_transcript(bias.path), set(vocab))
+                current, swaps = transplant(
+                    current,
+                    read_transcript(bias.path),
+                    set(vocab),
+                    list(bias.windows) if bias.windows is not None else None,
+                )
                 log += swaps
             current, dialect = apply_dialect(current, mapping)
             write_transcript(artifact, current)

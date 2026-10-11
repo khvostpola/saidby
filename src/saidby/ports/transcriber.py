@@ -25,4 +25,5 @@ class Transcriber(Protocol):
         language: str | None,
         hotwords: str | None = None,
         initial_prompt: str | None = None,
+        clip_windows: list[tuple[float, float]] | None = None,
     ) -> Transcript: ...

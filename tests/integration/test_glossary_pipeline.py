@@ -37,6 +37,7 @@ class ScriptedTranscriber:
     def __init__(self) -> None:
         self.info = EngineInfo(kind="asr", name="scripted", model="scripted")
         self.hotwords_seen: list[str | None] = []
+        self.windows_seen: list[list[tuple[float, float]] | None] = []
         self.loads = 0
         self.unloads = 0
 
@@ -57,12 +58,16 @@ class ScriptedTranscriber:
         language: str | None,
         hotwords: str | None = None,
         initial_prompt: str | None = None,
+        clip_windows: list[tuple[float, float]] | None = None,
     ) -> Transcript:
         self.hotwords_seen.append(hotwords)
+        self.windows_seen.append(clip_windows)
         words = [
             Word(start=i * 0.5 + 0.2, end=i * 0.5 + 0.6, word=f" {w}", p=0.9)
             for i, w in enumerate((BIASED if hotwords else PLAIN).split())
         ]
+        if clip_windows:
+            words = [w for w in words if any(s <= w.start < e for s, e in clip_windows)]
         return Transcript(
             language=language,
             duration_s=len(audio) / SAMPLE_RATE,
@@ -205,3 +210,34 @@ def test_resume_reuses_glossary_stages(tmp_path: Path) -> None:
     assert again.hotwords_seen == []
     assert llm2.calls == []
     assert _words(folder)[5] == "Converge"
+
+
+def test_windows_mode_biases_only_candidate_windows(tmp_path: Path) -> None:
+    transcriber = ScriptedTranscriber()
+    folder = _run(tmp_path, transcriber, _directory(tmp_path), bias_mode="windows")
+    assert transcriber.windows_seen[0] is None
+    windows = transcriber.windows_seen[1]
+    assert windows
+    assert all(end > start for start, end in windows)
+    assert _words(folder)[1] == "Acme"
+    manifest = read_manifest(folder / "manifest.json")
+    assert manifest.glossary is not None
+    assert manifest.glossary["bias_mode"] == "windows"
+    assert manifest.glossary["bias_windows"] == len(windows)
+    events = [json.loads(x) for x in (folder / "logs/telemetry.jsonl").read_text().splitlines()]
+    end = next(e for e in events if e["event"] == "stage.end" and e["stage"] == "asr_bias")
+    assert end["bias_windows"] == len(windows)
+
+
+def test_windows_mode_without_candidates_skips_second_pass(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "saidby.pipeline.glossary_stages.find_windows", lambda transcript, directory: []
+    )
+    transcriber = ScriptedTranscriber()
+    folder = _run(tmp_path, transcriber, _directory(tmp_path), bias_mode="windows")
+    assert transcriber.hotwords_seen == [None]
+    assert _words(folder)[1] == "akme"
+    stages = [s.stage for s in read_manifest(folder / "manifest.json").stages]
+    assert "asr_bias" not in stages

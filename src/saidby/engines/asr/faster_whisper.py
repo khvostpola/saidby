@@ -67,6 +67,7 @@ class FasterWhisperTranscriber:
         language: str | None,
         hotwords: str | None = None,
         initial_prompt: str | None = None,
+        clip_windows: list[tuple[float, float]] | None = None,
     ) -> Transcript:
         if self._model is None:
             self.load()
@@ -78,6 +79,7 @@ class FasterWhisperTranscriber:
             beam_size=self.beam_size,
             initial_prompt=initial_prompt,
             hotwords=hotwords,
+            clip_timestamps=[x for window in clip_windows for x in window] if clip_windows else "0",
         )
         built = []
         for seg in segments:

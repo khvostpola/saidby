@@ -29,6 +29,7 @@ class FakeTranscriber:
         language: str | None,
         hotwords: str | None = None,
         initial_prompt: str | None = None,
+        clip_windows: list[tuple[float, float]] | None = None,
     ) -> Transcript:
         duration = len(audio) / SAMPLE_RATE
         step = 1.0 / self.words_per_second
@@ -42,6 +43,8 @@ class FakeTranscriber:
             )
             for i in range(count)
         ]
+        if clip_windows:
+            words = [w for w in words if any(s <= w.start < e for s, e in clip_windows)]
         segments = [
             Segment(start=chunk[0].start, end=chunk[-1].end, words=chunk)
             for chunk in (words[i : i + 8] for i in range(0, len(words), 8))

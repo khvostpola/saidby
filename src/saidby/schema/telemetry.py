@@ -62,6 +62,8 @@ ALLOWED_FIELDS = (
     "overlap_s",
     "hotwords_tokens",
     "hotwords_truncated",
+    "bias_windows",
+    "bias_window_s",
     "transplant_swaps",
     "dialect_swaps",
     "llm_chunks",
@@ -113,6 +115,8 @@ class TelemetryEvent(BaseModel):
     overlap_s: float | None = None
     hotwords_tokens: int | None = None
     hotwords_truncated: bool | None = None
+    bias_windows: int | None = None
+    bias_window_s: float | None = None
     transplant_swaps: int | None = None
     dialect_swaps: int | None = None
     llm_chunks: int | None = None

@@ -58,3 +58,4 @@ class RecordingResult:
 class TextArtifact:
     path: Path
     key: str
+    windows: tuple[tuple[float, float], ...] | None = None
