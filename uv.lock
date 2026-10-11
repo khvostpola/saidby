@@ -3994,7 +3994,7 @@ wheels = [
 
 [[package]]
 name = "saidby"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "ctranslate2" },
@@ -4007,6 +4007,7 @@ dependencies = [
     { name = "ruamel-yaml" },
     { name = "scipy" },
     { name = "soundfile" },
+    { name = "tokenizers" },
     { name = "torch" },
     { name = "torchaudio" },
     { name = "transformers" },
@@ -4056,6 +4057,7 @@ requires-dist = [
     { name = "ruamel-yaml", specifier = ">=0.18" },
     { name = "scipy", specifier = ">=1.13" },
     { name = "soundfile", specifier = ">=0.13" },
+    { name = "tokenizers", specifier = ">=0.20" },
     { name = "torch", specifier = ">=2.8" },
     { name = "torchaudio", specifier = ">=2.8" },
     { name = "transformers", specifier = ">=5.19,<6" },

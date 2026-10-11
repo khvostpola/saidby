@@ -6,6 +6,17 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-11
+
+### Added
+- Glossary: biased second pass with the directory's names and terms (`asr_bias`), transplant of
+  the terms into the plain transcript, deterministic dialect unification, and `--no-bias` and
+  `--no-transplant`.
+- Optional LLM correction (`--correct`) through a local `llama-server` subprocess or any
+  OpenAI-compatible endpoint (`--llm-url`, loopback only unless `--allow-remote-llm`), with
+  guardrails enforced in code and prompts for Spanish, English and Portuguese.
+- `corrections.jsonl` and a `source` on every word; `glossary` block in `manifest.json`.
+
 ## [0.2.0] - 2026-10-11
 
 ### Added
