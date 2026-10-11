@@ -4,8 +4,10 @@ Offline-first diarized transcription: a command-line tool and Python library tha
 turns any recording into a transcript with speakers, timestamps, glossary-aware
 spelling and one audio track per speaker.
 
-Status: pre-alpha. Version 0.0.1 ships the CLI skeleton (`--version`, `doctor`,
-`models`). The processing pipeline arrives in 0.1.0.
+Status: pre-alpha. Version 0.1.0 runs the core pipeline: transcription with
+faster-whisper, diarization with Nemotron-3, word-to-speaker alignment and one aligned
+audio track per speaker. People identification, glossary correction and review arrive in
+later 0.x releases.
 
 ## Install
 
@@ -20,6 +22,28 @@ uv tool install saidby --index https://download.pytorch.org/whl/cpu --index-stra
 ```
 
 Requirements: `ffmpeg` on the PATH and, for GPU use, an NVIDIA driver 580 or newer.
+
+## Quick start
+
+```bash
+saidby models pull --all          # one-time download, the only step that uses the network
+saidby process call.m4a --out out/ --language es
+```
+
+Each recording gets its own folder under `out/`:
+
+| File | Content |
+|---|---|
+| `manifest.json` | Engines, models and versions per stage, speakers, timings |
+| `transcript.txt` | `[HH:MM:SS] Speaker: text` |
+| `transcript.vtt` | WebVTT with `<v Speaker>` voice tags |
+| `transcript.words.json` | Word-level transcript with timestamps and speaker labels |
+| `diarization.rttm` | Standard "who spoke when" |
+| `speakers/<id>.flac` | One track per speaker, same length as the original, silent elsewhere |
+| `logs/run.log`, `logs/telemetry.jsonl` | Local log and closed-field telemetry |
+
+A failed run keeps `.work/` so the next run resumes from the last finished stage;
+`--keep-intermediates` keeps it on success too. See [docs/cli.md](docs/cli.md).
 
 ## Models
 
