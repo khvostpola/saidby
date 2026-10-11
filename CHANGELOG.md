@@ -6,6 +6,17 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-11
+
+### Added
+- `saidby process`: ingest, transcription (faster-whisper large-v3), diarization (Nemotron-3, or
+  pyannote community-1 with the `pyannote` extra), word-to-speaker alignment, aligned
+  per-speaker FLAC tracks, `transcript.txt`, `transcript.vtt`, `transcript.words.json`,
+  `diarization.rttm` and `manifest.json`.
+- Resume by stage from `.work/`, several inputs per run with models loaded once, progress as
+  human lines or JSON events, `--strict-offline`.
+- Public-corpus fixtures (Multilingual LibriSpeech, CC BY 4.0) with four channel profiles.
+
 ## [0.0.1] - 2026-10-10
 
 ### Added
