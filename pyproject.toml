@@ -25,6 +25,7 @@ dependencies = [
   "torchaudio>=2.8",
   "transformers>=5.19,<6",
   "huggingface-hub>=1.0",
+  "librosa>=1.0",
   "numpy>=2.0",
   "scipy>=1.13",
   "soundfile>=0.13",
@@ -76,7 +77,7 @@ src = ["src", "tests", "tools"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "PL", "RUF", "PT", "N", "TC"]
-ignore = ["PLR0913", "PLR2004", "PLC0415"]
+ignore = ["PLR0913", "PLR0917", "PLR2004", "PLC0415"]
 
 [tool.ruff.format]
 docstring-code-format = true
