@@ -1,0 +1,549 @@
+{
+  "$defs": {
+    "AudioInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "sample_rate": {
+          "default": 16000,
+          "title": "Sample Rate",
+          "type": "integer"
+        },
+        "channels": {
+          "default": 1,
+          "title": "Channels",
+          "type": "integer"
+        },
+        "duration_s": {
+          "title": "Duration S",
+          "type": "number"
+        }
+      },
+      "required": [
+        "duration_s"
+      ],
+      "title": "AudioInfo",
+      "type": "object"
+    },
+    "DeviceRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "requested": {
+          "title": "Requested",
+          "type": "string"
+        },
+        "used": {
+          "title": "Used",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "vram_total_mb": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vram Total Mb"
+        }
+      },
+      "required": [
+        "requested",
+        "used"
+      ],
+      "title": "DeviceRecord",
+      "type": "object"
+    },
+    "EngineInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "asr",
+            "diarizer",
+            "embedder",
+            "llm"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        },
+        "repo_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Repo Id"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision"
+        },
+        "device": {
+          "anyOf": [
+            {
+              "enum": [
+                "cuda",
+                "cpu"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Device"
+        },
+        "compute_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Compute Type"
+        },
+        "library": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Library"
+        }
+      },
+      "required": [
+        "kind",
+        "name",
+        "model"
+      ],
+      "title": "EngineInfo",
+      "type": "object"
+    },
+    "SourceInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size_bytes": {
+          "title": "Size Bytes",
+          "type": "integer"
+        },
+        "duration_s": {
+          "title": "Duration S",
+          "type": "number"
+        }
+      },
+      "required": [
+        "path",
+        "sha256",
+        "size_bytes",
+        "duration_s"
+      ],
+      "title": "SourceInfo",
+      "type": "object"
+    },
+    "SpeakerEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "identified": {
+          "default": false,
+          "title": "Identified",
+          "type": "boolean"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        },
+        "speech_s": {
+          "default": 0.0,
+          "title": "Speech S",
+          "type": "number"
+        },
+        "track": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Track"
+        },
+        "merged_from": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Merged From",
+          "type": "array"
+        }
+      },
+      "required": [
+        "label"
+      ],
+      "title": "SpeakerEntry",
+      "type": "object"
+    },
+    "StageRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "stage": {
+          "enum": [
+            "ingest",
+            "asr",
+            "asr_bias",
+            "transplant",
+            "diarize",
+            "compare",
+            "identify",
+            "correct",
+            "align",
+            "tracks",
+            "outputs"
+          ],
+          "title": "Stage",
+          "type": "string"
+        },
+        "engine": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EngineInfo"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "options": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default": {},
+          "title": "Options",
+          "type": "object"
+        },
+        "wall_s": {
+          "default": 0.0,
+          "title": "Wall S",
+          "type": "number"
+        },
+        "cached": {
+          "default": false,
+          "title": "Cached",
+          "type": "boolean"
+        },
+        "status": {
+          "default": "ok",
+          "enum": [
+            "ok",
+            "failed",
+            "skipped"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "stage"
+      ],
+      "title": "StageRecord",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "saidby.manifest/1",
+      "default": "saidby.manifest/1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "tool": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Tool",
+      "type": "object"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "failed",
+        "interrupted"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "finished_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Finished At"
+    },
+    "source": {
+      "$ref": "#/$defs/SourceInfo"
+    },
+    "audio": {
+      "$ref": "#/$defs/AudioInfo"
+    },
+    "language": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Language"
+    },
+    "device": {
+      "$ref": "#/$defs/DeviceRecord"
+    },
+    "stages": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/StageRecord"
+      },
+      "title": "Stages",
+      "type": "array"
+    },
+    "speakers": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/SpeakerEntry"
+      },
+      "title": "Speakers",
+      "type": "array"
+    },
+    "files": {
+      "additionalProperties": true,
+      "default": {},
+      "title": "Files",
+      "type": "object"
+    },
+    "directory": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Directory"
+    },
+    "glossary": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Glossary"
+    },
+    "compare": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Compare"
+    },
+    "edits": {
+      "default": [],
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Edits",
+      "type": "array"
+    },
+    "warnings": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    },
+    "failed_stage": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Failed Stage"
+    },
+    "error_type": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error Type"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error"
+    }
+  },
+  "required": [
+    "tool",
+    "run_id",
+    "status",
+    "created_at",
+    "source",
+    "audio",
+    "device"
+  ],
+  "title": "Manifest",
+  "type": "object"
+}

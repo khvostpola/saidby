@@ -1,0 +1,261 @@
+{
+  "$defs": {
+    "ConsentRef": {
+      "additionalProperties": false,
+      "properties": {
+        "declared_by": {
+          "title": "Declared By",
+          "type": "string"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "scope": {
+          "const": "voiceprint",
+          "default": "voiceprint",
+          "title": "Scope",
+          "type": "string"
+        }
+      },
+      "required": [
+        "declared_by",
+        "date"
+      ],
+      "title": "ConsentRef",
+      "type": "object"
+    },
+    "Person": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "aliases": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        },
+        "variants": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Variants",
+          "type": "array"
+        },
+        "confusions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Confusions",
+          "type": "array"
+        },
+        "context": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Context"
+        },
+        "voiceprint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Voiceprint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "Person",
+      "type": "object"
+    },
+    "Term": {
+      "additionalProperties": false,
+      "properties": {
+        "term": {
+          "minLength": 1,
+          "title": "Term",
+          "type": "string"
+        },
+        "type": {
+          "anyOf": [
+            {
+              "const": "dialect",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Type"
+        },
+        "variants": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Variants",
+          "type": "array"
+        },
+        "confusions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Confusions",
+          "type": "array"
+        },
+        "context": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Context"
+        }
+      },
+      "required": [
+        "term"
+      ],
+      "title": "Term",
+      "type": "object"
+    },
+    "Voiceprint": {
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "title": "Model",
+          "type": "string"
+        },
+        "revision": {
+          "title": "Revision",
+          "type": "string"
+        },
+        "dim": {
+          "title": "Dim",
+          "type": "integer"
+        },
+        "sample_rate": {
+          "title": "Sample Rate",
+          "type": "integer"
+        },
+        "preprocessing": {
+          "title": "Preprocessing",
+          "type": "string"
+        },
+        "channel": {
+          "title": "Channel",
+          "type": "string"
+        },
+        "seconds": {
+          "title": "Seconds",
+          "type": "number"
+        },
+        "vector": {
+          "title": "Vector",
+          "type": "string"
+        },
+        "enrolled_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Enrolled At"
+        },
+        "consent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConsentRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "model",
+        "revision",
+        "dim",
+        "sample_rate",
+        "preprocessing",
+        "channel",
+        "seconds",
+        "vector"
+      ],
+      "title": "Voiceprint",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "language": {
+      "title": "Language",
+      "type": "string"
+    },
+    "people": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Person"
+      },
+      "title": "People",
+      "type": "array"
+    },
+    "terms": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Term"
+      },
+      "title": "Terms",
+      "type": "array"
+    }
+  },
+  "required": [
+    "version",
+    "language"
+  ],
+  "title": "Directory",
+  "type": "object"
+}
