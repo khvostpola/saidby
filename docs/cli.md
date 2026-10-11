@@ -22,6 +22,10 @@ saidby directory validate FILE | schema | init FILE
 | `--diarizer NAME` | `nemotron3` (default), `pyannote-community1` (needs `saidby[pyannote]`) or `fake` |
 | `--num-speakers N` | Fix the number of speakers when known |
 | `--directory FILE` | Directory with people (and voiceprints); enables identification |
+| `--no-bias`, `--no-transplant` | Skip the biased pass, or keep it but do not merge it |
+| `--correct` | Fix directory terms with a local LLM (see [glossary](glossary.md)) |
+| `--llm-url URL`, `--llm-binary PATH` | Use an existing OpenAI-compatible endpoint, or a specific `llama-server` |
+| `--allow-remote-llm` | Allow an endpoint that is not on this machine |
 | `--no-identify` | Skip identification even when voiceprints exist |
 | `--identify-threshold X` | Minimum cosine score to assign a name (default 0.5) |
 | `--keep-intermediates` | Keep `.work/` after success |
@@ -48,7 +52,7 @@ Configuration precedence: command line, `SAIDBY_*` environment variables, `saidb
 | 4 | Model unavailable or license refused |
 | 5 | Consent missing (reserved) |
 | 6 | Stage failure, or more than one file failed |
-| 7 | LLM backend unavailable (reserved) |
+| 7 | LLM backend unavailable |
 | 8 | Network attempt under `--strict-offline` |
 | 130 | Interrupted |
 

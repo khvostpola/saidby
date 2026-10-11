@@ -27,3 +27,10 @@ and, on failure, `failed_stage` and `error_type`.
 One event per line with a closed set of fields: stage, engine, model, revision, device,
 timings, real-time factor, memory peak and counts. It never contains transcript text,
 names, glossary terms, voiceprints or file names.
+
+## `corrections.jsonl`
+
+Written when a directory is given. One JSON object per line: `t` and `end` (seconds), `from`,
+`to`, `by` (`bias`, `dialect`, `llm`, later `review`), `status` (`accepted` or `rejected`),
+`reason` for rejections (`out_of_range`, `span_too_long`, `term_not_allowed`, `already_equal`,
+`covers_extra_words`, `low_similarity`, `overlaps_change`, `truncated_response`) and `similarity`.

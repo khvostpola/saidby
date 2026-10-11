@@ -4,10 +4,11 @@ Offline-first diarized transcription: a command-line tool and Python library tha
 turns any recording into a transcript with speakers, timestamps, glossary-aware
 spelling and one audio track per speaker.
 
-Status: pre-alpha. Version 0.2.0 transcribes with faster-whisper, diarizes with Nemotron-3,
+Status: pre-alpha. Version 0.3.0 transcribes with faster-whisper, diarizes with Nemotron-3,
 aligns words to speakers, renders one aligned audio track per speaker and names speakers by
-voiceprint (with recorded consent). Glossary correction and review arrive in later 0.x
-releases.
+voiceprint (with recorded consent). With a directory it also spells your names and terms
+correctly (biased pass, transplant and an optional local LLM, all logged). Review and
+short-window bias arrive in later 0.x releases.
 
 ## Install
 
@@ -38,6 +39,7 @@ Each recording gets its own folder under `out/`:
 | `transcript.txt` | `[HH:MM:SS] Speaker: text` |
 | `transcript.vtt` | WebVTT with `<v Speaker>` voice tags |
 | `transcript.words.json` | Word-level transcript with timestamps and speaker labels |
+| `corrections.jsonl` | Every glossary change, accepted or rejected, with its reason |
 | `diarization.rttm` | Standard "who spoke when" |
 | `speakers/<id>.flac` | One track per speaker, same length as the original, silent elsewhere |
 | `logs/run.log`, `logs/telemetry.jsonl` | Local log and closed-field telemetry |
