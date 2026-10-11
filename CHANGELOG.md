@@ -6,6 +6,16 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-11
+
+### Added
+- `process --compare NAME`: runs a second diarizer, records the agreement (0.25 s margin) and
+  the disagreement spans in `manifest.json` and telemetry.
+- `saidby review`: walks through disagreement spans, rejected LLM proposals and low-confidence
+  words; corrections and speaker changes are logged, decisions are remembered, and new spellings
+  can be added to the directory as variants.
+- `process --bias-mode windows` (experimental): biased pass only around likely terms.
+
 ## [0.3.0] - 2026-10-11
 
 ### Added
