@@ -6,6 +6,21 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-11
+
+### Added
+- People: directory format with JSON Schema, `saidby directory validate|schema|init`,
+  `saidby enroll` with recorded consent (exit code 5 without it) and comment-preserving,
+  backed-up writes of the directory and `consent.yaml`.
+- Speaker identification by voiceprint with one-to-one assignment, a 0.5 score threshold and a
+  3 s speech minimum; a built-in WeSpeaker ResNet34 that matches pyannote's embeddings
+  (cosine above 0.999), so pyannote.audio stays optional.
+- `saidby speakers show|map|merge` to rename and merge speakers without reprocessing.
+- `process --directory`, `--no-identify` and `--identify-threshold`.
+
+### Fixed
+- Re-running with different speaker names no longer leaves stale tracks behind.
+
 ## [0.1.0] - 2026-10-11
 
 ### Added
