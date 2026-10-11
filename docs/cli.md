@@ -5,6 +5,11 @@ saidby --version
 saidby doctor [--json]
 saidby models list | pull KEY... [--all] | licenses | path KEY
 saidby process INPUT... --out DIR [options]
+saidby enroll OUT_DIR --speaker LABEL=PERSON_ID... --directory FILE [consent options]
+saidby speakers show OUT_DIR
+saidby speakers map OUT_DIR --set LABEL=PERSON_ID [--directory FILE]
+saidby speakers merge OUT_DIR LABEL... --into LABEL
+saidby directory validate FILE | schema | init FILE
 ```
 
 ## `saidby process`
@@ -16,6 +21,9 @@ saidby process INPUT... --out DIR [options]
 | `--asr-model KEY` | `large-v3` by default, `tiny` for quick tests, or a local model path |
 | `--diarizer NAME` | `nemotron3` (default), `pyannote-community1` (needs `saidby[pyannote]`) or `fake` |
 | `--num-speakers N` | Fix the number of speakers when known |
+| `--directory FILE` | Directory with people (and voiceprints); enables identification |
+| `--no-identify` | Skip identification even when voiceprints exist |
+| `--identify-threshold X` | Minimum cosine score to assign a name (default 0.5) |
 | `--keep-intermediates` | Keep `.work/` after success |
 | `--force` | Overwrite a folder that holds results for a different input |
 | `--fail-fast` | Stop at the first failed recording |
@@ -43,3 +51,10 @@ Configuration precedence: command line, `SAIDBY_*` environment variables, `saidb
 | 7 | LLM backend unavailable (reserved) |
 | 8 | Network attempt under `--strict-offline` |
 | 130 | Interrupted |
+
+## Speakers after processing
+
+`speakers map` and `speakers merge` rewrite `transcript.words.json`, `transcript.txt`,
+`transcript.vtt`, `diarization.rttm`, the tracks and `manifest.json` (it records each edit under
+`edits`) without reprocessing audio. Speaker labels (`SPEAKER_00`) never change; names and
+track file names do. Merge is for a person the diarizer split in two.

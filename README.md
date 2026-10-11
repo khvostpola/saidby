@@ -4,10 +4,10 @@ Offline-first diarized transcription: a command-line tool and Python library tha
 turns any recording into a transcript with speakers, timestamps, glossary-aware
 spelling and one audio track per speaker.
 
-Status: pre-alpha. Version 0.1.0 runs the core pipeline: transcription with
-faster-whisper, diarization with Nemotron-3, word-to-speaker alignment and one aligned
-audio track per speaker. People identification, glossary correction and review arrive in
-later 0.x releases.
+Status: pre-alpha. Version 0.2.0 transcribes with faster-whisper, diarizes with Nemotron-3,
+aligns words to speakers, renders one aligned audio track per speaker and names speakers by
+voiceprint (with recorded consent). Glossary correction and review arrive in later 0.x
+releases.
 
 ## Install
 
@@ -41,6 +41,16 @@ Each recording gets its own folder under `out/`:
 | `diarization.rttm` | Standard "who spoke when" |
 | `speakers/<id>.flac` | One track per speaker, same length as the original, silent elsewhere |
 | `logs/run.log`, `logs/telemetry.jsonl` | Local log and closed-field telemetry |
+
+To name speakers, enroll them once and pass the directory:
+
+```bash
+saidby enroll out/call --speaker SPEAKER_00=ana --directory directory.yaml \
+  --consent-source "signed form" --consent-declared-by "Ana Gomez"
+saidby process next-call.m4a --out out/ --directory directory.yaml
+```
+
+See [docs/directory-format.md](docs/directory-format.md).
 
 A failed run keeps `.work/` so the next run resumes from the last finished stage;
 `--keep-intermediates` keeps it on success too. See [docs/cli.md](docs/cli.md).
