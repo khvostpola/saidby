@@ -13,6 +13,7 @@ from saidby.cli import speakers as speakers_cli
 from saidby.cli.doctor import doctor
 from saidby.cli.enroll import enroll
 from saidby.cli.process import process
+from saidby.cli.review import review
 from saidby.errors import SaidbyError
 
 app = typer.Typer(
@@ -27,6 +28,7 @@ app.add_typer(directory_cli.app, name="directory")
 app.command("doctor")(doctor)
 app.command("process")(process)
 app.command("enroll")(enroll)
+app.command("review")(review)
 
 
 def _version(value: bool) -> None:

@@ -52,6 +52,8 @@ class Folder:
         )
         files = dict(self.manifest.files)
         files["tracks"] = [s.track for s in self.transcript.speakers if s.track]
+        if (self.out_dir / "corrections.jsonl").exists():
+            files["corrections"] = "corrections.jsonl"
         manifest = self.manifest.model_copy(
             update={
                 "speakers": self.transcript.speakers,
