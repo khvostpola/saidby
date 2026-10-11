@@ -1,0 +1,54 @@
+# SPDX-FileCopyrightText: 2026 the saidby authors
+# SPDX-License-Identifier: Apache-2.0
+
+from pathlib import Path
+from typing import Annotated
+
+import typer
+
+from saidby.cli.progress import Progress
+from saidby.config.settings import Settings
+from saidby.errors import StageError
+from saidby.pipeline.runner import Pipeline
+
+
+def process(
+    inputs: Annotated[list[Path], typer.Argument(help="Audio or video files")],
+    out: Annotated[Path, typer.Option("--out", help="Output folder")],
+    config: Annotated[Path | None, typer.Option(help="Path to a saidby.toml")] = None,
+    language: Annotated[str | None, typer.Option(help="Recording language, e.g. es")] = None,
+    device: Annotated[str | None, typer.Option(help="auto, cuda or cpu")] = None,
+    asr_model: Annotated[str | None, typer.Option(help="Model key or local path")] = None,
+    compute_type: Annotated[str | None, typer.Option()] = None,
+    diarizer: Annotated[
+        str | None, typer.Option(help="nemotron3, pyannote-community1 or fake")
+    ] = None,
+    num_speakers: Annotated[int | None, typer.Option(min=1)] = None,
+    keep_intermediates: Annotated[bool, typer.Option("--keep-intermediates")] = False,
+    force: Annotated[bool, typer.Option("--force")] = False,
+    fail_fast: Annotated[bool, typer.Option("--fail-fast")] = False,
+    strict_offline: Annotated[bool, typer.Option("--strict-offline")] = False,
+    progress: Annotated[str | None, typer.Option(help="human, json or none")] = None,
+) -> None:
+    """Transcribe recordings into one output folder each."""
+    settings = Settings.load(
+        config,
+        {
+            "language": language,
+            "device": device,
+            "asr_model": asr_model,
+            "compute_type": compute_type,
+            "diarizer": diarizer,
+            "num_speakers": num_speakers,
+            "keep_intermediates": keep_intermediates or None,
+            "force": force or None,
+            "fail_fast": fail_fast or None,
+            "strict_offline": strict_offline or None,
+            "progress": progress,
+        },
+    )
+    results = Pipeline(settings, progress=Progress(settings.progress)).run(inputs, out)
+    failed = [r for r in results if r.status != "ok"]
+    if failed:
+        code = failed[0].exit_code if len(failed) == 1 else StageError.exit_code
+        raise typer.Exit(code)

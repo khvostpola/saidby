@@ -9,6 +9,7 @@ import typer
 from saidby import __version__
 from saidby.cli import models as models_cli
 from saidby.cli.doctor import doctor
+from saidby.cli.process import process
 from saidby.errors import SaidbyError
 
 app = typer.Typer(
@@ -19,6 +20,7 @@ app = typer.Typer(
 )
 app.add_typer(models_cli.app, name="models")
 app.command("doctor")(doctor)
+app.command("process")(process)
 
 
 def _version(value: bool) -> None:
@@ -37,6 +39,8 @@ def root(
 def main() -> None:
     try:
         app()
+    except KeyboardInterrupt:
+        sys.exit(130)
     except SaidbyError as exc:
         print(f"error: {type(exc).__name__}: {exc}", file=sys.stderr)
         sys.exit(exc.exit_code)
