@@ -27,6 +27,22 @@ Every accepted or rejected change is written to `corrections.jsonl` with its tim
 replacement, origin (`bias`, `dialect`, `llm`) and rejection reason. Words carry a `source`
 field in `transcript.words.json`.
 
+## Bias in short windows (experimental)
+
+`--bias-mode windows` runs the biased pass only around words of the plain transcript that
+resemble a name, term, variant or confusion of the directory (2 s of margin, nearby windows
+merged), instead of over the whole recording, and transplants inside those windows only.
+
+It is not the default because, in the one measurement we have, it saves time but finds fewer
+terms. On a 15-minute call with the same plain transcript: windows covered 30 % of the audio and
+the biased pass took 1:33 against 3:18 for the full pass; after the transplant the share of
+directory terms spelled correctly was 40.9 % with windows, 59.1 % with the full pass and 36.4 %
+with no bias at all. Terms the recognizer garbles beyond recognition are not found by similarity,
+so they never get a window. Adding every low-confidence word as a window recovered more terms
+(54.5 %) but covered half of the audio. One call and one run each: treat the figures as an
+indication, and note that run-to-run variation of the plain transcription alone was up to two
+points of WER.
+
 ## Setting up the LLM
 
 saidby does not install `llama.cpp`. Put `llama-server` on the `PATH`, or set

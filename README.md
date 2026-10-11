@@ -4,11 +4,12 @@ Offline-first diarized transcription: a command-line tool and Python library tha
 turns any recording into a transcript with speakers, timestamps, glossary-aware
 spelling and one audio track per speaker.
 
-Status: pre-alpha. Version 0.3.0 transcribes with faster-whisper, diarizes with Nemotron-3,
+Status: pre-alpha. Version 0.4.0 transcribes with faster-whisper, diarizes with Nemotron-3,
 aligns words to speakers, renders one aligned audio track per speaker and names speakers by
 voiceprint (with recorded consent). With a directory it also spells your names and terms
-correctly (biased pass, transplant and an optional local LLM, all logged). Review and
-short-window bias arrive in later 0.x releases.
+correctly (biased pass, transplant and an optional local LLM, all logged). A second
+diarizer can be compared on the same audio, and `saidby review` walks through the uncertain
+spans so you can type the right text and feed new spellings back into the directory.
 
 ## Install
 

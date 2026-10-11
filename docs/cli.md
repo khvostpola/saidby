@@ -5,6 +5,7 @@ saidby --version
 saidby doctor [--json]
 saidby models list | pull KEY... [--all] | licenses | path KEY
 saidby process INPUT... --out DIR [options]
+saidby review OUT_DIR [--kinds ...] [--limit N] [--directory FILE]
 saidby enroll OUT_DIR --speaker LABEL=PERSON_ID... --directory FILE [consent options]
 saidby speakers show OUT_DIR
 saidby speakers map OUT_DIR --set LABEL=PERSON_ID [--directory FILE]
@@ -26,6 +27,8 @@ saidby directory validate FILE | schema | init FILE
 | `--correct` | Fix directory terms with a local LLM (see [glossary](glossary.md)) |
 | `--llm-url URL`, `--llm-binary PATH` | Use an existing OpenAI-compatible endpoint, or a specific `llama-server` |
 | `--allow-remote-llm` | Allow an endpoint that is not on this machine |
+| `--compare NAME` | Also run a second diarizer and record where the two disagree |
+| `--bias-mode full\|windows` | Biased pass over the whole audio (default) or only around likely terms |
 | `--no-identify` | Skip identification even when voiceprints exist |
 | `--identify-threshold X` | Minimum cosine score to assign a name (default 0.5) |
 | `--keep-intermediates` | Keep `.work/` after success |
