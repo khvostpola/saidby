@@ -95,7 +95,7 @@ jobs:
       - run: uv build
       - run: uvx twine check dist/*
       - run: uv run --isolated --no-project --with dist/*.whl -- saidby --version
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist/
