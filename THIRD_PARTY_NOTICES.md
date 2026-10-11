@@ -9,12 +9,16 @@ closure of the environment where it ran. Versions and CUDA wheels vary by platfo
 | annotated-types | 0.8.0 | MIT |  |
 | anyio | 4.15.1 | MIT |  |
 | av | 19.0.1 | BSD-3-Clause | BSD-3-Clause bindings; wheels bundle FFmpeg with GPL components; pulled by faster-whisper, never imported by saidby |
+| certifi | 2026.7.22 | MPL-2.0 |  |
 | cffi | 2.1.1 | MIT-0 |  |
+| charset-normalizer | 3.5.2 | MIT |  |
 | click | 8.5.0 | BSD-3-Clause |  |
+| cloudpickle | 3.1.2 | BSD-3-Clause |  |
 | ctranslate2 | 4.8.2 | MIT |  |
 | cuda-bindings | 13.4.3 | Apache-2.0 |  |
 | cuda-pathfinder | 1.8.3 | Apache-2.0 |  |
 | cuda-toolkit | 13.0.3.0 | UNKNOWN | Meta-package for NVIDIA CUDA wheels; installed from PyPI, never redistributed by saidby |
+| decorator | 5.3.1 | BSD-2-Clause |  |
 | faster-whisper | 1.2.1 | MIT |  |
 | filelock | 4.1.0 | MIT |  |
 | flatbuffers | 25.12.19 | Apache-2.0 |  |
@@ -26,11 +30,18 @@ closure of the environment where it ran. Versions and CUDA wheels vary by platfo
 | huggingface-hub | 2.2.0 | Apache-2.0 |  |
 | idna | 3.20 | BSD-3-Clause |  |
 | jinja2 | 3.1.6 | BSD-3-Clause |  |
+| joblib | 1.6.0 | BSD-3-Clause |  |
+| lazy-loader | 0.6 | BSD-3-Clause |  |
+| librosa | 1.0.0 | ISC |  |
+| llvmlite | 0.50.0 | BSD-2-Clause AND Apache-2.0 WITH LLVM-exception |  |
 | markdown-it-py | 4.2.0 | MIT |  |
 | markupsafe | 3.0.4 | BSD-3-Clause |  |
 | mdurl | 0.1.2 | MIT |  |
 | mpmath | 1.3.0 | BSD-3-Clause |  |
+| msgpack | 1.2.3 | Apache-2.0 |  |
+| narwhals | 2.27.1 | MIT |  |
 | networkx | 3.7 | BSD-3-Clause |  |
+| numba | 0.68.0 | BSD-3-Clause |  |
 | numpy | 2.5.4 | BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0 |  |
 | nvidia-cublas | 13.1.1.3 | LicenseRef-NVIDIA-Proprietary | NVIDIA proprietary redistributable EULA; installed from PyPI, never redistributed by saidby |
 | nvidia-cublas-cu12 | 12.9.2.10 | LicenseRef-NVIDIA-Proprietary | NVIDIA proprietary redistributable EULA; installed from PyPI, never redistributed by saidby |
@@ -42,6 +53,8 @@ closure of the environment where it ran. Versions and CUDA wheels vary by platfo
 | nvidia-nvshmem-cu13 | 3.4.5 | LicenseRef-NVIDIA-Proprietary | NVIDIA proprietary redistributable EULA; installed from PyPI, never redistributed by saidby |
 | onnxruntime | 1.31.0 | MIT |  |
 | packaging | 26.3 | Apache-2.0 OR BSD-2-Clause |  |
+| platformdirs | 4.13.0 | MIT |  |
+| pooch | 1.9.0 | BSD-3-Clause |  |
 | protobuf | 7.36.2 | BSD-3-Clause |  |
 | pycparser | 3.11 | BSD-3-Clause |  |
 | pydantic | 2.14.0 | MIT |  |
@@ -49,14 +62,18 @@ closure of the environment where it ran. Versions and CUDA wheels vary by platfo
 | pygments | 2.21.0 | BSD-2-Clause |  |
 | pyyaml | 6.0.3 | MIT |  |
 | regex | 2026.9.29 | Apache-2.0 AND CNRI-Python |  |
+| requests | 2.34.2 | Apache-2.0 |  |
 | rich | 15.0.0 | MIT |  |
 | ruamel-yaml | 0.19.1 | MIT |  |
 | safetensors | 0.8.0 | Apache-2.0 |  |
+| scikit-learn | 1.9.1 | BSD-3-Clause |  |
 | scipy | 1.18.1 | BSD-3-Clause |  |
 | setuptools | 84.0.0 | MIT |  |
 | shellingham | 1.5.4 | ISC |  |
 | soundfile | 0.14.0 | BSD-3-Clause |  |
+| soxr | 1.1.0 | LGPL-2.1-or-later | LGPL-2.1-or-later resampler pulled by librosa; installed from PyPI as a separate library, unmodified and never redistributed by saidby |
 | sympy | 1.14.0 | BSD-3-Clause |  |
+| threadpoolctl | 3.7.0 | BSD-3-Clause |  |
 | tokenizers | 0.23.3 | Apache-2.0 |  |
 | torch | 2.14.1 | Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT |  |
 | torchaudio | 2.11.0 | BSD-3-Clause |  |
@@ -67,3 +84,4 @@ closure of the environment where it ran. Versions and CUDA wheels vary by platfo
 | typer | 0.27.3 | MIT |  |
 | typing-extensions | 4.16.0 | PSF-2.0 |  |
 | typing-inspection | 0.4.4 | MIT |  |
+| urllib3 | 2.8.0 | MIT |  |

@@ -27,3 +27,4 @@ allow = [
 "nvidia-*" = "NVIDIA proprietary redistributable EULA; installed from PyPI, never redistributed by saidby"
 "cuda-toolkit" = "Meta-package for NVIDIA CUDA wheels; installed from PyPI, never redistributed by saidby"
 "av" = "BSD-3-Clause bindings; wheels bundle FFmpeg with GPL components; pulled by faster-whisper, never imported by saidby"
+"soxr" = "LGPL-2.1-or-later resampler pulled by librosa; installed from PyPI as a separate library, unmodified and never redistributed by saidby"
