@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
+import hashlib
 import json
 import platform
 import shutil
@@ -16,6 +17,7 @@ from saidby.cli.progress import Progress, fmt_clock
 from saidby.config.settings import Settings
 from saidby.errors import InputError, SaidbyError, StageError
 from saidby.formats.audio import SAMPLE_RATE, read_audio
+from saidby.formats.directory_yaml import load_directory
 from saidby.formats.manifest import read_manifest, write_manifest
 from saidby.formats.rttm import write_rttm
 from saidby.formats.transcripts import render_txt, render_vtt
@@ -23,7 +25,8 @@ from saidby.formats.words_json import read_transcript, write_transcript
 from saidby.pipeline import cache
 from saidby.pipeline.job import Recording, RecordingResult
 from saidby.ports.diarizer import Diarizer
-from saidby.ports.registry import make_diarizer, make_transcriber
+from saidby.ports.embedder import Embedder
+from saidby.ports.registry import make_diarizer, make_embedder, make_transcriber
 from saidby.ports.transcriber import Transcriber
 from saidby.runtime import prepare
 from saidby.runtime.device import DeviceInfo, resolve_device
@@ -31,8 +34,11 @@ from saidby.runtime.netguard import guard_network
 from saidby.schema.diarization import Diarization
 from saidby.schema.ids import unique_slugs
 from saidby.schema.manifest import AudioInfo, DeviceRecord, Manifest, SourceInfo, StageRecord
+from saidby.schema.speakers import IdentificationResult
 from saidby.schema.telemetry import StageName
+from saidby.schema.transcript import Transcript
 from saidby.stages.align import assign_speakers
+from saidby.stages.identify import identify as run_identify
 from saidby.stages.ingest import file_sha256, ingest
 from saidby.stages.tracks import render_track
 from saidby.telemetry.runlog import RunLog
@@ -40,10 +46,19 @@ from saidby.telemetry.sink import TelemetrySink
 from saidby.telemetry.vram import VramPeak
 
 if TYPE_CHECKING:
+    from saidby.schema.directory import Directory
     from saidby.schema.engine import EngineInfo
     from saidby.schema.speakers import SpeakerEntry
 
-STAGES: tuple[StageName, ...] = ("ingest", "asr", "diarize", "align", "tracks", "outputs")
+STAGES: tuple[StageName, ...] = (
+    "ingest",
+    "asr",
+    "diarize",
+    "identify",
+    "align",
+    "tracks",
+    "outputs",
+)
 
 
 class Pipeline:
@@ -53,12 +68,15 @@ class Pipeline:
         *,
         transcriber: Transcriber | None = None,
         diarizer: Diarizer | None = None,
+        embedder: Embedder | None = None,
         progress: Progress | None = None,
     ) -> None:
         self.settings = settings
         self.progress = progress or Progress("none")
         self._transcriber = transcriber
         self._diarizer = diarizer
+        self._embedder = embedder
+        self._directory: Directory | None = None
         self.run_id = str(uuid.uuid4())
         self.device: DeviceInfo = DeviceInfo("cpu")
         self.warnings: list[str] = []
@@ -94,6 +112,8 @@ class Pipeline:
         return recs
 
     def _run(self, inputs: list[Path], out_root: Path) -> list[RecordingResult]:
+        if self.settings.directory is not None:
+            self._directory, _ = load_directory(self.settings.directory)
         recs = self._recordings(inputs, out_root)
         total = len(recs)
         for rec in recs:
@@ -109,6 +129,7 @@ class Pipeline:
                 "ingest": self._ingest,
                 "asr": self._asr,
                 "diarize": self._diarize,
+                "identify": self._identify,
                 "align": self._align,
                 "tracks": self._tracks,
                 "outputs": self._outputs,
@@ -119,12 +140,7 @@ class Pipeline:
                         self._run_stage(rec, stage, handlers[stage], total)
                         if not rec.alive and self.settings.fail_fast:
                             break
-                if stage == "asr" and self._transcriber is not None:
-                    self._transcriber.unload()
-                    self._loaded.discard("asr")
-                if stage == "diarize" and self._diarizer is not None:
-                    self._diarizer.unload()
-                    self._loaded.discard("diarize")
+                self._release(stage)
                 if self.settings.fail_fast and any(not r.alive for r in recs):
                     break
         except KeyboardInterrupt:
@@ -167,6 +183,8 @@ class Pipeline:
                 index=rec.index, total=total, slug=rec.slug, stage=stage, error_type=rec.error_type
             )
             return
+        if info.pop("skipped", False):
+            return
         wall = round(time.perf_counter() - started, 3)
         engine: EngineInfo | None = info.pop("engine", None)
         cached = bool(info.pop("cached", False))
@@ -186,6 +204,9 @@ class Pipeline:
                 "speech_s",
                 "overlap_s",
                 "mode",
+                "identified",
+                "unidentified",
+                "voiceprints_skipped",
             }
         }
         audio_s = fields.get("audio_s")
@@ -264,7 +285,18 @@ class Pipeline:
             "parts": ["ffmpeg", f"{fmt_clock(rec.duration_s)} of audio"],
         }
 
-    def _load_once(self, name: str, engine: Transcriber | Diarizer) -> float:
+    def _release(self, stage: str) -> None:
+        engines: dict[str, Transcriber | Diarizer | Embedder | None] = {
+            "asr": self._transcriber,
+            "diarize": self._diarizer,
+            "identify": self._embedder,
+        }
+        engine = engines.get(stage)
+        if engine is not None:
+            engine.unload()
+            self._loaded.discard(stage)
+
+    def _load_once(self, name: str, engine: Transcriber | Diarizer | Embedder) -> float:
         if name in self._loaded:
             return 0.0
         self._loaded.add(name)
@@ -365,10 +397,78 @@ class Pipeline:
             "parts": [*parts, f"{len(diar.labels())} speakers"],
         }
 
+    def _embedder_engine(self) -> Embedder:
+        if self._embedder is None:
+            self._embedder = make_embedder(self.settings.embedder, device=self.device)
+        return self._embedder
+
+    def _identify(self, rec: Recording) -> dict[str, Any]:
+        directory = self._directory
+        if (
+            directory is None
+            or not self.settings.identify
+            or not any(p.voiceprint for p in directory.people)
+        ):
+            return {"skipped": True}
+        engine = self._embedder_engine()
+        diar_key = (cache.read_marker(rec.work_dir, "diarize") or {})["key"]
+        prints = "".join(f"{p.id}:{p.voiceprint.vector}" for p in directory.people if p.voiceprint)
+        key = cache.stage_key(
+            "identify",
+            inputs={
+                "audio": self._audio_sha[rec.slug],
+                "diarize": diar_key,
+                "voiceprints": hashlib.sha256(prints.encode()).hexdigest(),
+            },
+            engine=engine.info,
+            options={
+                "threshold": self.settings.identify_threshold,
+                "min_speech_s": self.settings.identify_min_speech,
+            },
+        )
+        artifact = rec.work_dir / "identification.json"
+        cached = cache.is_fresh(rec.work_dir, "identify", key, [artifact])
+        if cached:
+            result = IdentificationResult.model_validate_json(artifact.read_text(encoding="utf-8"))
+        else:
+            diar = Diarization.model_validate_json(
+                (rec.work_dir / "diarization.json").read_text(encoding="utf-8")
+            )
+            self._load_once("identify", engine)
+            result = run_identify(
+                read_audio(rec.wav),
+                diar,
+                directory,
+                engine,
+                threshold=self.settings.identify_threshold,
+                min_speech_s=self.settings.identify_min_speech,
+            )
+            artifact.write_text(result.model_dump_json(), encoding="utf-8")
+            cache.write_marker(rec.work_dir, "identify", key)
+        named = sum(1 for m in result.mapping.values() if m.person_id)
+        for warning in result.warnings:
+            rec.warnings.append(warning)
+            rec.log.caution("identify", warning)
+        return {
+            "engine": engine.info,
+            "cached": cached,
+            "identified": named,
+            "unidentified": len(result.mapping) - named,
+            "voiceprints_skipped": result.voiceprints_skipped,
+            "parts": [
+                engine.info.name,
+                engine.info.device or "cpu",
+                f"{named} of {len(result.mapping)} speakers named",
+            ],
+        }
+
     def _align(self, rec: Recording) -> dict[str, Any]:
         asr_key = (cache.read_marker(rec.work_dir, "asr") or {})["key"]
         diar_key = (cache.read_marker(rec.work_dir, "diarize") or {})["key"]
-        key = cache.stage_key("align", inputs={"asr": asr_key, "diarize": diar_key})
+        ident_key = (cache.read_marker(rec.work_dir, "identify") or {}).get("key", "")
+        key = cache.stage_key(
+            "align", inputs={"asr": asr_key, "diarize": diar_key, "identify": ident_key}
+        )
         artifact = rec.work_dir / "transcript.aligned.json"
         if cache.is_fresh(rec.work_dir, "align", key, [artifact]):
             aligned = read_transcript(artifact)
@@ -383,6 +483,7 @@ class Pipeline:
             (rec.work_dir / "diarization.json").read_text(encoding="utf-8")
         )
         aligned = assign_speakers(transcript, diar)
+        aligned = self._apply_identities(rec, aligned)
         write_transcript(artifact, aligned)
         cache.write_marker(rec.work_dir, "align", key)
         unassigned = sum(1 for w in aligned.words() if w.speaker is None)
@@ -395,6 +496,27 @@ class Pipeline:
             "parts": ["word-to-speaker", f"{len(aligned.speakers)} speakers"],
         }
 
+    def _apply_identities(self, rec: Recording, transcript: Transcript) -> Transcript:
+        path = rec.work_dir / "identification.json"
+        if not path.is_file() or not (rec.work_dir / "stage.identify.json").is_file():
+            return transcript
+        result = IdentificationResult.model_validate_json(path.read_text(encoding="utf-8"))
+        speakers = []
+        for current in transcript.speakers:
+            entry = current
+            match = result.mapping.get(entry.label)
+            if match and match.person_id:
+                entry = entry.model_copy(
+                    update={
+                        "id": match.person_id,
+                        "name": match.name,
+                        "identified": True,
+                        "score": match.score,
+                    }
+                )
+            speakers.append(entry)
+        return transcript.model_copy(update={"speakers": speakers})
+
     def _tracks(self, rec: Recording) -> dict[str, Any]:
         align_key = (cache.read_marker(rec.work_dir, "align") or {})["key"]
         key = cache.stage_key(
@@ -403,6 +525,7 @@ class Pipeline:
         listing = rec.work_dir / "tracks.json"
         aligned = read_transcript(rec.work_dir / "transcript.aligned.json")
         files = {s.label: f"speakers/{s.file_id}.flac" for s in aligned.speakers}
+        self._remove_stale_tracks(rec, set(files.values()))
         fresh = cache.is_fresh(rec.work_dir, "tracks", key, [listing])
         if fresh and all((rec.out_dir / rel).exists() for rel in files.values()):
             return {"cached": True, "speakers": len(files), "parts": [f"{len(files)} tracks"]}
@@ -415,6 +538,14 @@ class Pipeline:
         listing.write_text(json.dumps(files), encoding="utf-8")
         cache.write_marker(rec.work_dir, "tracks", key)
         return {"speakers": len(files), "parts": [f"{len(files)} tracks", "aligned FLAC"]}
+
+    def _remove_stale_tracks(self, rec: Recording, keep: set[str]) -> None:
+        folder = rec.out_dir / "speakers"
+        if not folder.is_dir():
+            return
+        for path in folder.glob("*.flac"):
+            if f"speakers/{path.name}" not in keep:
+                path.unlink()
 
     def _outputs(self, rec: Recording) -> dict[str, Any]:
         aligned = read_transcript(rec.work_dir / "transcript.aligned.json")
@@ -437,6 +568,16 @@ class Pipeline:
         )
         self._speakers[rec.slug] = speakers
         return {"parts": ["txt", "vtt", "words.json", "rttm"], "speakers": len(speakers)}
+
+    def _directory_record(self) -> dict[str, Any] | None:
+        if self._directory is None or self.settings.directory is None:
+            return None
+        return {
+            "path": str(self.settings.directory),
+            "sha256": file_sha256(self.settings.directory),
+            "people": len(self._directory.people),
+            "terms": len(self._directory.terms),
+        }
 
     def _finalize(self, rec: Recording, total: int) -> RecordingResult:
         speakers = self._speakers.get(rec.slug, [])
@@ -473,6 +614,7 @@ class Pipeline:
                 "run_log": "logs/run.log",
                 "telemetry": "logs/telemetry.jsonl",
             },
+            directory=self._directory_record(),
             warnings=rec.warnings,
             failed_stage=rec.failed_stage,
             error_type=rec.error_type,

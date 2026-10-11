@@ -23,6 +23,11 @@ class Settings(BaseModel):
     compute_type: str = "auto"
     diarizer: str = "nemotron3"
     num_speakers: int | None = None
+    directory: Path | None = None
+    identify: bool = True
+    identify_threshold: float = 0.5
+    identify_min_speech: float = 3.0
+    embedder: str = "wespeaker-resnet34"
     keep_intermediates: bool = False
     force: bool = False
     fail_fast: bool = False
