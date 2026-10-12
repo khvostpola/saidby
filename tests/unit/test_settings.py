@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from saidby.config.settings import Settings
+from saidby.config.settings import Settings, find_project_config, global_config_path
 from saidby.errors import UsageError
 
 
@@ -95,3 +95,81 @@ def test_missing_explicit_file(tmp_path: Path) -> None:
 def test_suite_never_reads_the_real_user_config(isolated_user_config: Path) -> None:
     assert os.environ["XDG_CONFIG_HOME"] == str(isolated_user_config / "config")
     assert not [key for key in os.environ if key.startswith("SAIDBY_")]
+
+
+def _global_config(home: Path, body: str) -> Path:
+    path = home / "config" / "saidby" / "config.toml"
+    path.parent.mkdir(parents=True)
+    path.write_text(body)
+    return path
+
+
+def test_global_and_project_files_merge_key_by_key(
+    tmp_path: Path, isolated_user_config: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    global_file = _global_config(
+        isolated_user_config, '[saidby]\nlanguage = "es"\ndevice = "cpu"\n[asr]\nmodel = "tiny"\n'
+    )
+    project = tmp_path / "work"
+    project.mkdir()
+    project_file = _write(project, '[saidby]\ndevice = "cuda"\n')
+    monkeypatch.chdir(project)
+    settings = Settings.load()
+    assert (settings.language, settings.device, settings.asr_model) == ("es", "cuda", "tiny")
+    assert settings.sources == [global_file, project_file.resolve()]
+
+
+def test_explicit_config_ignores_the_global_file(
+    tmp_path: Path, isolated_user_config: Path
+) -> None:
+    _global_config(isolated_user_config, '[saidby]\nlanguage = "es"\n')
+    settings = Settings.load(_write(tmp_path, '[saidby]\ndevice = "cpu"\n'))
+    assert settings.language is None
+    assert len(settings.sources) == 1
+
+
+def test_no_config_files_means_defaults(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    settings = Settings.load()
+    assert settings.sources == []
+    assert settings.language is None
+
+
+def test_empty_xdg_config_home_falls_back_to_dot_config(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", "")
+    monkeypatch.setenv("HOME", str(tmp_path))
+    assert global_config_path() == tmp_path / ".config" / "saidby" / "config.toml"
+
+
+def test_project_file_is_found_walking_up_inside_home(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    project = tmp_path / "clients" / "acme"
+    deep = project / "recordings" / "2026"
+    deep.mkdir(parents=True)
+    config = _write(project, '[saidby]\nlanguage = "es"\n')
+    assert find_project_config(deep) == config.resolve()
+
+
+def test_walk_up_stops_at_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    home = tmp_path / "home"
+    work = home / "work"
+    work.mkdir(parents=True)
+    _write(tmp_path, '[saidby]\nlanguage = "es"\n')
+    monkeypatch.setenv("HOME", str(home))
+    assert find_project_config(work) is None
+
+
+def test_outside_home_only_the_current_folder_counts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    elsewhere = tmp_path / "elsewhere"
+    nested = elsewhere / "nested"
+    nested.mkdir(parents=True)
+    config = _write(elsewhere, '[saidby]\nlanguage = "es"\n')
+    assert find_project_config(nested) is None
+    assert find_project_config(elsewhere) == config.resolve()

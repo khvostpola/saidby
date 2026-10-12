@@ -6,7 +6,7 @@ import tomllib
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ConfigDict, PrivateAttr, ValidationError
 
 from saidby.errors import UsageError
 
@@ -46,27 +46,60 @@ class Settings(BaseModel):
     strict_offline: bool = False
     progress: Literal["human", "json", "none"] = "human"
 
+    _sources: list[Path] = PrivateAttr(default_factory=list)
+
+    @property
+    def sources(self) -> list[Path]:
+        return list(self._sources)
+
     @classmethod
     def load(
         cls, config_path: Path | None = None, overrides: dict[str, Any] | None = None
     ) -> "Settings":
+        files = config_files(config_path)
         merged: dict[str, Any] = {}
-        merged.update(_from_file(config_path))
+        for path in files:
+            merged.update(_read_file(path))
         merged.update(_from_env())
         merged.update({k: v for k, v in (overrides or {}).items() if v is not None})
         try:
-            return cls.model_validate(merged)
+            settings = cls.model_validate(merged)
         except ValidationError as exc:
             first = exc.errors()[0]
             where = ".".join(str(part) for part in first["loc"])
             raise UsageError(f"invalid configuration: {where}: {first['msg']}") from exc
+        settings._sources = files
+        return settings
 
 
-def _config_candidates(explicit: Path | None) -> list[Path]:
+def global_config_path() -> Path:
+    base = os.environ.get("XDG_CONFIG_HOME") or str(Path.home() / ".config")
+    return Path(base) / "saidby" / "config.toml"
+
+
+def find_project_config(start: Path | None = None) -> Path | None:
+    here = (start or Path.cwd()).resolve()
+    home = Path.home().resolve()
+    inside_home = here == home or home in here.parents
+    for directory in [here, *here.parents] if inside_home else [here]:
+        candidate = directory / "saidby.toml"
+        if candidate.is_file():
+            return candidate
+        if directory == home:
+            break
+    return None
+
+
+def config_files(explicit: Path | None = None) -> list[Path]:
     if explicit is not None:
+        if not explicit.is_file():
+            raise UsageError(f"config file not found: {explicit}")
         return [explicit]
-    home = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
-    return [Path("saidby.toml"), home / "saidby" / "config.toml"]
+    files: list[Path] = []
+    for path in (global_config_path(), find_project_config()):
+        if path is not None and path.is_file() and path not in files:
+            files.append(path)
+    return files
 
 
 TABLE_KEYS: dict[str, dict[str, str]] = {
@@ -128,17 +161,12 @@ def _flatten(data: dict[str, Any], source: Path) -> dict[str, Any]:
     return flat
 
 
-def _from_file(explicit: Path | None) -> dict[str, Any]:
-    for path in _config_candidates(explicit):
-        if path.is_file():
-            try:
-                data = tomllib.loads(path.read_text(encoding="utf-8"))
-            except tomllib.TOMLDecodeError as exc:
-                raise UsageError(f"{path}: not valid TOML: {exc}") from exc
-            return _flatten(data, path)
-        if explicit is not None:
-            raise UsageError(f"config file not found: {path}")
-    return {}
+def _read_file(path: Path) -> dict[str, Any]:
+    try:
+        data = tomllib.loads(path.read_text(encoding="utf-8"))
+    except tomllib.TOMLDecodeError as exc:
+        raise UsageError(f"{path}: not valid TOML: {exc}") from exc
+    return _flatten(data, path)
 
 
 def _from_env() -> dict[str, Any]:

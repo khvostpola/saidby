@@ -6,6 +6,12 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+### Changed
+- The global config file (`~/.config/saidby/config.toml`) is no longer ignored when a
+  `saidby.toml` exists: the two are merged key by key and the project file wins. saidby now
+  looks for `saidby.toml` in the current folder and its parents up to your home folder.
+  `--config FILE` still means exactly that one file.
+
 ### Fixed
 - `saidby review` no longer loses the edits you already made when a later answer fails (an
   unknown `@speaker`) or you press Ctrl+C: they are saved before the command stops.

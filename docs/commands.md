@@ -54,9 +54,18 @@ finishes; when stderr is not a terminal you only get the result lines. Every run
 
 ## Configuration
 
-Defaults can come from a file so you do not retype options. Precedence, highest first: the
-command line, `SAIDBY_*` environment variables, the config file, built-in defaults. saidby looks
-for `--config FILE`, then `./saidby.toml`, then `~/.config/saidby/config.toml`.
+Defaults can come from files so you do not retype options. Precedence, highest first: the
+command line, `SAIDBY_*` environment variables, the project file, the global file, built-in
+defaults. The two files are merged key by key, so a project can change one setting and keep the
+rest from the global file.
+
+- **Global file**: `~/.config/saidby/config.toml` (or under `$XDG_CONFIG_HOME`).
+- **Project file**: the nearest `saidby.toml`, looking in the current folder and then in each
+  parent folder up to your home folder, like git does for `.git`. Outside your home folder only
+  the current folder is checked, so a stray file in a shared parent is never read.
+- **`--config FILE`**: use exactly that file and ignore both of the above.
+
+Relative paths in a file, such as `directory`, are resolved against the file that declares them.
 
 ```toml
 [saidby]
