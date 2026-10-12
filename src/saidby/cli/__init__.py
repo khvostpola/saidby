@@ -18,6 +18,7 @@ from saidby.cli.init import init
 from saidby.cli.process import EPILOG as PROCESS_EPILOG
 from saidby.cli.process import process
 from saidby.cli.review import review
+from saidby.cli.term import prepare_streams
 from saidby.errors import SaidbyError
 from saidby.i18n import _, set_language
 
@@ -91,6 +92,7 @@ def root(
 
 
 def main() -> None:
+    prepare_streams()
     set_language()
     if len(sys.argv) == 1:
         show_home()
