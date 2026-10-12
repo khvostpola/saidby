@@ -77,13 +77,14 @@ jobs:
       run:
         shell: bash
     env:
-      HF_HOME: ${{ runner.temp }}/hf
       CI_REQUIRE_FFMPEG: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+      - name: Keep the model cache in a per-runner folder
+        run: echo "HF_HOME=$RUNNER_TEMP/hf" >> "$GITHUB_ENV"
       - name: Install ffmpeg
         run: |
           if [ "$RUNNER_OS" = "Windows" ]; then
