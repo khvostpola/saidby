@@ -18,6 +18,7 @@ file that failed.
 | Very slow on the CPU | large-v3 is big | `--asr-model tiny`; on a modern 20-thread CPU large-v3 runs at about 0.4 times real time |
 | `output folder holds results for a different input` (`input`) | The folder name collides with an earlier, different file | Use another `--out`, or `--force` to overwrite |
 | `words could not be assigned to a speaker` (warning) | Some words fell outside every diarized turn | Usually a few at the edges; if many, try `--num-speakers` |
+| `saidby process` stops and waits in a script | It found a terminal and asked its questions | `--no-interactive`, or `interactive = false` in `saidby.toml`; see [commands](commands.md#guided-and-unattended-runs) |
 | One person appears as two speakers | The diarizer split them | `saidby speakers merge out/call SPEAKER_01 --into SPEAKER_00` |
 | Nobody is named | No voiceprint matched | Check `manifest.json` warnings (a voiceprint from another model is skipped), enroll again, or lower `--identify-threshold` |
 | `consent_missing` (exit 5) | There is no consent record for that person | `--consent-source` and `--consent-declared-by` on `saidby enroll` |

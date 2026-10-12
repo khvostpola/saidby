@@ -113,7 +113,7 @@ def test_on_a_terminal_it_asks_before_adding(
         return next(answers)
 
     speakers_module = sys.modules["saidby.cli.speakers"]
-    monkeypatch.setattr(speakers_module, "interactive_streams", lambda: True)
+    monkeypatch.setattr("saidby.cli.ui.interactive_streams", lambda: True)
     monkeypatch.setattr(
         speakers_module, "_ui", lambda: Ui(PLAIN, input_fn=fake_input, out=io.StringIO())
     )

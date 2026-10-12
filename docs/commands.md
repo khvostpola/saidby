@@ -22,7 +22,7 @@ Measure        eval         score a run and arbitrate differences between two sy
 | download the models | `saidby models pull --all` |
 | stop retyping the same options | `saidby init` (this folder) or `saidby init --global` |
 | transcribe one or several files | `saidby process a.m4a b.mp4 --out out/ --language es` |
-| be guided: plan, one key to start | `saidby process call.m4a -i` |
+| run unattended (scripts, cron) | `saidby process ... --no-interactive`, or `interactive = false` in `saidby.toml` |
 | use my names and terms | `saidby process ... --directory directory.yaml` |
 | name the speakers | `saidby enroll` (or `enroll -i`) once per person, then `process --directory` |
 | rename or merge speakers afterwards | `saidby speakers map -i` / `saidby speakers merge` |
@@ -44,6 +44,18 @@ saidby process monday.m4a tuesday.m4a --out out/
 Each input gets its own folder (`out/monday`, `out/tuesday`; duplicates get `-2`, `-3`). Models
 are loaded once, and each stage runs for all the files before the next stage starts. If one file
 fails, the others finish and the exit code tells you; `--fail-fast` stops at the first failure.
+
+## Guided and unattended runs
+
+On a terminal, `saidby process` shows its plan and starts on Enter; when the run ends it plays
+and names the voices, offers to store what you chose, and prints a summary. `saidby speakers map`
+without `--set` and `saidby enroll` without `--speaker` ask in the same way. The questions are
+described in [getting started](getting-started.md#4-your-first-transcript).
+
+Nothing is asked when stdin or stdout is not a terminal (a pipe, cron, CI), with `--progress
+json` or `none`, with `--no-interactive`, or with `interactive = false` in `saidby.toml`
+(`SAIDBY_INTERACTIVE=false` in the environment). `-i` insists on the questions and fails with
+exit code 2, naming the equivalent command, when there is no terminal.
 
 ## Progress
 
@@ -121,6 +133,7 @@ device = "auto"            # auto, cuda or cpu
 language = "es"
 keep_intermediates = false
 progress = "human"
+interactive = true         # on a terminal: the plan, one key, then the voices; false never asks
 
 [asr]
 model = "large-v3"         # or tiny, or a path to a CTranslate2 model

@@ -7,7 +7,7 @@ from typing import Annotated
 
 import typer
 
-from saidby.cli.ui import Ui, ensure_terminal, interactive_streams
+from saidby.cli.ui import Ui, auto_interactive, ensure_terminal
 from saidby.config.settings import Settings
 from saidby.errors import UsageError
 from saidby.formats.directory_set import load_directory_set
@@ -100,13 +100,17 @@ def map_speaker(
         typer.Option(
             "--interactive",
             "-i",
-            help="Listen to each voice and name it, with questions, instead of --set.",
+            help=(
+                "Listen to each voice and name it, with questions: the default on a terminal "
+                "without --set. -i insists and fails without a terminal."
+            ),
         ),
     ] = False,
 ) -> None:
     """Give speakers a person id and name without reprocessing audio."""
-    files = directory or Settings.load().directory
-    if interactive:
+    settings = Settings.load()
+    files = directory or settings.directory
+    if interactive or (not assign and auto_interactive(settings)):
         _interactive_map(out_dir, assign, files)
         return
     if not assign:
@@ -117,7 +121,8 @@ def map_speaker(
         if not label or not target:
             raise UsageError(_("expected LABEL=VALUE, got {item!r}").format(item=item))
         person = find_person(people, target) if people else None
-        if person is None and files and (add_missing or _offer_to_add(target, files[-1])):
+        offered = add_missing or (auto_interactive(settings) and _offer_to_add(target, files[-1]))
+        if person is None and files and offered:
             person, backup = add_person_to_file(files[-1], target)
             note = f" (backup: {backup})" if backup else ""
             typer.echo(
@@ -142,8 +147,6 @@ def _interactive_map(out_dir: Path, assign: list[str] | None, files: list[Path])
 
 
 def _offer_to_add(name: str, file: Path) -> bool:
-    if not interactive_streams():
-        return False
     question = _("{name!r} is not in the directory. Add it to {file}?").format(name=name, file=file)
     return _ui().confirm(question, default=True)
 

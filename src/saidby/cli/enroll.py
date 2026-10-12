@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Annotated
 
 import typer
 
-from saidby.cli.ui import Ui, ensure_terminal
+from saidby.cli.ui import Ui, auto_interactive, ensure_terminal
 from saidby.config.settings import Settings
 from saidby.errors import UsageError
 from saidby.formats.directory_set import consent_path
@@ -63,12 +63,16 @@ def enroll(
         typer.Option(
             "--interactive",
             "-i",
-            help="Ask for each named voice whether the person consented, instead of --speaker.",
+            help=(
+                "Ask for each named voice whether the person consented: the default on a "
+                "terminal without --speaker. -i insists and fails without a terminal."
+            ),
         ),
     ] = False,
 ) -> None:
     """Store voiceprints of people who spoke in a finished run. Requires recorded consent."""
-    if interactive:
+    unattended = speaker or consent_source or consent_declared_by or consent_date
+    if interactive or (not unattended and auto_interactive(Settings.load())):
         _interactive_enroll(
             out_dir,
             speaker,

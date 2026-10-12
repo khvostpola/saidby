@@ -12,7 +12,7 @@ from saidby.cli.banner import show_compact
 from saidby.cli.next_steps import next_steps, read_state
 from saidby.cli.progress import Progress
 from saidby.cli.term import detect
-from saidby.cli.ui import Ui, ensure_terminal
+from saidby.cli.ui import Ui, auto_interactive, ensure_terminal
 from saidby.config.settings import Settings
 from saidby.errors import StageError, UsageError
 from saidby.i18n import _
@@ -238,14 +238,18 @@ def process(
         ),
     ] = False,
     interactive: Annotated[
-        bool,
+        bool | None,
         typer.Option(
-            "--interactive",
+            "--interactive/--no-interactive",
             "-i",
-            help="Show a plan and start with one key; afterwards listen to and name the voices.",
+            help=(
+                "Ask on a terminal: show the plan, start with one key, then name the voices "
+                "(the default). --no-interactive never asks; -i insists and fails without a "
+                "terminal."
+            ),
             rich_help_panel=BEHAVIOR,
         ),
-    ] = False,
+    ] = None,
 ) -> None:
     """Turn recordings into transcripts with speakers, timestamps and a track per speaker."""
     settings = Settings.load(
@@ -276,13 +280,15 @@ def process(
             "fail_fast": fail_fast or None,
             "strict_offline": strict_offline or None,
             "progress": progress,
+            "interactive": interactive,
         },
     )
     if interactive:
         _check_interactive(inputs, settings)
+    guided = bool(interactive) or (interactive is None and auto_interactive(settings))
     if settings.progress == "human":
         show_compact(len(inputs), settings.out)
-    ui = _ui() if interactive else None
+    ui = _ui() if guided else None
     plan: RunPlan | None = None
     if ui is not None:
         plan = plan_run(ui, inputs, settings)

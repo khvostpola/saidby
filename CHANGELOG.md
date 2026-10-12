@@ -6,6 +6,14 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+### Changed
+- On a terminal, `saidby process` is guided by default: it shows the plan, starts on Enter, and
+  afterwards plays and names the voices. `saidby speakers map` without `--set` and
+  `saidby enroll` without `--speaker` ask the same way. Nothing is asked without a terminal, with
+  `--progress json` or `none`, with the new `--no-interactive`, or with the new setting
+  `interactive = false` (`SAIDBY_INTERACTIVE`). `-i` now means "insist": it still fails without
+  a terminal.
+
 ## [0.5.0] - 2026-10-12
 
 ### Added

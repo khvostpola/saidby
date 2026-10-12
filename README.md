@@ -81,10 +81,14 @@ saidby models pull --all      # downloads the models, about 3.5 GB; the only ste
 ```bash
 saidby init --language es                                          # once per folder: no more flags
 saidby process call.m4a                                            # transcript, speakers, tracks in ./saidby/
-saidby process call.m4a -i                                         # the same, guided: a plan, then listen and name the voices
 saidby directory add-term Acme --variant akme                      # your people and terms
 saidby review saidby/call                                          # fix the doubtful spans
 ```
+
+On a terminal, `saidby process` shows what it is about to do and starts on Enter. When the run
+ends it plays each voice, asks who it is, offers to remember what you chose, and says what is
+left to review. Scripts get none of that: nothing is asked without a terminal, with
+`--progress json`, with `--no-interactive`, or with `interactive = false` in `saidby.toml`.
 
 The [getting started guide](https://github.com/khvostpola/saidby/blob/main/docs/getting-started.md)
 walks through each step, including naming the speakers.

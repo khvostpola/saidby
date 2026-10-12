@@ -357,3 +357,22 @@ def test_a_consent_file_elsewhere_is_flagged(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
     assert f"saidby process only reads {directory.with_name('consent.yaml')}" in result.output
     assert elsewhere.exists()
+
+
+def test_without_speaker_the_command_is_guided_on_a_terminal(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    folder, directory = _folder(tmp_path), _directory(tmp_path)
+    ui, _, prompts = _session(["y", "signed form", "", "n", ""])
+    monkeypatch.setattr("saidby.cli.ui.interactive_streams", lambda: True)
+    monkeypatch.setattr(sys.modules["saidby.cli.enroll"], "Ui", lambda: ui)
+    base = ["enroll", str(folder), "--directory", str(directory), "--embedder", "fake"]
+    result = runner.invoke(app, [*base, "--device", "cpu"])
+    assert result.exit_code == 0, result.output
+    assert len(prompts) == 5
+    assert "voiceprint" in _people(directory)["alice"]
+    flags = runner.invoke(app, [*base, "--consent-source", "form"])
+    assert "pass --speaker LABEL=PERSON, or -i" in str(flags.exception)
+    monkeypatch.setenv("SAIDBY_INTERACTIVE", "false")
+    off = runner.invoke(app, base)
+    assert "pass --speaker LABEL=PERSON, or -i" in str(off.exception)

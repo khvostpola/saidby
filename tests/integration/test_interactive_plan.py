@@ -254,3 +254,72 @@ def test_dropping_the_glossary_is_remembered_as_a_choice(project: Path) -> None:
     assert plan is not None
     assert plan.settings.directory == []
     assert plan.chosen["directory"] == ""
+
+
+def _on_a_terminal(monkeypatch: pytest.MonkeyPatch, ui: Ui) -> None:
+    monkeypatch.setattr("saidby.cli.ui.interactive_streams", lambda: True)
+    monkeypatch.setattr(sys.modules["saidby.cli.process"], "_ui", lambda: ui)
+    monkeypatch.setattr(sys.modules["saidby.cli.process"], "Pipeline", FakePipeline)
+
+
+def test_on_a_terminal_the_plan_is_shown_without_any_flag(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    FakePipeline.runs = []
+    ui, out, prompts = _session(["es", ""])
+    _on_a_terminal(monkeypatch, ui)
+    result = runner.invoke(app, ["process", "call.m4a"])
+    assert result.exit_code == 0, result.output
+    assert "Ready to process 1 file" in out.getvalue()
+    assert len(prompts) == 2
+    assert FakePipeline.runs[0][0].language == "es"
+
+
+def test_without_a_terminal_nothing_is_asked_and_the_run_just_happens(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    FakePipeline.runs = []
+    monkeypatch.setattr(sys.modules["saidby.cli.process"], "Pipeline", FakePipeline)
+    result = runner.invoke(app, ["process", "call.m4a"])
+    assert result.exit_code == 0, result.output
+    assert FakePipeline.runs[0][1] == [Path("call.m4a")]
+    assert "Ready to process" not in result.output
+
+
+@pytest.mark.parametrize(
+    ("args", "env"),
+    [
+        (["--no-interactive"], {}),
+        (["--progress", "json"], {}),
+        ([], {"SAIDBY_INTERACTIVE": "false"}),
+    ],
+)
+def test_a_flag_the_progress_mode_or_the_setting_turn_the_questions_off(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, args: list[str], env: dict[str, str]
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    for key, value in env.items():
+        monkeypatch.setenv(key, value)
+    FakePipeline.runs = []
+    ui, _, prompts = _session([])
+    _on_a_terminal(monkeypatch, ui)
+    result = runner.invoke(app, ["process", "call.m4a", *args])
+    assert result.exit_code == 0, result.output
+    assert prompts == []
+    assert len(FakePipeline.runs) == 1
+
+
+def test_a_project_file_can_turn_the_questions_off_and_i_turns_them_back_on(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "saidby.toml").write_text('[saidby]\nlanguage = "es"\ninteractive = false\n')
+    FakePipeline.runs = []
+    ui, _, prompts = _session([""])
+    _on_a_terminal(monkeypatch, ui)
+    assert runner.invoke(app, ["process", "call.m4a"]).exit_code == 0
+    assert prompts == []
+    assert runner.invoke(app, ["process", "call.m4a", "-i"]).exit_code == 0
+    assert len(prompts) == 1

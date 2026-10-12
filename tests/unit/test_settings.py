@@ -263,3 +263,17 @@ def test_every_value_remembers_where_it_came_from(
         "num_speakers": "flag",
     }
     assert "out" not in settings.origins
+
+
+def test_interactive_is_on_unless_a_file_or_the_environment_turns_it_off(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    assert Settings.load().interactive is True
+    (tmp_path / "saidby.toml").write_text("[saidby]\ninteractive = false\n")
+    assert Settings.load().interactive is False
+    monkeypatch.setenv("SAIDBY_INTERACTIVE", "true")
+    assert Settings.load().interactive is True
+    monkeypatch.setenv("SAIDBY_INTERACTIVE", "0")
+    assert Settings.load().interactive is False
+    assert Settings.load(overrides={"interactive": True}).interactive is True

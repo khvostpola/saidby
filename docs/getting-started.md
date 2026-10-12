@@ -99,26 +99,30 @@ It writes `saidby.toml` (language and output folder), an empty `directory.yaml` 
 `consent.yaml`. From then on `saidby process call.m4a` needs no flags in that folder. Run
 `saidby init --global` instead to set defaults for every folder.
 
-To be guided instead, add `-i`:
+On a terminal, saidby guides you through the run:
 
 ```bash
-saidby process call.m4a -i
+saidby process call.m4a
 ```
 
 It shows what is about to happen (the glossary, language, number of speakers, output folder and
 extra terms, each with where the value comes from: a flag, the environment, `saidby.toml` or the
 default) and waits for one key: Enter starts, `t` adds terms for this recording only, `e` changes
 a value, `q` quits without running. It only asks about what nothing else decided, which today is
-the language. It needs a terminal, so it cannot be combined with `--progress json` or `none`.
+the language.
 
-When the run ends, `-i` walks through each finished folder: it plays a sample of every voice that
+When the run ends, it walks through each finished folder: it plays a sample of every voice that
 still has no name (see [step 5](#5-put-names-on-the-speakers)), asks who each one is, and, if you
 want, stores voiceprints so the next run recognizes them (default: no, and only with the person's
 consent). With several files, everything is processed first and then the folders are walked one
 by one. At the end it offers, once, to keep the terms you added for this recording in your
 glossary, and to save the language, glossary and output folder you chose into `saidby.toml`. It
 closes with a summary: the device, what changed in each folder, the doubtful spans left for
-`saidby review`, and the command that repeats the run without `-i`.
+`saidby review`, and the command that repeats the run unattended.
+
+Nothing is asked when there is no terminal (a pipe, cron, CI), with `--progress json` or `none`,
+with `--no-interactive`, or with `interactive = false` in `saidby.toml` (`SAIDBY_INTERACTIVE=false`
+in the environment). `-i` insists, and fails without a terminal.
 
 ## 5. Put names on the speakers
 
@@ -146,18 +150,19 @@ saidby enroll out/call --speaker SPEAKER_01="Ben Ruiz" --directory directory.yam
   --consent-source "signed form" --consent-declared-by "Ben Ruiz"
 ```
 
-Or let saidby ask. With `-i` it lists the voices that already have a name from your directory
-and asks, for each person, whether they agreed to have their voiceprint stored:
+Or let saidby ask. On a terminal, without `--speaker`, it lists the voices that already have a
+name from your directory and asks, for each person, whether they agreed to have their voiceprint
+stored:
 
 ```bash
-saidby enroll -i out/call --directory directory.yaml
+saidby enroll out/call --directory directory.yaml
 ```
 
 It asks how consent was given once (you type it, for example "signed form") and who declared it (the
 default is the person). No consent, no voiceprint: nothing is stored for that person and no
 record is written. Nothing is changed until you confirm the summary, and the directory file is
-backed up first. A person whose consent is already recorded is not asked again. It needs a
-terminal; without one, use `--speaker` as above.
+backed up first. A person whose consent is already recorded is not asked again. Without a
+terminal, or with `interactive = false`, use `--speaker` as above (`-i` insists).
 
 From now on:
 
@@ -175,15 +180,16 @@ audio.
 
 ```bash
 saidby speakers show out/call                                  # who is who, in a table
-saidby speakers map -i out/call                                # listen to each voice and name it
+saidby speakers map out/call                                   # listen to each voice and name it
 saidby speakers map out/call --set SPEAKER_00="Ana Gómez" --set SPEAKER_01=ben
 ```
 
-With `-i`, saidby lists the voices (how long each one speaks, how many turns, and a clean
+Without `--set` on a terminal, saidby lists the voices (how long each one speaks, how many turns, and a clean
 stretch where nobody else talks) and plays a sample of each one through `ffplay`. Press Enter to
 listen, `p` to hear it again, `s` to skip the voice and `q` to stop. Then type the name of each
 voice: Tab completes people from your directory, and a new name is offered for the directory.
-Nothing is changed until you confirm the summary. It needs a terminal; without one, use `--set`.
+Nothing is changed until you confirm the summary. Without a terminal, or with
+`interactive = false`, use `--set` (`-i` insists).
 
 `--set` takes a person from your directory by id, by name or by alias. A name that is not in the
 directory is used as it is for this folder; if you have a directory, `saidby` asks whether to add

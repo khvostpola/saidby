@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from typing import TextIO
 
 from saidby.cli.term import Terminal, detect
+from saidby.config.settings import Settings
 from saidby.errors import UsageError
 from saidby.i18n import _, current_language
 
@@ -22,6 +23,10 @@ Options = Callable[[], Sequence[str]]
 
 def interactive_streams() -> bool:
     return sys.stdin.isatty() and sys.stdout.isatty() and sys.stderr.isatty()
+
+
+def auto_interactive(settings: Settings) -> bool:
+    return settings.interactive and settings.progress == "human" and interactive_streams()
 
 
 def ensure_terminal(equivalent: str) -> None:

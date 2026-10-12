@@ -301,3 +301,43 @@ def test_the_promised_id_is_the_one_that_gets_written(tmp_path: Path) -> None:
     ids = [p.id for p in load_directory_set([directory]).merged.people]
     assert ids == ["ana-gomez", "ana-gomez-2"]
     assert (out_dir / "speakers/ana-gomez-2.flac").exists()
+
+
+def test_without_set_the_command_is_guided_on_a_terminal_unless_turned_off(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    out_dir, directory = _folder(tmp_path), _directory(tmp_path)
+    ui, _, prompts = _session(["", "ben", "", ""])
+    monkeypatch.setattr("saidby.cli.ui.interactive_streams", lambda: True)
+    monkeypatch.setattr(sys.modules["saidby.cli.speakers"], "_ui", lambda: ui)
+    result = runner.invoke(app, ["speakers", "map", str(out_dir), "--directory", str(directory)])
+    assert result.exit_code == 0, result.output
+    assert len(prompts) == 4
+    assert _names(out_dir)["SPEAKER_00"] == ("ben", "Ben Ruiz")
+    monkeypatch.setenv("SAIDBY_INTERACTIVE", "false")
+    result = runner.invoke(app, ["speakers", "map", str(out_dir)])
+    assert "pass --set LABEL=PERSON, or -i" in str(result.exception)
+
+
+def test_with_the_questions_off_a_new_name_is_not_offered_for_the_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    out_dir, directory = _folder(tmp_path), _directory(tmp_path)
+    before = directory.read_text()
+    monkeypatch.setattr("saidby.cli.ui.interactive_streams", lambda: True)
+    monkeypatch.setenv("SAIDBY_INTERACTIVE", "false")
+    result = runner.invoke(
+        app,
+        [
+            "speakers",
+            "map",
+            str(out_dir),
+            "--directory",
+            str(directory),
+            "--set",
+            "SPEAKER_00=Carla",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert directory.read_text() == before
+    assert _names(out_dir)["SPEAKER_00"] == ("carla", "Carla")

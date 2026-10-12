@@ -38,7 +38,7 @@ Arguments:
 | `--fail-fast` | flag |  | Stop at the first input that fails. |
 | `--progress` | str |  | human (default, on stderr), json (one event per line on stdout) or none. |
 | `--strict-offline` | flag |  | Fail with exit code 8 if anything tries to leave this machine. |
-| `--interactive`, `-i` | flag |  | Show a plan and start with one key; afterwards listen to and name the voices. |
+| `--interactive`, `-i` | flag |  | Ask on a terminal: show the plan, start with one key, then name the voices (the default). --no-interactive never asks; -i insists and fails without a terminal. |
 
 Examples:
 
@@ -88,7 +88,7 @@ Arguments:
 | `--channel` | str | `mobile-call` | Recording channel label |
 | `--embedder` | str | `wespeaker-resnet34` | Voiceprint model. |
 | `--device` | str | `auto` | auto, cuda or cpu. |
-| `--interactive`, `-i` | flag |  | Ask for each named voice whether the person consented, instead of --speaker. |
+| `--interactive`, `-i` | flag |  | Ask for each named voice whether the person consented: the default on a terminal without --speaker. -i insists and fails without a terminal. |
 
 ## `saidby init`
 
@@ -139,7 +139,7 @@ Arguments:
 | `--set` | str |  | LABEL=PERSON (an id or a name) or LABEL="Free name" |
 | `--directory` | path |  | Directory to find people in (default: the configured ones) |
 | `--add-missing` | flag |  | Add names that are not in the directory to its last file, without asking. |
-| `--interactive`, `-i` | flag |  | Listen to each voice and name it, with questions, instead of --set. |
+| `--interactive`, `-i` | flag |  | Listen to each voice and name it, with questions: the default on a terminal without --set. -i insists and fails without a terminal. |
 
 ### `saidby speakers merge`
 

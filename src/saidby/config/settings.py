@@ -50,6 +50,7 @@ class Settings(BaseModel):
     fail_fast: bool = False
     strict_offline: bool = False
     progress: Literal["human", "json", "none"] = "human"
+    interactive: bool = True
 
     _sources: list[Path] = PrivateAttr(default_factory=list)
     _origins: dict[str, str] = PrivateAttr(default_factory=dict)
