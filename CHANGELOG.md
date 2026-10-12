@@ -6,6 +6,8 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+## [0.4.4] - 2026-10-11
+
 ### Added
 - Every run ends with a `[total]` line: duration, start and finish times, and the speed over all
   the audio (with `--progress json`, a `run.end` event with the same data).
