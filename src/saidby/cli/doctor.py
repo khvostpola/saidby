@@ -9,6 +9,7 @@ from typing import Annotated
 import typer
 
 from saidby import __version__
+from saidby.i18n import _, ngettext, set_language
 from saidby.models import REGISTRY
 from saidby.models import store as model_store
 from saidby.runtime.diagnose import Check, run_checks
@@ -32,6 +33,8 @@ def doctor(
     device: Annotated[str, typer.Option(help="Device to check: auto, cuda or cpu")] = "auto",
 ) -> None:
     """Check that this machine can run saidby and say how to fix what is missing."""
+    if as_json:
+        set_language("en")
     checks = run_checks(smoke=smoke, requested=device)
     failures = [c for c in checks if c.status == "fail"]
     if as_json:
@@ -50,9 +53,16 @@ def doctor(
             )
         )
     else:
-        typer.echo(f"saidby {__version__}")
+        typer.echo(_("saidby {version}").format(version=__version__))
         _print(checks)
-        typer.echo(
-            "\nready" if not failures else f"\n{len(failures)} problem(s) to fix before processing"
-        )
+        typer.echo("")
+        if failures:
+            problems = ngettext(
+                "{n} problem to fix before processing",
+                "{n} problems to fix before processing",
+                len(failures),
+            )
+            typer.echo(problems.format(n=len(failures)))
+        else:
+            typer.echo(_("ready"))
     raise typer.Exit(1 if failures else 0)

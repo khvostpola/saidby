@@ -13,6 +13,7 @@ import tomlkit
 
 from saidby.errors import UsageError
 from saidby.formats.yaml_io import backup_path
+from saidby.i18n import _
 
 LANGUAGE_PATTERN = re.compile(r"[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})?")
 
@@ -39,7 +40,9 @@ def default_language() -> str:
 
 def check_language(language: str) -> str:
     if not LANGUAGE_PATTERN.fullmatch(language):
-        raise UsageError(f"{language!r} is not a language code such as es, en or pt")
+        raise UsageError(
+            _("{language!r} is not a language code such as es, en or pt").format(language=language)
+        )
     return language.lower()
 
 

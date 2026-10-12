@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass
 
 from saidby.errors import InputError
+from saidby.i18n import _
 from saidby.schema.transcript import Word
 from saidby.text.normalize import norm
 
@@ -46,7 +47,7 @@ def clock(text: str) -> float:
         for part in parts:
             seconds = seconds * 60 + float(part)
     except ValueError as exc:
-        raise InputError(f"bad time in reference: {text!r}") from exc
+        raise InputError(_("bad time in reference: {text!r}").format(text=text)) from exc
     return seconds
 
 
@@ -63,7 +64,7 @@ def _split_turns(
     pieces = [(speaker, parts[0]), *zip(parts[1::2], parts[2::2], strict=True)]
     span = [w for w in words if start - 0.5 <= w.start - offset < end + 0.5]
     hyp_tokens = [norm(w.word) for w in span]
-    ref_tokens = [norm(t) for _, chunk in pieces for t in _words(chunk)]
+    ref_tokens = [norm(t) for _label, chunk in pieces for t in _words(chunk)]
     matcher = difflib.SequenceMatcher(a=ref_tokens, b=hyp_tokens, autojunk=False)
     lines: list[RefLine] = []
     cursor, consumed = start, 0
@@ -99,12 +100,14 @@ def parse_reference(content: str, words: list[Word] | None = None) -> Reference:
         fields = [p.strip() for p in row.split("|", 2)]
         if len(fields) != 3 or "-" not in fields[0]:
             raise InputError(
-                f"bad reference line (expected 'MM:SS-MM:SS | speaker | text'): {row[:40]!r}"
+                _("bad reference line (expected 'MM:SS-MM:SS | speaker | text'): {value!r}").format(
+                    value=row[:40]
+                )
             )
         first, last = fields[0].split("-", 1)
         lines.extend(
             _split_turns(clock(first), clock(last), fields[1], fields[2], words or [], offset)
         )
     if not lines:
-        raise InputError("the reference has no lines")
+        raise InputError(_("the reference has no lines"))
     return Reference(offset, lines)

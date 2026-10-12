@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from saidby.errors import UsageError
+from saidby.i18n import _
 
 Role = Literal["asr", "diarizer", "embedder", "llm"]
 
@@ -113,7 +114,9 @@ def get_spec(key: str) -> ModelSpec:
         if spec.key == key:
             return spec
     valid = ", ".join(s.key for s in REGISTRY)
-    raise UsageError(f"unknown model key {key!r}; valid keys: {valid}")
+    raise UsageError(
+        _("unknown model key {key!r}; valid keys: {valid}").format(key=key, valid=valid)
+    )
 
 
 def render_markdown() -> str:

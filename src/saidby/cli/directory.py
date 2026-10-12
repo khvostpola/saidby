@@ -11,6 +11,7 @@ from saidby.config.settings import Settings, global_config_path
 from saidby.errors import UsageError
 from saidby.formats.directory_edit import add_person, add_term
 from saidby.formats.directory_yaml import load_directory, save_directory
+from saidby.i18n import _, ngettext
 from saidby.schema.directory import Directory
 from saidby.speakers.naming import ascii_slug, person_id_for
 
@@ -38,8 +39,15 @@ def validate(
     file: Annotated[Path, typer.Argument(help="Directory YAML file to check.")],
 ) -> None:
     """Check a directory file against the schema."""
-    directory, _ = load_directory(file)
-    typer.echo(f"ok: {len(directory.people)} people, {len(directory.terms)} terms")
+    directory, _raw = load_directory(file)
+    people = ngettext("{n} person", "{n} people", len(directory.people))
+    terms = ngettext("{n} term", "{n} terms", len(directory.terms))
+    typer.echo(
+        _("ok: {people}, {terms}").format(
+            people=people.format(n=len(directory.people)),
+            terms=terms.format(n=len(directory.terms)),
+        )
+    )
 
 
 @app.command("schema")
@@ -61,13 +69,13 @@ def init(
 ) -> None:
     """Create a starter directory file."""
     if file is None and not global_:
-        raise UsageError("give a file name, or use --global")
+        raise UsageError(_("give a file name, or use --global"))
     target = file or global_config_path().parent / "directory.yaml"
     if target.exists():
-        raise UsageError(f"{target} already exists")
+        raise UsageError(_("{target} already exists").format(target=target))
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(TEMPLATE.format(language=language), encoding="utf-8")
-    typer.echo(f"created {target}")
+    typer.echo(_("created {target}").format(target=target))
 
 
 def _target(directory: Path | None) -> Path:
@@ -75,7 +83,7 @@ def _target(directory: Path | None) -> Path:
         return directory
     configured = Settings.load().directory
     if not configured:
-        raise UsageError("no directory file: pass --directory or set one in saidby.toml")
+        raise UsageError(_("no directory file: pass --directory or set one in saidby.toml"))
     return configured[-1]
 
 
@@ -97,9 +105,9 @@ def add_person_command(
 ) -> None:
     """Add a person to a directory file, keeping its comments."""
     file = _target(directory)
-    _, raw = load_directory(file)
+    _model, raw = load_directory(file)
     if person_id is None and not ascii_slug(name):
-        raise UsageError("cannot make an id from that name; pass --id")
+        raise UsageError(_("cannot make an id from that name; pass --id"))
     taken = [p["id"] for p in raw.get("people") or []]
     chosen = person_id or person_id_for(name, taken)
     add_person(
@@ -111,7 +119,11 @@ def add_person_command(
         context=context,
     )
     backup = save_directory(file, raw)
-    typer.echo(f"added {chosen} ({name}) to {file}" + (f" (backup: {backup})" if backup else ""))
+    if backup:
+        message = _("added {chosen} ({name}) to {file} (backup: {backup})")
+    else:
+        message = _("added {chosen} ({name}) to {file}")
+    typer.echo(message.format(chosen=chosen, name=name, file=file, backup=backup))
 
 
 @app.command("add-term")
@@ -133,7 +145,7 @@ def add_term_command(
 ) -> None:
     """Add a term to a directory file, keeping its comments."""
     file = _target(directory)
-    _, raw = load_directory(file)
+    _model, raw = load_directory(file)
     add_term(
         raw,
         term=term,
@@ -143,4 +155,8 @@ def add_term_command(
         dialect=dialect,
     )
     backup = save_directory(file, raw)
-    typer.echo(f"added {term} to {file}" + (f" (backup: {backup})" if backup else ""))
+    if backup:
+        message = _("added {term} to {file} (backup: {backup})")
+    else:
+        message = _("added {term} to {file}")
+    typer.echo(message.format(term=term, file=file, backup=backup))

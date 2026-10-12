@@ -10,6 +10,7 @@ import soundfile as sf
 
 from saidby.errors import InputError
 from saidby.formats.audio import SAMPLE_RATE, read_audio
+from saidby.i18n import _
 from saidby.runtime.procs import run_checked
 
 
@@ -32,7 +33,7 @@ def file_sha256(path: Path) -> str:
 
 def ingest(media: Path, workdir: Path) -> IngestResult:
     if not media.is_file():
-        raise InputError(f"input file not found: {media}")
+        raise InputError(_("input file not found: {media}").format(media=media))
     workdir.mkdir(parents=True, exist_ok=True)
     wav = workdir / "audio.wav"
     run_checked(
@@ -56,7 +57,7 @@ def ingest(media: Path, workdir: Path) -> IngestResult:
     )
     audio = read_audio(wav)
     if audio.size == 0:
-        raise InputError(f"no audio stream found in {media.name}")
+        raise InputError(_("no audio stream found in {name}").format(name=media.name))
     return IngestResult(
         wav=wav,
         audio=audio,

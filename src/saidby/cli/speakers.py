@@ -11,6 +11,7 @@ from saidby.cli.ui import Ui, ensure_terminal, interactive_streams
 from saidby.config.settings import Settings
 from saidby.errors import UsageError
 from saidby.formats.directory_set import load_directory_set
+from saidby.i18n import _
 from saidby.interactive.flows import name_voices
 from saidby.speakers import remap
 from saidby.speakers.naming import person_id_for
@@ -32,12 +33,14 @@ def _minutes(seconds: float) -> str:
 
 def _named_by(row: dict[str, object]) -> str:
     if row["identified"]:
-        return f"voice {row['score']:.2f}" if isinstance(row["score"], float) else "voice"
-    return "you" if row["name"] else "-"
+        if isinstance(row["score"], float):
+            return _("voice {score:.2f}").format(score=row["score"])
+        return _("voice")
+    return _("you") if row["name"] else "-"
 
 
 def speaker_table(rows: list[dict[str, object]]) -> list[str]:
-    header = ["speaker", "name", "speech", "named by", "track"]
+    header = [_("speaker"), _("name"), _("speech"), _("named by"), _("track")]
     body = [
         [
             str(row["label"]),
@@ -107,17 +110,21 @@ def map_speaker(
         _interactive_map(out_dir, assign, files)
         return
     if not assign:
-        raise UsageError("pass --set LABEL=PERSON, or -i to listen and name each voice")
+        raise UsageError(_("pass --set LABEL=PERSON, or -i to listen and name each voice"))
     people = load_directory_set(files).merged if files else None
     for item in assign:
-        label, _, target = item.partition("=")
+        label, _sep, target = item.partition("=")
         if not label or not target:
-            raise UsageError(f"expected LABEL=VALUE, got {item!r}")
+            raise UsageError(_("expected LABEL=VALUE, got {item!r}").format(item=item))
         person = find_person(people, target) if people else None
         if person is None and files and (add_missing or _offer_to_add(target, files[-1])):
             person, backup = add_person_to_file(files[-1], target)
             note = f" (backup: {backup})" if backup else ""
-            typer.echo(f"added {person.id} ({person.name}) to {files[-1]}{note}")
+            typer.echo(
+                _("added {id} ({name}) to {value}{note}").format(
+                    id=person.id, name=person.name, value=files[-1], note=note
+                )
+            )
             people = load_directory_set(files).merged
         if person is not None:
             remap.map_speaker(out_dir, label, person.id, person.name)
@@ -128,16 +135,17 @@ def map_speaker(
 
 def _interactive_map(out_dir: Path, assign: list[str] | None, files: list[Path]) -> None:
     if assign:
-        raise UsageError("use either --set or -i, not both")
+        raise UsageError(_("use either --set or -i, not both"))
     ensure_terminal(f"saidby speakers map {out_dir} --set SPEAKER_00=NAME")
-    title = f"Speakers in {out_dir}"
+    title = _("Speakers in {folder}").format(folder=out_dir)
     name_voices(_ui(), out_dir, files, title=title)
 
 
 def _offer_to_add(name: str, file: Path) -> bool:
     if not interactive_streams():
         return False
-    return _ui().confirm(f"{name!r} is not in the directory. Add it to {file}?", default=True)
+    question = _("{name!r} is not in the directory. Add it to {file}?").format(name=name, file=file)
+    return _ui().confirm(question, default=True)
 
 
 @app.command("merge")
@@ -151,4 +159,4 @@ def merge(
 ) -> None:
     """Merge speakers that the diarizer split by mistake."""
     remap.merge_speakers(out_dir, labels, into)
-    typer.echo(f"merged {', '.join(labels)} into {into}")
+    typer.echo(_("merged {items} into {into}").format(items=", ".join(labels), into=into))

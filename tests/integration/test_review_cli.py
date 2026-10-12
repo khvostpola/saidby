@@ -66,7 +66,7 @@ def test_review_edits_text_speaker_and_state(tmp_path: Path) -> None:
         input="Acme nuevo texto\n@SPEAKER_01\n/s\n",
     )
     assert result.exit_code == 0, result.output
-    assert "saved 1 text corrections" in result.output
+    assert "saved 1 text correction" in result.output
     after = read_transcript(folder / "transcript.words.json")
     sources = [w.source for w in after.words()]
     assert "review" in sources
@@ -135,7 +135,7 @@ def test_review_offers_directory_variants(tmp_path: Path) -> None:
     backups = list(tmp_path.glob("directory.bak-*.yaml"))
     assert len(backups) == 1
     assert yaml.safe_load(backups[0].read_text())["terms"][0]["variants"] == ["akme"]
-    assert "added 1 variants" in result.output
+    assert "added 1 variant" in result.output
 
 
 def test_review_directory_prompt_can_be_declined(tmp_path: Path) -> None:

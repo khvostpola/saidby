@@ -15,6 +15,7 @@ from saidby.formats.directory_yaml import save_directory
 from saidby.formats.manifest import read_manifest
 from saidby.formats.rttm import read_rttm
 from saidby.formats.words_json import read_transcript
+from saidby.i18n import _
 from saidby.ports.registry import make_embedder
 from saidby.runtime import prepare
 from saidby.runtime.device import resolve_device
@@ -50,8 +51,10 @@ def resolve_consents(
             append_consent(consent_path, raw, record)
         if record is None:
             raise ConsentMissingError(
-                f"no voiceprint consent recorded for {person.id}; pass --consent-source and "
-                f"--consent-declared-by or add it to {consent_path}"
+                _(
+                    "no voiceprint consent recorded for {id}; pass --consent-source and "
+                    "--consent-declared-by or add it to {consent_path}"
+                ).format(id=person.id, consent_path=consent_path)
             )
         resolved[person.id] = record
     return resolved
@@ -65,8 +68,11 @@ def _audio_files(out_dir: Path) -> tuple[Path | None, Path]:
         return kept, source
     if not source.is_file():
         raise InputError(
-            f"original recording not found: {source}; run this from the folder where you ran "
-            "saidby process, or run the process again with --keep-intermediates"
+            _(
+                "original recording not found: {source}; run this from the folder "
+                "where you ran saidby process, or run the process again with "
+                "--keep-intermediates"
+            ).format(source=source)
         )
     return None, source
 
@@ -105,10 +111,18 @@ def enroll_voices(
         label = by_key.get(label_arg)
         if label is None or label not in centroids:
             known = sorted({s.label for s in transcript.speakers})
-            raise UsageError(f"no usable speech for speaker {label_arg!r} (known: {known})")
+            raise UsageError(
+                _("no usable speech for speaker {label_arg!r} (known: {known})").format(
+                    label_arg=label_arg, known=known
+                )
+            )
         voiceprint = make_voiceprint(
             centroids[label], embedder, channel=channel, consent=consents[person_id]
         )
         people[person_id]["voiceprint"] = voiceprint.model_dump(mode="json", exclude_none=True)
-        echo(f"{person_id}: {centroids[label].seconds} s of speech")
+        echo(
+            _("{person}: {seconds} s of speech").format(
+                person=person_id, seconds=centroids[label].seconds
+            )
+        )
     return save_directory(directory_file, raw)

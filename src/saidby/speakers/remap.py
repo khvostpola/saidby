@@ -12,6 +12,7 @@ from saidby.formats.manifest import read_manifest, write_manifest
 from saidby.formats.rttm import read_rttm, write_rttm
 from saidby.formats.transcripts import render_txt, render_vtt
 from saidby.formats.words_json import read_transcript, write_transcript
+from saidby.i18n import _
 from saidby.schema.speakers import SpeakerEntry
 from saidby.schema.transcript import Segment, Transcript, Word
 from saidby.speakers.naming import track_path
@@ -22,7 +23,7 @@ class Folder:
         self.out_dir = out_dir
         words = out_dir / "transcript.words.json"
         if not words.is_file():
-            raise InputError(f"not a saidby output folder: {out_dir}")
+            raise InputError(_("not a saidby output folder: {out_dir}").format(out_dir=out_dir))
         self.transcript = read_transcript(words)
         self.manifest = read_manifest(out_dir / "manifest.json")
         by_id = {s.file_id: s.label for s in self.transcript.speakers}
@@ -36,7 +37,9 @@ class Folder:
             if label in (s.label, s.id):
                 return s
         known = ", ".join(s.label for s in self.transcript.speakers)
-        raise UsageError(f"unknown speaker {label!r}; known: {known}")
+        raise UsageError(
+            _("unknown speaker {label!r}; known: {known}").format(label=label, known=known)
+        )
 
     def save(self, op: dict[str, str]) -> None:
         for s in self.transcript.speakers:
@@ -86,7 +89,11 @@ def map_speaker(out_dir: Path, label: str, person_id: str, name: str) -> None:
     entry = folder.entry(label)
     taken = {s.file_id for s in folder.transcript.speakers if s is not entry}
     if person_id in taken:
-        raise UsageError(f"{person_id!r} is already used by another speaker; use merge instead")
+        raise UsageError(
+            _("{person_id!r} is already used by another speaker; use merge instead").format(
+                person_id=person_id
+            )
+        )
     old_track = out_dir / track_path(entry)
     entry.id, entry.name, entry.identified, entry.score = person_id, name, False, None
     new_track = out_dir / track_path(entry)
@@ -115,7 +122,7 @@ def merge_speakers(out_dir: Path, labels: list[str], into: str) -> None:
     target = folder.entry(into)
     sources = [folder.entry(label) for label in labels]
     if any(s is target for s in sources):
-        raise UsageError("cannot merge a speaker into itself")
+        raise UsageError(_("cannot merge a speaker into itself"))
     target_audio_path = out_dir / track_path(target)
     mixed: np.ndarray | None = None
     rate = 16000

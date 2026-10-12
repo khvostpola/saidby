@@ -7,6 +7,7 @@ from typing import Annotated
 import typer
 
 from saidby.errors import ModelUnavailableError
+from saidby.i18n import _
 from saidby.models import REGISTRY, get_spec
 from saidby.models import store as model_store
 from saidby.runtime import prepare
@@ -75,12 +76,14 @@ def pull(
         [s for s in REGISTRY if s.default] if all_defaults else [get_spec(k) for k in keys or []]
     )
     if not specs:
-        raise typer.BadParameter("give at least one model key or --all")
+        raise typer.BadParameter(_("give at least one model key or --all"))
     for spec in specs:
         if not spec.commercial_ok and not allow_noncommercial:
             raise ModelUnavailableError(
-                f"{spec.key} is not licensed for commercial use; "
-                "pass --allow-noncommercial to pull it"
+                _(
+                    "{key} is not licensed for commercial use; pass --allow-noncommercial "
+                    "to pull it"
+                ).format(key=spec.key)
             )
         target = model_store.pull(spec, token=token or os.environ.get("HF_TOKEN"))
         typer.echo(f"{spec.key}: {target}")

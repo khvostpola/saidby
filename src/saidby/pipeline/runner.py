@@ -24,7 +24,7 @@ from saidby.formats.manifest import read_manifest, write_manifest
 from saidby.formats.rttm import write_rttm
 from saidby.formats.transcripts import render_txt, render_vtt
 from saidby.formats.words_json import read_transcript, write_transcript
-from saidby.i18n import _
+from saidby.i18n import _, ngettext
 from saidby.pipeline import cache
 from saidby.pipeline.compare_stage import CompareStage
 from saidby.pipeline.glossary_stages import GlossaryStages
@@ -334,7 +334,7 @@ class Pipeline:
 
     def _ingest(self, rec: Recording) -> dict[str, Any]:
         if not rec.media.is_file():
-            raise InputError(f"input file not found: {rec.media}")
+            raise InputError(_("input file not found: {media}").format(media=rec.media))
         rec.source_sha256 = file_sha256(rec.media)
         rec.size_bytes = rec.media.stat().st_size
         previous = rec.out_dir / "manifest.json"
@@ -345,7 +345,7 @@ class Pipeline:
                 old = None
             if old is not None and old.source.sha256 != rec.source_sha256:
                 raise InputError(
-                    "output folder holds results for a different input; use --force to overwrite"
+                    _("output folder holds results for a different input; use --force to overwrite")
                 )
         key = cache.stage_key("ingest", inputs={"source": rec.source_sha256})
         marker_extra: dict[str, Any]
@@ -356,7 +356,7 @@ class Pipeline:
             return {
                 "cached": True,
                 "audio_s": rec.duration_s,
-                "parts": [f"{fmt_clock(rec.duration_s)} of audio"],
+                "parts": [_("{duration} of audio").format(duration=fmt_clock(rec.duration_s))],
             }
         result = ingest(rec.media, rec.work_dir)
         rec.duration_s = result.duration_s
@@ -365,7 +365,10 @@ class Pipeline:
         cache.write_marker(rec.work_dir, "ingest", key, **marker_extra)
         return {
             "audio_s": rec.duration_s,
-            "parts": ["ffmpeg", f"{fmt_clock(rec.duration_s)} of audio"],
+            "parts": [
+                "ffmpeg",
+                _("{duration} of audio").format(duration=fmt_clock(rec.duration_s)),
+            ],
         }
 
     def _release(self, stage: str) -> None:
@@ -491,7 +494,12 @@ class Pipeline:
             "speech_s": round(diar.speech_s(), 1),
             "overlap_s": round(diar.overlap_s(), 1),
             "mode": mode,
-            "parts": [*parts, f"{len(diar.labels())} speakers"],
+            "parts": [
+                *parts,
+                ngettext("{n} speaker", "{n} speakers", len(diar.labels())).format(
+                    n=len(diar.labels())
+                ),
+            ],
         }
 
     def _embedder_engine(self) -> Embedder:
@@ -556,7 +564,11 @@ class Pipeline:
             "parts": [
                 engine.info.name,
                 engine.info.device or "cpu",
-                f"{named} of {len(result.mapping)} speakers named",
+                ngettext(
+                    "{named} of {total} speaker named",
+                    "{named} of {total} speakers named",
+                    len(result.mapping),
+                ).format(named=named, total=len(result.mapping)),
             ],
         }
 

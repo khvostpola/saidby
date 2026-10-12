@@ -6,6 +6,7 @@ from pathlib import Path
 from saidby.errors import UsageError
 from saidby.formats.directory_edit import add_person
 from saidby.formats.directory_yaml import load_directory, save_directory
+from saidby.i18n import _
 from saidby.schema.directory import Directory, Person
 from saidby.speakers.naming import ascii_slug, person_id_for
 
@@ -23,9 +24,11 @@ def find_person(directory: Directory, key: str) -> Person | None:
 def add_person_to_file(path: Path, name: str) -> tuple[Person, Path | None]:
     if not ascii_slug(name):
         raise UsageError(
-            f"cannot make an id from {name!r}; use saidby directory add-person with --id"
+            _("cannot make an id from {name!r}; use saidby directory add-person with --id").format(
+                name=name
+            )
         )
-    _, raw = load_directory(path)
+    _model, raw = load_directory(path)
     taken = [str(p["id"]) for p in raw.get("people") or []]
     person_id = person_id_for(name, taken)
     add_person(raw, person_id=person_id, name=name)

@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 
 from saidby.errors import ModelUnavailableError
+from saidby.i18n import _
 from saidby.models.registry import ModelSpec
 
 
@@ -31,7 +32,7 @@ def is_installed(spec: ModelSpec) -> bool:
 def local_path(spec: ModelSpec) -> Path:
     if not is_installed(spec):
         raise ModelUnavailableError(
-            f"model {spec.key} is not installed; run: saidby models pull {spec.key}"
+            _("model {key} is not installed; run: saidby models pull {key}").format(key=spec.key)
         )
     snapshot = _snapshot_dir(spec)
     return snapshot / spec.filename if spec.filename else snapshot
@@ -45,7 +46,7 @@ def size_bytes(spec: ModelSpec) -> int | None:
     if not is_installed(spec):
         return None
     total = 0
-    for root, _, files in os.walk(_snapshot_dir(spec)):
+    for root, _dirs, files in os.walk(_snapshot_dir(spec)):
         for name in files:
             total += (Path(root) / name).stat().st_size
     return total
@@ -63,7 +64,11 @@ def pull(spec: ModelSpec, *, token: str | None = None) -> Path:
     except (GatedRepoError, RepositoryNotFoundError) as exc:
         if spec.gated:
             raise ModelUnavailableError(
-                f"{spec.repo_id} is gated: accept its conditions at {spec.accept_url} "
-                "and provide your token with HF_TOKEN"
+                _(
+                    "{repo_id} is gated: accept its conditions at {accept_url} and provide "
+                    "your token with HF_TOKEN"
+                ).format(repo_id=spec.repo_id, accept_url=spec.accept_url)
             ) from exc
-        raise ModelUnavailableError(f"cannot download {spec.repo_id}: {exc}") from exc
+        raise ModelUnavailableError(
+            _("cannot download {repo_id}: {exc}").format(repo_id=spec.repo_id, exc=exc)
+        ) from exc

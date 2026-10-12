@@ -38,7 +38,7 @@ def format_device(device: DeviceInfo, requested: str, term: Terminal) -> list[st
     how = f"({requested} → cpu: {_fallback_reason(device)})"
     lines = [f"{label} {term.paint(_cpu_value(), 'yellow')}   {term.paint(how, 'yellow')}"]
     if device.reason == "gpu_unusable" and device.note:
-        problem = device.note.removeprefix("running on CPU: ")
+        problem = _(device.note.removeprefix("running on CPU: "))
         hint = _("{problem} (details: saidby doctor)").format(problem=problem)
         lines.append(f"{' ' * (LABEL_WIDTH + 1)}{term.paint(hint, 'dim')}")
     return lines

@@ -24,7 +24,7 @@ from saidby.cli.lines import (
     status_label,
 )
 from saidby.cli.term import Terminal, detect
-from saidby.i18n import _
+from saidby.i18n import _, ngettext
 from saidby.runtime.device import DeviceInfo
 from saidby.runtime.usage import Probe
 
@@ -260,12 +260,13 @@ class Progress:
             )
         elif self.mode == "human":
             parts = [
-                f"started {fmt_moment(started)}",
-                f"finished {fmt_moment(finished, started)}",
-                f"{fmt_clock(audio_s)} of audio" + (f" · {speed_text(rtf)}" if rtf else ""),
+                _("started {moment}").format(moment=fmt_moment(started)),
+                _("finished {moment}").format(moment=fmt_moment(finished, started)),
+                _("{duration} of audio").format(duration=fmt_clock(audio_s))
+                + (f" · {speed_text(rtf)}" if rtf else ""),
             ]
             if files > 1:
-                parts.append(f"{files} files")
+                parts.append(ngettext("{n} file", "{n} files", files).format(n=files))
             if failed:
-                parts.append(f"{failed} failed")
+                parts.append(_("{n} failed").format(n=failed))
             self._line(f"[total]    {fmt_clock(wall_s)}   {' · '.join(parts)}")

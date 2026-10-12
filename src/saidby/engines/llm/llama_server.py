@@ -14,6 +14,7 @@ from typing import Any
 
 from saidby.engines.llm.openai_compat import OpenAICompatClient
 from saidby.errors import LlmUnavailableError
+from saidby.i18n import _
 from saidby.models import get_spec
 from saidby.models import store as model_store
 from saidby.runtime.device import DeviceInfo
@@ -26,8 +27,10 @@ def find_binary(explicit: str | None = None) -> str:
     candidate = explicit or os.environ.get(ENV_BINARY) or shutil.which("llama-server")
     if not candidate or (not Path(candidate).exists() and shutil.which(candidate) is None):
         raise LlmUnavailableError(
-            "llama-server not found: install llama.cpp and put llama-server on PATH "
-            f"or set {ENV_BINARY}"
+            _(
+                "llama-server not found: install llama.cpp and put llama-server on "
+                "PATH or set {ENV_BINARY}"
+            ).format(ENV_BINARY=ENV_BINARY)
         )
     return str(candidate)
 
@@ -42,7 +45,11 @@ def wait_healthy(url: str, timeout_s: float, proc: subprocess.Popen[Any]) -> Non
     deadline = time.monotonic() + timeout_s
     while time.monotonic() < deadline:
         if proc.poll() is not None:
-            raise LlmUnavailableError(f"llama-server exited early with code {proc.returncode}")
+            raise LlmUnavailableError(
+                _("llama-server exited early with code {returncode}").format(
+                    returncode=proc.returncode
+                )
+            )
         try:
             with urllib.request.urlopen(url, timeout=2) as response:
                 if b'"ok"' in response.read():
@@ -50,7 +57,7 @@ def wait_healthy(url: str, timeout_s: float, proc: subprocess.Popen[Any]) -> Non
         except (urllib.error.URLError, ConnectionError, TimeoutError):
             pass
         time.sleep(1)
-    raise LlmUnavailableError("llama-server did not become healthy in time")
+    raise LlmUnavailableError(_("llama-server did not become healthy in time"))
 
 
 class LlamaServerManager:

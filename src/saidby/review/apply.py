@@ -4,6 +4,7 @@
 from collections import Counter
 
 from saidby.errors import UsageError
+from saidby.i18n import _
 from saidby.review.queue import Item
 from saidby.schema.correction import Correction
 from saidby.schema.speakers import SpeakerEntry
@@ -19,7 +20,7 @@ def resolve_speaker(speakers: list[SpeakerEntry], name: str) -> str:
         if name in (entry.label, entry.id) or name.casefold() == (entry.name or "").casefold():
             return entry.label
     known = ", ".join(s.label for s in speakers)
-    raise UsageError(f"unknown speaker {name!r}; known: {known}")
+    raise UsageError(_("unknown speaker {name!r}; known: {known}").format(name=name, known=known))
 
 
 def _rebuild(transcript: Transcript, first: int, last: int, new: list[Word]) -> Transcript:

@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from typing import Any
 
 from saidby.errors import NetworkAttemptError
+from saidby.i18n import _
 
 LOOPBACK_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
@@ -45,7 +46,9 @@ class NetGuard:
             return
         self.events.append((event, str(host)))
         if self.raise_on_attempt:
-            raise NetworkAttemptError(f"outbound network attempt blocked: {event}")
+            raise NetworkAttemptError(
+                _("outbound network attempt blocked: {event}").format(event=event)
+            )
 
     def __enter__(self) -> "NetGuard":
         sys.addaudithook(self._hook)

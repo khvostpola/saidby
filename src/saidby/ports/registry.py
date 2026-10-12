@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from saidby.errors import UsageError
+from saidby.i18n import _
 from saidby.ports.diarizer import Diarizer
 from saidby.ports.embedder import Embedder
 from saidby.ports.transcriber import Transcriber
@@ -27,7 +28,11 @@ def make_transcriber(
         from saidby.engines.asr.fake import FakeTranscriber
 
         return FakeTranscriber()
-    raise UsageError(f"unknown transcriber {name!r}; valid: {', '.join(TRANSCRIBERS)}")
+    raise UsageError(
+        _("unknown transcriber {name!r}; valid: {items}").format(
+            name=name, items=", ".join(TRANSCRIBERS)
+        )
+    )
 
 
 def make_diarizer(name: str, *, device: DeviceInfo) -> Diarizer:
@@ -39,13 +44,15 @@ def make_diarizer(name: str, *, device: DeviceInfo) -> Diarizer:
         try:
             from saidby.engines.diarize.pyannote_community1 import PyannoteCommunity1Diarizer
         except ImportError as exc:
-            raise UsageError("install the extra: pip install 'saidby[pyannote]'") from exc
+            raise UsageError(_("install the extra: pip install 'saidby[pyannote]'")) from exc
         return PyannoteCommunity1Diarizer(device)
     if name == "fake":
         from saidby.engines.diarize.fake import FakeDiarizer
 
         return FakeDiarizer()
-    raise UsageError(f"unknown diarizer {name!r}; valid: {', '.join(DIARIZERS)}")
+    raise UsageError(
+        _("unknown diarizer {name!r}; valid: {items}").format(name=name, items=", ".join(DIARIZERS))
+    )
 
 
 EMBEDDERS = ("wespeaker-resnet34", "fake")
@@ -60,4 +67,6 @@ def make_embedder(name: str, *, device: DeviceInfo) -> Embedder:
         from saidby.engines.embed.fake import FakeEmbedder
 
         return FakeEmbedder()
-    raise UsageError(f"unknown embedder {name!r}; valid: {', '.join(EMBEDDERS)}")
+    raise UsageError(
+        _("unknown embedder {name!r}; valid: {items}").format(name=name, items=", ".join(EMBEDDERS))
+    )

@@ -9,6 +9,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, PrivateAttr, ValidationError, field_validator
 
 from saidby.errors import UsageError
+from saidby.i18n import _
 
 ENV_PREFIX = "SAIDBY_"
 ORIGIN_ENV = "env"
@@ -92,7 +93,9 @@ class Settings(BaseModel):
         except ValidationError as exc:
             first = exc.errors()[0]
             where = ".".join(str(part) for part in first["loc"])
-            raise UsageError(f"invalid configuration: {where}: {first['msg']}") from exc
+            raise UsageError(
+                _("invalid configuration: {where}: {msg}").format(where=where, msg=first["msg"])
+            ) from exc
         settings._sources = files
         settings._origins = origins
         return settings
@@ -119,7 +122,7 @@ def find_project_config(start: Path | None = None) -> Path | None:
 def config_files(explicit: Path | None = None) -> list[Path]:
     if explicit is not None:
         if not explicit.is_file():
-            raise UsageError(f"config file not found: {explicit}")
+            raise UsageError(_("config file not found: {explicit}").format(explicit=explicit))
         return [explicit]
     files: list[Path] = []
     for path in (global_config_path(), find_project_config()):
@@ -167,7 +170,11 @@ def _flatten(data: dict[str, Any], source: Path) -> dict[str, Any]:
         if table == "saidby":
             unknown = sorted(set(values) - set(Settings.model_fields))
             if unknown:
-                raise UsageError(f"{source}: unknown key(s) in [saidby]: {', '.join(unknown)}")
+                raise UsageError(
+                    _("{source}: unknown key(s) in [saidby]: {items}").format(
+                        source=source, items=", ".join(unknown)
+                    )
+                )
             flat.update(values)
         elif table in TABLE_KEYS:
             mapping = TABLE_KEYS[table]
@@ -175,12 +182,18 @@ def _flatten(data: dict[str, Any], source: Path) -> dict[str, Any]:
             if unknown:
                 valid = ", ".join(sorted(mapping))
                 raise UsageError(
-                    f"{source}: unknown key(s) in [{table}]: {', '.join(unknown)} (valid: {valid})"
+                    _("{source}: unknown key(s) in [{table}]: {items} (valid: {valid})").format(
+                        source=source, table=table, items=", ".join(unknown), valid=valid
+                    )
                 )
             flat.update({mapping[key]: value for key, value in values.items()})
         else:
             valid = ", ".join(["saidby", *TABLE_KEYS])
-            raise UsageError(f"{source}: unknown section [{table}] (valid: {valid})")
+            raise UsageError(
+                _("{source}: unknown section [{table}] (valid: {valid})").format(
+                    source=source, table=table, valid=valid
+                )
+            )
     _resolve_paths(flat, source)
     return flat
 
@@ -190,7 +203,9 @@ def _resolve_paths(flat: dict[str, Any], source: Path) -> None:
     if directory is not None:
         items = [directory] if isinstance(directory, str) else directory
         if not isinstance(items, list) or not all(isinstance(item, str) for item in items):
-            raise UsageError(f"{source}: directory must be a path or a list of paths")
+            raise UsageError(
+                _("{source}: directory must be a path or a list of paths").format(source=source)
+            )
         flat["directory"] = [_anchor(item, source) for item in items]
     out = flat.get("out")
     if isinstance(out, str) and source != global_config_path():
@@ -215,7 +230,7 @@ def _read_file(path: Path) -> dict[str, Any]:
     try:
         data = tomllib.loads(path.read_text(encoding="utf-8"))
     except tomllib.TOMLDecodeError as exc:
-        raise UsageError(f"{path}: not valid TOML: {exc}") from exc
+        raise UsageError(_("{path}: not valid TOML: {exc}").format(path=path, exc=exc)) from exc
     return _flatten(data, path)
 
 

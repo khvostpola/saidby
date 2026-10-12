@@ -8,13 +8,16 @@ from saidby.errors import InputError
 from saidby.evaluation import metrics
 from saidby.evaluation.reference import parse_reference
 from saidby.formats.directory_yaml import load_directory
+from saidby.i18n import _
 
 
 def score_run(
     reference_path: Path, run_dir: Path, directory_path: Path | None = None
 ) -> dict[str, Any]:
     if not reference_path.is_file():
-        raise InputError(f"reference not found: {reference_path}")
+        raise InputError(
+            _("reference not found: {reference_path}").format(reference_path=reference_path)
+        )
     transcript = metrics.load_run(run_dir)
     reference = parse_reference(reference_path.read_text(encoding="utf-8"), transcript.words())
     directory = load_directory(directory_path)[0] if directory_path else None

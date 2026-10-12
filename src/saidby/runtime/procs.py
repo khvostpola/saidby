@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 from saidby.errors import InputError
+from saidby.i18n import _
 
 
 def run_checked(
@@ -21,9 +22,11 @@ def run_checked(
             stdin=subprocess.DEVNULL,
         )
     except FileNotFoundError as exc:
-        raise InputError(f"{argv[0]} not found on PATH") from exc
+        raise InputError(_("{argv} not found on PATH").format(argv=argv[0])) from exc
     except subprocess.CalledProcessError as exc:
-        raise InputError(f"{argv[0]} failed: {exc.stderr.strip()[-500:]}") from exc
+        raise InputError(
+            _("{argv} failed: {value}").format(argv=argv[0], value=exc.stderr.strip()[-500:])
+        ) from exc
 
 
 def which(name: str) -> str | None:

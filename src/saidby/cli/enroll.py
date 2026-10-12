@@ -11,6 +11,7 @@ from saidby.cli.ui import Ui, ensure_terminal
 from saidby.config.settings import Settings
 from saidby.errors import UsageError
 from saidby.formats.directory_yaml import load_directory
+from saidby.i18n import _
 from saidby.interactive.voices import store_voices
 from saidby.speakers.enrollment import (
     DEFAULT_CHANNEL,
@@ -28,7 +29,7 @@ if TYPE_CHECKING:
 def _configured_directory() -> Path:
     configured = Settings.load().directory
     if not configured:
-        raise UsageError("no directory file: pass --directory or set one in saidby.toml")
+        raise UsageError(_("no directory file: pass --directory or set one in saidby.toml"))
     return configured[-1]
 
 
@@ -79,29 +80,31 @@ def enroll(
         )
         return
     if not speaker:
-        raise UsageError("pass --speaker LABEL=PERSON, or -i to be asked for each voice")
+        raise UsageError(_("pass --speaker LABEL=PERSON, or -i to be asked for each voice"))
     parsed = [item.partition("=") for item in speaker]
-    if any(not label or not person for label, _, person in parsed):
-        raise UsageError("expected --speaker LABEL=PERSON (an id or a name)")
+    if any(not label or not person for label, _sep, person in parsed):
+        raise UsageError(_("expected --speaker LABEL=PERSON (an id or a name)"))
     directory = directory or _configured_directory()
     dir_model, raw = load_directory(directory)
     chosen: list[tuple[str, Person]] = []
-    for label, _, key in parsed:
+    for label, _sep, key in parsed:
         person = find_person(dir_model, key)
         if person is None:
             raise UsageError(
-                f"{key!r} is not in the directory; add the person first "
-                "(saidby directory add-person)"
+                _(
+                    "{key!r} is not in the directory; add the person first (saidby "
+                    "directory add-person)"
+                ).format(key=key)
             )
         chosen.append((label, person))
     given = {}
     if consent_source and consent_declared_by:
         when = dt.date.fromisoformat(consent_date) if consent_date else None
         entry = ConsentInput(consent_source, consent_declared_by, when)
-        given = {person.id: entry for _, person in chosen}
+        given = {person.id: entry for _label, person in chosen}
     ensure_audio(out_dir)
     consents = resolve_consents(
-        [person for _, person in chosen],
+        [person for _label, person in chosen],
         consent_file or directory.with_name("consent.yaml"),
         given,
     )
@@ -117,7 +120,7 @@ def enroll(
         echo=typer.echo,
     )
     if backup:
-        typer.echo(f"backup: {backup}")
+        typer.echo(_("backup: {backup}").format(backup=backup))
 
 
 def _interactive_enroll(
@@ -132,11 +135,13 @@ def _interactive_enroll(
     device: str,
 ) -> None:
     if speaker:
-        raise UsageError("use either --speaker or -i, not both")
+        raise UsageError(_("use either --speaker or -i, not both"))
     if any(consent_flags):
         raise UsageError(
-            "-i asks about consent itself; do not combine it with "
-            "--consent-source, --consent-declared-by or --consent-date"
+            _(
+                "-i asks about consent itself; do not combine it with "
+                "--consent-source, --consent-declared-by or --consent-date"
+            )
         )
     ensure_terminal(
         f"saidby enroll {out_dir} --speaker SPEAKER_00=PERSON "

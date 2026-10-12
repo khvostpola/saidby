@@ -9,6 +9,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 from saidby.errors import LlmUnavailableError
+from saidby.i18n import _
 from saidby.ports.corrector import LlmTruncatedError
 from saidby.runtime.netguard import is_loopback
 from saidby.schema.engine import EngineInfo
@@ -65,10 +66,12 @@ class OpenAICompatClient:
                 content = json.load(response)["choices"][0]["message"]["content"]
         except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
             raise LlmUnavailableError(
-                f"LLM endpoint {self.base_url} is not reachable: {exc}"
+                _("LLM endpoint {base_url} is not reachable: {exc}").format(
+                    base_url=self.base_url, exc=exc
+                )
             ) from exc
         try:
             parsed: dict[str, Any] = json.loads(content)
         except json.JSONDecodeError as exc:
-            raise LlmTruncatedError("LLM returned incomplete JSON") from exc
+            raise LlmTruncatedError(_("LLM returned incomplete JSON")) from exc
         return parsed

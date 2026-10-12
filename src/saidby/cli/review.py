@@ -12,6 +12,7 @@ from saidby.config.settings import Settings
 from saidby.errors import UsageError
 from saidby.formats.corrections_log import read_corrections, write_corrections
 from saidby.formats.directory_yaml import load_directory, save_directory
+from saidby.i18n import _, ngettext
 from saidby.review.apply import apply_speaker, apply_text, resolve_speaker
 from saidby.review.context import (
     audio_source,
@@ -27,10 +28,6 @@ from saidby.runtime.procs import play
 from saidby.schema.correction import Correction
 from saidby.speakers.remap import Folder
 
-HELP = (
-    "Enter keeps the text; type the corrected text to replace it; p plays the span; "
-    "@SPEAKER (optionally followed by text) sets who spoke; /s skips; /q quits"
-)
 QUESTION_WIDTH = 40
 
 
@@ -42,7 +39,7 @@ def _speakers(folder: Folder, item: Item) -> str:
 def _decide(folder: Folder, item: Item, answer: str) -> tuple[Correction | None, str | None]:
     speaker: str | None = None
     if answer.startswith("@"):
-        name, _, answer = answer[1:].partition(" ")
+        name, _sep, answer = answer[1:].partition(" ")
         speaker = resolve_speaker(folder.transcript.speakers, name)
         folder.transcript = apply_speaker(folder.transcript, item, speaker)
     correction = None
@@ -58,7 +55,8 @@ def _without_repeats(folder: Folder, item: Item, text: str) -> str:
     if not overlap:
         return text
     repeated = repeated_words(text, overlap)
-    question = f'Your text repeats "{repeated}" from next to the span. Replace only the span?'
+    question = _('Your text repeats "{repeated}" from next to the span. Replace only the span?')
+    question = question.format(repeated=repeated)
     return strip_overlap(text, overlap) if typer.confirm(question, default=True) else text
 
 
@@ -78,17 +76,21 @@ def _show(folder: Folder, item: Item, number: int, total: int, term: Terminal) -
     shown = context.span
     if len(shown) > QUESTION_WIDTH:
         shown = shown[: QUESTION_WIDTH - 1] + "…"
-    return f'Text for "{shown}"?'
+    return _('Text for "{span}"?').format(span=shown)
 
 
 def _play(folder: Folder, item: Item) -> None:
     source = audio_source(folder.out_dir, folder.transcript, folder.manifest, item)
     if source is None:
-        typer.echo("no audio to play: there is no work folder, track or original recording")
+        typer.echo(_("no audio to play: there is no work folder, track or original recording"))
         return
     start, duration = play_window(item)
     if not play(source.path, start, duration):
-        typer.echo(f"ffplay not found; open {source.path} at {start:.1f} s")
+        typer.echo(
+            _("ffplay not found; open {path} at {start:.1f} s").format(
+                path=source.path, start=start
+            )
+        )
 
 
 def review(
@@ -116,7 +118,11 @@ def review(
     chosen = tuple(k.strip() for k in kinds.split(",") if k.strip())
     unknown = [k for k in chosen if k not in KINDS]
     if unknown:
-        raise UsageError(f"unknown kinds {unknown}; valid: {', '.join(KINDS)}")
+        raise UsageError(
+            _("unknown kinds {unknown}; valid: {items}").format(
+                unknown=unknown, items=", ".join(KINDS)
+            )
+        )
     folder = Folder(out_dir)
     queue = build_queue(
         out_dir, folder.transcript, folder.manifest, kinds=chosen, low_p=low_confidence
@@ -124,9 +130,14 @@ def review(
     if limit:
         queue = queue[:limit]
     if not queue:
-        typer.echo("nothing to review")
+        typer.echo(_("nothing to review"))
         return
-    typer.echo(HELP)
+    typer.echo(
+        _(
+            "Enter keeps the text; type the corrected text to replace it; p plays the span; "
+            "@SPEAKER (optionally followed by text) sets who spoke; /s skips; /q quits"
+        )
+    )
     new_corrections: list[Correction] = []
     changed = False
     try:
@@ -151,7 +162,11 @@ def review(
     finally:
         if changed:
             _save(folder, new_corrections)
-    typer.echo(f"\nsaved {len(new_corrections)} text corrections")
+    typer.echo("")
+    saved = ngettext(
+        "saved {n} text correction", "saved {n} text corrections", len(new_corrections)
+    )
+    typer.echo(saved.format(n=len(new_corrections)))
     configured = Settings.load().directory
     target = directory or (configured[-1] if configured else None)
     if target is not None and new_corrections:
@@ -171,8 +186,11 @@ def _offer_directory(path: Path, corrections: list[Correction], yes: bool) -> No
     if not suggestions:
         return
     for s in suggestions:
-        typer.echo(f"  {s.target}: add variant {s.variant!r}")
-    if yes or typer.confirm("Add these variants to the directory?", default=False):
+        typer.echo(
+            _("  {target}: add variant {variant!r}").format(target=s.target, variant=s.variant)
+        )
+    if yes or typer.confirm(_("Add these variants to the directory?"), default=False):
         count = apply_suggestions(raw, suggestions)
         backup = save_directory(path, raw)
-        typer.echo(f"added {count} variants" + (f" (backup: {backup})" if backup else ""))
+        added = ngettext("added {n} variant", "added {n} variants", count).format(n=count)
+        typer.echo(added + (_(" (backup: {backup})").format(backup=backup) if backup else ""))

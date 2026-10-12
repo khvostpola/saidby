@@ -8,6 +8,7 @@ from typing import Annotated
 import typer
 
 from saidby.errors import UsageError
+from saidby.i18n import _
 
 app = typer.Typer(
     help="Measure runs against a hand-corrected reference and arbitrate differences blind.",
@@ -16,7 +17,7 @@ app = typer.Typer(
 
 
 def _need_extra() -> UsageError:
-    return UsageError("this command needs the evaluation extra: pip install 'saidby[eval]'")
+    return UsageError(_("this command needs the evaluation extra: pip install 'saidby[eval]'"))
 
 
 @app.command("score")

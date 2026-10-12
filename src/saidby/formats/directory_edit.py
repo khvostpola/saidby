@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from saidby.errors import UsageError
+from saidby.i18n import _
 
 
 def add_person(
@@ -19,9 +20,13 @@ def add_person(
     people = raw.setdefault("people", [])
     for person in people:
         if person["id"] == person_id:
-            raise UsageError(f"person {person_id!r} already exists")
+            raise UsageError(_("person {person_id!r} already exists").format(person_id=person_id))
         if str(person["name"]).casefold() == name.casefold():
-            raise UsageError(f"{name!r} is already in the directory as {person['id']!r}")
+            raise UsageError(
+                _("{name!r} is already in the directory as {id!r}").format(
+                    name=name, id=person["id"]
+                )
+            )
     entry: dict[str, Any] = {"id": person_id, "name": name}
     if aliases:
         entry["aliases"] = list(aliases)
@@ -44,7 +49,7 @@ def add_term(
     terms = raw.setdefault("terms", [])
     for existing in terms:
         if str(existing["term"]).casefold() == term.casefold():
-            raise UsageError(f"term {existing['term']!r} already exists")
+            raise UsageError(_("term {term!r} already exists").format(term=existing["term"]))
     entry: dict[str, Any] = {"term": term}
     if dialect:
         entry["type"] = "dialect"

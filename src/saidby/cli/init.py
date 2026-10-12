@@ -17,6 +17,7 @@ from saidby.config.writer import (
     shorten_home,
 )
 from saidby.formats.directory_set import CONSENT_FILE
+from saidby.i18n import _
 
 
 def _interactive() -> bool:
@@ -25,10 +26,10 @@ def _interactive() -> bool:
 
 def _write_new(path: Path, text: str, note: str) -> None:
     if path.exists():
-        typer.echo(f"  kept   {path.name:<16} already there, not touched")
+        typer.echo(_("  kept   {name:<16} already there, not touched").format(name=path.name))
         return
     path.write_text(text, encoding="utf-8")
-    typer.echo(f"  wrote  {path.name:<16} {note}")
+    typer.echo(_("  wrote  {name:<16} {note}").format(name=path.name, note=note))
 
 
 def init(
@@ -48,7 +49,7 @@ def init(
     ask = _interactive() and not yes
     chosen = language or default_language()
     if ask and language is None:
-        chosen = typer.prompt("Language of your recordings", default=chosen)
+        chosen = typer.prompt(_("Language of your recordings"), default=chosen)
     chosen = check_language(chosen)
     folder = global_config_path().parent if global_ else Path.cwd()
     shared = global_config_path().parent / "directory.yaml"
@@ -57,21 +58,28 @@ def init(
         use_shared = True
         if ask:
             use_shared = typer.confirm(
-                f"Use the global glossary {shorten_home(shared)} here too?", default=True
+                _("Use the global glossary {shorten_home} here too?").format(
+                    shorten_home=shorten_home(shared)
+                ),
+                default=True,
             )
         if use_shared:
             directories.insert(0, shorten_home(shared))
     folder.mkdir(parents=True, exist_ok=True)
     config = folder / ("config.toml" if global_ else "saidby.toml")
-    typer.echo(f"Setting up {folder}")
-    config_note = f"language {chosen}" + ("" if global_ else " · output ./saidby/")
+    typer.echo(_("Setting up {folder}").format(folder=folder))
+    config_note = _("language {language}").format(language=chosen)
+    if not global_:
+        config_note += " · " + _("output ./saidby/")
     _write_new(
         config,
         render_config(language=chosen, directories=directories, out=None if global_ else "saidby"),
-        f"{config_note} · glossary {', '.join(directories)}",
+        f"{config_note} · " + _("glossary {files}").format(files=", ".join(directories)),
     )
     starter = DIRECTORY_STARTER.format(language=chosen)
-    _write_new(folder / "directory.yaml", starter, "empty, with hints")
-    _write_new(folder / CONSENT_FILE, CONSENT_STARTER, "empty")
-    where = "every folder" if global_ else "this folder"
-    typer.echo(f"Done. In {where}, `saidby process call.m4a` needs no flags now.")
+    _write_new(folder / "directory.yaml", starter, _("empty, with hints"))
+    _write_new(folder / CONSENT_FILE, CONSENT_STARTER, _("empty"))
+    where = _("every folder") if global_ else _("this folder")
+    typer.echo(
+        _("Done. In {where}, `saidby process call.m4a` needs no flags now.").format(where=where)
+    )

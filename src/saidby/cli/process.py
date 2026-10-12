@@ -15,6 +15,7 @@ from saidby.cli.term import detect
 from saidby.cli.ui import Ui, ensure_terminal
 from saidby.config.settings import Settings
 from saidby.errors import StageError, UsageError
+from saidby.i18n import _
 from saidby.interactive.plan import RunPlan, plan_run
 from saidby.interactive.walk import finish_run, walk_folders
 from saidby.pipeline.runner import Pipeline
@@ -310,4 +311,4 @@ def _check_interactive(inputs: list[Path], settings: Settings) -> None:
     equivalent = "saidby process " + shlex.join(str(path) for path in inputs)
     ensure_terminal(equivalent)
     if settings.progress != "human":
-        raise UsageError("-i needs the human progress output; do not combine it with --progress")
+        raise UsageError(_("-i needs the human progress output; do not combine it with --progress"))

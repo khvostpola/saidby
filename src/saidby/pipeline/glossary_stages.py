@@ -11,6 +11,7 @@ from saidby.errors import UsageError
 from saidby.formats.audio import read_audio
 from saidby.formats.corrections_log import read_corrections, write_corrections
 from saidby.formats.words_json import read_transcript, write_transcript
+from saidby.i18n import _, ngettext
 from saidby.pipeline import cache
 from saidby.pipeline.job import Recording, TextArtifact
 from saidby.ports.corrector import LlmClient
@@ -43,11 +44,11 @@ class GlossaryStages:
         if not settings.correct:
             return
         if self.p._directory is None:
-            raise UsageError("--correct needs --directory or --term with the terms to correct")
+            raise UsageError(_("--correct needs --directory or --term with the terms to correct"))
         if settings.llm_url:
             if not is_local_url(settings.llm_url) and not settings.allow_remote_llm:
                 raise UsageError(
-                    "the LLM endpoint is not on this machine; pass --allow-remote-llm to confirm"
+                    _("the LLM endpoint is not on this machine; pass --allow-remote-llm to confirm")
                 )
         elif self.llm is None:
             manager = self._manager()
@@ -134,7 +135,11 @@ class GlossaryStages:
             "hotwords_truncated": hot.truncated,
             "parts": [
                 f"{engine.info.name} {engine.info.model}",
-                f"hotwords in {len(windows)} windows" if windows is not None else "with hotwords",
+                ngettext("hotwords in {n} window", "hotwords in {n} windows", len(windows)).format(
+                    n=len(windows)
+                )
+                if windows is not None
+                else _("with hotwords"),
             ],
         }
         if windows is not None:
@@ -227,7 +232,7 @@ class GlossaryStages:
         )
         artifact = rec.work_dir / "transcript.corrected.json"
         log_path = rec.work_dir / "corrections.llm.jsonl"
-        parts = ["llm", "bounded corrections"]
+        parts = ["llm", _("bounded corrections")]
         if cache.is_fresh(rec.work_dir, "correct", key, [artifact, log_path]):
             stats = (cache.read_marker(rec.work_dir, "correct") or {}).get("stats", {})
             self.p.text[rec.slug] = TextArtifact(artifact, key)

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from saidby.errors import UsageError
+from saidby.i18n import N_, _
 from saidby.runtime.prepare import preload_cublas
 from saidby.runtime.procs import which
 
@@ -98,14 +99,14 @@ def cublas12_available() -> bool:
 
 def cuda_problems(gpu: GpuFacts | None) -> list[str]:
     if gpu is None:
-        return ["no NVIDIA GPU found (nvidia-smi is missing or reports nothing)"]
+        return [N_("no NVIDIA GPU found (nvidia-smi is missing or reports nothing)")]
     problems = []
     if torch_build() == "cpu":
         problems.append(CPU_TORCH_HINT)
     elif not torch_cuda_ready():
-        problems.append("PyTorch cannot use the GPU (check the NVIDIA driver, 580 or newer)")
+        problems.append(N_("PyTorch cannot use the GPU (check the NVIDIA driver, 580 or newer)"))
     if ct2_cuda_devices() == 0:
-        problems.append("CTranslate2 cannot see the GPU")
+        problems.append(N_("CTranslate2 cannot see the GPU"))
     elif not cublas12_available():
         problems.append(f"CUDA 12 cuBLAS libraries are missing: {CUDA_EXTRA_HINT}")
     return problems
@@ -113,7 +114,7 @@ def cuda_problems(gpu: GpuFacts | None) -> list[str]:
 
 def resolve_device(requested: str = "auto") -> DeviceInfo:
     if requested not in {"auto", "cuda", "cpu"}:
-        raise UsageError(f"unknown device: {requested}")
+        raise UsageError(_("unknown device: {requested}").format(requested=requested))
     if requested == "cpu":
         return DeviceInfo("cpu", reason="requested_cpu")
     gpu = read_gpu()
@@ -122,7 +123,9 @@ def resolve_device(requested: str = "auto") -> DeviceInfo:
         return DeviceInfo("cuda", gpu.name, gpu.vram_total_mb)
     if requested == "cuda":
         raise UsageError(
-            "--device cuda requested but the GPU is not usable: " + "; ".join(problems)
+            _("--device cuda requested but the GPU is not usable: {problems}").format(
+                problems="; ".join(problems)
+            )
         )
     if gpu is None:
         return DeviceInfo("cpu", reason="no_gpu")

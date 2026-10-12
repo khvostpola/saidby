@@ -17,6 +17,7 @@ from saidby.errors import InputError
 from saidby.evaluation.metrics import dialect_map, load_run, words_text
 from saidby.evaluation.reference import parse_reference
 from saidby.formats.directory_yaml import load_directory
+from saidby.i18n import _
 from saidby.schema.transcript import Transcript
 from saidby.stages.ingest import ingest
 
@@ -235,7 +236,9 @@ class Handler(BaseHTTPRequestHandler):
 
 def serve(out: Path, port: int = 8765) -> ThreadingHTTPServer:
     if not (out / "items.json").exists():
-        raise InputError(f"nothing to serve in {out}; run `saidby eval arbitrate-build` first")
+        raise InputError(
+            _("nothing to serve in {out}; run `saidby eval arbitrate-build` first").format(out=out)
+        )
     Handler.out = out
     return ThreadingHTTPServer(("127.0.0.1", port), Handler)
 

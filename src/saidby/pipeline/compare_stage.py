@@ -5,6 +5,7 @@ import json
 from typing import TYPE_CHECKING, Any
 
 from saidby.formats.audio import read_audio
+from saidby.i18n import _, ngettext
 from saidby.pipeline import cache
 from saidby.pipeline.job import Recording
 from saidby.ports.diarizer import Diarizer
@@ -89,7 +90,11 @@ class CompareStage:
             "disagreement_spans": len(record["disagreement_spans"]),
             "parts": [
                 engine.info.name,
-                f"agreement {record['agreement'] * 100:.1f}%",
-                f"{len(record['disagreement_spans'])} spans differ",
+                _("agreement {percent:.1f}%").format(percent=record["agreement"] * 100),
+                ngettext(
+                    "{n} span differs",
+                    "{n} spans differ",
+                    len(record["disagreement_spans"]),
+                ).format(n=len(record["disagreement_spans"])),
             ],
         }

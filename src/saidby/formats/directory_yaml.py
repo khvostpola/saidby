@@ -10,6 +10,7 @@ from pydantic import ValidationError
 
 from saidby.errors import InputError
 from saidby.formats.yaml_io import load_yaml, save_yaml
+from saidby.i18n import _
 from saidby.schema.directory import Directory
 
 
@@ -27,12 +28,14 @@ def validate_directory(raw: Any) -> Directory:
     except ValidationError as exc:
         first = exc.errors()[0]
         where = ".".join(str(p) for p in first["loc"])
-        raise InputError(f"invalid directory at {where}: {first['msg']}") from exc
+        raise InputError(
+            _("invalid directory at {where}: {msg}").format(where=where, msg=first["msg"])
+        ) from exc
 
 
 def load_directory(path: Path) -> tuple[Directory, Any]:
     if not path.is_file():
-        raise InputError(f"directory file not found: {path}")
+        raise InputError(_("directory file not found: {path}").format(path=path))
     raw = load_yaml(path)
     return validate_directory(raw), raw
 
