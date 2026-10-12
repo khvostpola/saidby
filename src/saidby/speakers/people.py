@@ -21,7 +21,9 @@ def find_person(directory: Directory, key: str) -> Person | None:
     return None
 
 
-def add_person_to_file(path: Path, name: str) -> tuple[Person, Path | None]:
+def add_person_to_file(
+    path: Path, name: str, person_id: str | None = None
+) -> tuple[Person, Path | None]:
     if not ascii_slug(name):
         raise UsageError(
             _("cannot make an id from {name!r}; use saidby directory add-person with --id").format(
@@ -30,7 +32,7 @@ def add_person_to_file(path: Path, name: str) -> tuple[Person, Path | None]:
         )
     _model, raw = load_directory(path)
     taken = [str(p["id"]) for p in raw.get("people") or []]
-    person_id = person_id_for(name, taken)
+    person_id = person_id or person_id_for(name, taken)
     add_person(raw, person_id=person_id, name=name)
     backup = save_directory(path, raw)
     person = load_directory(path)[0].person(person_id)

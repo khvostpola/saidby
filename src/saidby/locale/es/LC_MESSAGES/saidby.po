@@ -859,7 +859,11 @@ msgstr "Carpeta"
 msgid "type Enter, p, s or q"
 msgstr "escribe Enter, p, s o q"
 
-#: src/saidby/interactive/name.py:63
+#: src/saidby/interactive/name.py:70
+msgid "use letters or digits in the name"
+msgstr "usa letras o números en el nombre"
+
+#: src/saidby/interactive/name.py:74
 #, python-brace-format
 msgid ""
 "{who} is already {label}. Pick another name, or use \"saidby speakers merge\" if the diarizer "
@@ -868,73 +872,77 @@ msgstr ""
 "{who} ya es {label}. Elige otro nombre, o usa \"saidby speakers merge\" si el diarizador partió a"
 " una persona en dos."
 
-#: src/saidby/interactive/name.py:72
+#: src/saidby/interactive/name.py:83
 msgid "Who is each voice?"
 msgstr "¿Quién es cada voz?"
 
-#: src/saidby/interactive/name.py:73
+#: src/saidby/interactive/name.py:84
 msgid "Type an id or a name. Tab completes. Enter keeps the label."
 msgstr "Escribe un id o un nombre. Tab completa. Enter deja la etiqueta."
 
-#: src/saidby/interactive/name.py:76
+#: src/saidby/interactive/name.py:87
 msgid "directory:"
 msgstr "directorio:"
 
-#: src/saidby/interactive/name.py:81 src/saidby/interactive/voices.py:103
+#: src/saidby/interactive/name.py:92 src/saidby/interactive/voices.py:103
 #, python-brace-format
 msgid "{time} of speech"
 msgstr "{time} de habla"
 
-#: src/saidby/interactive/name.py:85
+#: src/saidby/interactive/name.py:96
 msgid "Name or id?"
 msgstr "¿Nombre o id?"
 
-#: src/saidby/interactive/name.py:86
+#: src/saidby/interactive/name.py:97
 #, python-brace-format
 msgid "[keep {current}]"
 msgstr "[dejar {current}]"
 
-#: src/saidby/interactive/name.py:91
+#: src/saidby/interactive/name.py:102
 #, python-brace-format
 msgid "stays {current}"
 msgstr "se queda en {current}"
 
-#: src/saidby/interactive/name.py:98
+#: src/saidby/interactive/name.py:109
 msgid "(new, will be added to the directory)"
 msgstr "(nuevo, se agregará al directorio)"
 
-#: src/saidby/interactive/name.py:98
+#: src/saidby/interactive/name.py:109
 msgid "(new name)"
 msgstr "(nombre nuevo)"
 
-#: src/saidby/interactive/name.py:112
+#: src/saidby/interactive/name.py:124
 msgid "Apply these names?"
 msgstr "¿Aplicar estos nombres?"
 
-#: src/saidby/interactive/name.py:124
+#: src/saidby/interactive/name.py:136
 msgid "Nothing to rename."
 msgstr "Nada que renombrar."
 
-#: src/saidby/interactive/name.py:127
+#: src/saidby/interactive/name.py:139
 msgid "Apply?"
 msgstr "¿Aplicar?"
 
-#: src/saidby/interactive/name.py:128
+#: src/saidby/interactive/name.py:140
 msgid "nothing was changed"
 msgstr "no se cambió nada"
 
-#: src/saidby/interactive/name.py:144
+#: src/saidby/interactive/name.py:151
+msgid "two voices would end up with the same name; nothing was changed"
+msgstr "dos voces quedarían con el mismo nombre; no se cambió nada"
+
+#: src/saidby/interactive/name.py:158
 msgid "added to"
 msgstr "agregado a"
 
-#: src/saidby/interactive/name.py:148
+#: src/saidby/interactive/name.py:162
 #, python-brace-format
 msgid "{n} track renamed"
 msgid_plural "{n} tracks renamed"
 msgstr[0] "se renombró {n} pista"
 msgstr[1] "se renombraron {n} pistas"
 
-#: src/saidby/interactive/name.py:150
+#: src/saidby/interactive/name.py:164
 msgid "rewrote the transcript files and the RTTM; no audio was re-processed"
 msgstr "se reescribieron los archivos de transcripción y el RTTM; no se volvió a procesar audio"
 
@@ -1575,7 +1583,7 @@ msgstr "no hay habla utilizable para el hablante {label_arg!r} (conocidos: {know
 msgid "{person}: {seconds} s of speech"
 msgstr "{person}: {seconds} s de habla"
 
-#: src/saidby/speakers/people.py:27
+#: src/saidby/speakers/people.py:29
 #, python-brace-format
 msgid "cannot make an id from {name!r}; use saidby directory add-person with --id"
 msgstr "no se puede hacer un id con {name!r}; usa saidby directory add-person con --id"

@@ -241,3 +241,63 @@ def test_the_command_runs_the_whole_flow_on_a_terminal(
     assert result.exit_code == 0, result.output
     assert _names(out_dir)["SPEAKER_00"] == ("ben", "Ben Ruiz")
     assert yaml.safe_load(directory.read_text())["people"][1]["id"] == "ben"
+
+
+def test_a_voice_that_keeps_its_name_still_blocks_that_name_for_another(tmp_path: Path) -> None:
+    from saidby.speakers import remap
+
+    out_dir, directory = _folder(tmp_path), _directory(tmp_path)
+    remap.map_speaker(out_dir, "SPEAKER_00", "ana", "Ana Gómez")
+    ui, out, _ = _session(["", "", "ana", "ben", ""])
+    naming = name_voices(ui, out_dir, [directory], title="t", player=Played())
+    assert naming is not None
+    assert "ana is already SPEAKER_00" in out.getvalue()
+    assert _names(out_dir) == {
+        "SPEAKER_00": ("ana", "Ana Gómez"),
+        "SPEAKER_01": ("ben", "Ben Ruiz"),
+    }
+
+
+def test_a_new_name_that_makes_an_existing_id_is_refused_whatever_its_accents(
+    tmp_path: Path,
+) -> None:
+    from saidby.speakers import remap
+
+    out_dir = _folder(tmp_path)
+    remap.map_speaker(out_dir, "SPEAKER_00", "maria", "Maria")
+    ui, out, _ = _session(["", "", "María", "Mariana", ""])
+    naming = name_voices(ui, out_dir, [], title="t", player=Played())
+    assert naming is not None
+    assert "María is already SPEAKER_00" in out.getvalue()
+    assert _names(out_dir)["SPEAKER_01"] == ("mariana", "Mariana")
+
+
+def test_new_names_that_make_the_same_id_cannot_both_be_chosen(tmp_path: Path) -> None:
+    out_dir = _folder(tmp_path)
+    ui, out, _ = _session(["", "Maria", "maría", "Marcos", ""])
+    naming = name_voices(ui, out_dir, [], title="t", player=Played())
+    assert naming is not None
+    assert "maría is already SPEAKER_00" in out.getvalue()
+    assert [a[1] for a in naming.applied] == ["maria", "marcos"]
+
+
+def test_a_name_with_no_letters_or_digits_is_refused(tmp_path: Path) -> None:
+    out_dir = _folder(tmp_path)
+    ui, out, _ = _session(["", "???", "Carla", "", ""])
+    naming = name_voices(ui, out_dir, [], title="t", player=Played())
+    assert naming is not None
+    assert "use letters or digits in the name" in out.getvalue()
+
+
+def test_the_promised_id_is_the_one_that_gets_written(tmp_path: Path) -> None:
+    out_dir = _folder(tmp_path)
+    directory = tmp_path / "d.yaml"
+    directory.write_text("version: 1\nlanguage: es\npeople:\n  - id: ana-gomez\n    name: Ana\n")
+    ui, out, _ = _session(["", "Ana Gómez", "", ""])
+    naming = name_voices(ui, out_dir, [directory], title="t", player=Played())
+    assert naming is not None
+    assert "speakers/ana-gomez-2.flac" in out.getvalue()
+    assert naming.applied[0][1] == "ana-gomez-2"
+    ids = [p.id for p in load_directory_set([directory]).merged.people]
+    assert ids == ["ana-gomez", "ana-gomez-2"]
+    assert (out_dir / "speakers/ana-gomez-2.flac").exists()

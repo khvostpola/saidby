@@ -5,12 +5,13 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from saidby.cli.ui import Ui
+from saidby.errors import UsageError
 from saidby.i18n import _, ngettext
 from saidby.interactive.listen import clock
 from saidby.schema.directory import Directory, Person
 from saidby.schema.speakers import SpeakerEntry
 from saidby.speakers import remap
-from saidby.speakers.naming import person_id_for
+from saidby.speakers.naming import ascii_slug, person_id_for
 from saidby.speakers.people import add_person_to_file, find_person
 from saidby.speakers.remap import Folder
 
@@ -51,19 +52,29 @@ class Namer:
         used = {c.person.id for c in self.chosen.values() if c.person}
         return [t for p in self.merged.people if p.id not in used for t in (p.id, p.name)]
 
-    def _check(self, text: str) -> str | None:
+    def _id_of(self, text: str) -> str:
         person = self._find(text)
-        for label, other in self.chosen.items():
-            same_person = (
-                person is not None and other.person is not None and other.person.id == person.id
-            )
-            same_new = person is None and bool(text) and other.new_name == text
-            if same_person or same_new:
+        return person.id if person else ascii_slug(text)
+
+    def _prospective_id(self, entry: SpeakerEntry) -> str:
+        choice = self.chosen.get(entry.label)
+        if choice is None:
+            return entry.file_id
+        return choice.person.id if choice.person else ascii_slug(choice.name)
+
+    def _check(self, text: str, entry: SpeakerEntry) -> str | None:
+        if not text:
+            return None
+        target = self._id_of(text)
+        if not target:
+            return _("use letters or digits in the name")
+        for other in self.folder.transcript.speakers:
+            if other.label != entry.label and self._prospective_id(other) == target:
                 message = _(
                     "{who} is already {label}. Pick another name, or use "
                     '"saidby speakers merge" if the diarizer split one person.'
                 )
-                return message.format(who=text, label=label)
+                return message.format(who=text, label=other.label)
         return None
 
     def _intro(self) -> None:
@@ -84,7 +95,7 @@ class Namer:
         typed = self.ui.ask(
             _("Name or id?"),
             hint=_("[keep {current}]").format(current=current),
-            check=self._check,
+            check=lambda text: self._check(text, entry),
             complete=self._options,
         )
         if not typed:
@@ -101,6 +112,7 @@ class Namer:
     def _target_ids(self) -> dict[str, str]:
         taken = [s.file_id for s in self.folder.transcript.speakers if s.label not in self.chosen]
         taken += [c.person.id for c in self.chosen.values() if c.person]
+        taken += [p.id for p in self.merged.people] if self.merged else []
         ids: dict[str, str] = {}
         for label, choice in self.chosen.items():
             ids[label] = choice.person.id if choice.person else person_id_for(choice.name, taken)
@@ -134,11 +146,13 @@ class Namer:
         applied: list[tuple[str, str, str]] = []
         added: list[str] = []
         ids = self._target_ids()
+        kept = [s.file_id for s in self.folder.transcript.speakers if s.label not in self.chosen]
+        if len({*kept, *ids.values()}) != len(kept) + len(ids):
+            raise UsageError(_("two voices would end up with the same name; nothing was changed"))
         for label, choice in self.chosen.items():
             person = choice.person
             if person is None and self.files:
-                person, backup = add_person_to_file(self.files[-1], choice.name)
-                ids[label] = person.id
+                person, backup = add_person_to_file(self.files[-1], choice.name, ids[label])
                 added.append(person.name)
                 extra = f" (backup: {backup})" if backup else ""
                 where = f"{_('added to')} {self.files[-1]}{extra}"
