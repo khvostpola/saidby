@@ -6,6 +6,8 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-10-11
+
 ### Fixed
 - Progress no longer looks frozen: on a terminal, a stage that takes more than a moment shows what
   it is doing and the elapsed time, and the JSON progress gains a `stage.start` event. The model
