@@ -6,6 +6,8 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-12
+
 ### Changed
 - On a terminal, `saidby process` is guided by default: it shows the plan, starts on Enter, and
   afterwards plays and names the voices. `saidby speakers map` without `--set` and
