@@ -1,15 +1,49 @@
 # saidby
 
-Offline-first diarized transcription: a command-line tool and Python library that
-turns any recording into a transcript with speakers, timestamps, glossary-aware
-spelling and one audio track per speaker.
+**Who said what, and when, on your own machine.**
 
-Status: pre-alpha. Version 0.4.0 transcribes with faster-whisper, diarizes with Nemotron-3,
-aligns words to speakers, renders one aligned audio track per speaker and names speakers by
-voiceprint (with recorded consent). With a directory it also spells your names and terms
-correctly (biased pass, transplant and an optional local LLM, all logged). A second
-diarizer can be compared on the same audio, and `saidby review` walks through the uncertain
-spans so you can type the right text and feed new spellings back into the directory.
+saidby turns a recording (a phone call, a meeting, an interview) into a transcript with
+speakers, timestamps and one audio track per person. It knows *your* names and terms, can put
+names on voices (with consent), checks its own work, and never sends your audio anywhere. It is
+a command-line tool and a Python library.
+
+[![PyPI](https://img.shields.io/pypi/v/saidby)](https://pypi.org/project/saidby/)
+[![CI](https://github.com/khvostpola/saidby/actions/workflows/ci.yml/badge.svg)](https://github.com/khvostpola/saidby/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](https://github.com/khvostpola/saidby/blob/main/LICENSE)
+
+![From a recording to a folder of results](https://raw.githubusercontent.com/khvostpola/saidby/main/docs/img/pipeline.svg)
+
+## What you get
+
+```bash
+saidby process call.m4a --out out/ --language es
+```
+
+```
+out/call/
+├── transcript.txt          [00:00:03] Ana Gómez: Hola, buenas tardes...
+├── transcript.vtt          subtitles with the speaker in every cue
+├── transcript.words.json   every word with start, end, confidence and speaker
+├── diarization.rttm        standard "who spoke when"
+├── speakers/ana.flac       one track per person, aligned with the original
+├── corrections.jsonl       every spelling change, with the reason
+├── manifest.json           which engines, models and versions produced it
+└── logs/                   timings and counts, never your text
+```
+
+## Why saidby
+
+- **It stays on your machine.** Processing runs offline. Models are downloaded once, on request.
+  A test fails the build if anything but loopback is touched, and `--strict-offline` enforces it
+  on every run.
+- **It spells your world right.** Give it a YAML file with your people, your product names and
+  your slang. A second recognition pass finds them and a strictly limited local LLM can fix what
+  is left. Every change is logged and can be traced.
+- **It names the speakers.** Voiceprints, created only with a recorded consent, put names on
+  voices. A person split in two, or a wrong name, is one command to fix.
+- **It checks itself, and lets you check it.** Two diarizers can vote; a review mode walks you
+  through the doubtful spans and feeds your fixes back into the directory. A built-in bench
+  (blind A/B arbitration, pre-set margins) lets you test the claims on your own recordings.
 
 ## Install
 
@@ -19,83 +53,80 @@ NVIDIA GPU (driver 580 or newer):
 uv tool install 'saidby[cuda]'
 ```
 
-No GPU (or you do not want the CUDA libraries, about 1 GB): use the CPU build of PyTorch.
+No GPU, or to skip about 1 GB of CUDA libraries:
 
 ```bash
 uv tool install saidby --index https://download.pytorch.org/whl/cpu --index-strategy unsafe-best-match
 ```
 
-You also need `ffmpeg` on the PATH. Then check the machine:
+You also need `ffmpeg`. Then:
 
 ```bash
-saidby doctor          # what works, what does not, and how to fix it
-saidby doctor --smoke  # also runs a short transcription with the tiny model
+saidby doctor                 # checks the machine and says how to fix what is missing
+saidby models pull --all      # downloads the models, about 3.5 GB; the only step using the network
 ```
-
-On a 20-thread desktop CPU, large-v3 (int8) transcribed at 0.39 times real time and the diarizer at
-0.05, so a 15-minute call takes about 6 minutes. Slower CPUs can use a smaller model with
-`--asr-model tiny` or `small`. If a GPU is present but not usable, saidby falls back to the CPU and
-says why in `manifest.json`.
 
 ## Quick start
 
 ```bash
-saidby models pull --all          # one-time download, the only step that uses the network
-saidby process call.m4a --out out/ --language es
+saidby process call.m4a --out out/ --language es                    # transcript, speakers, tracks
+saidby directory init directory.yaml                                # your people and terms
+saidby process call.m4a --out out/ --directory directory.yaml      # with your spelling
+saidby review out/call --directory directory.yaml                  # fix the doubtful spans
 ```
 
-Each recording gets its own folder under `out/`:
+The [getting started guide](https://github.com/khvostpola/saidby/blob/main/docs/getting-started.md)
+walks through each step, including naming the speakers.
 
-| File | Content |
-|---|---|
-| `manifest.json` | Engines, models and versions per stage, speakers, timings |
-| `transcript.txt` | `[HH:MM:SS] Speaker: text` |
-| `transcript.vtt` | WebVTT with `<v Speaker>` voice tags |
-| `transcript.words.json` | Word-level transcript with timestamps and speaker labels |
-| `corrections.jsonl` | Every glossary change, accepted or rejected, with its reason |
-| `diarization.rttm` | Standard "who spoke when" |
-| `speakers/<id>.flac` | One track per speaker, same length as the original, silent elsewhere |
-| `logs/run.log`, `logs/telemetry.jsonl` | Local log and closed-field telemetry |
+## Commands
 
-To name speakers, enroll them once and pass the directory:
-
-```bash
-saidby enroll out/call --speaker SPEAKER_00=ana --directory directory.yaml \
-  --consent-source "signed form" --consent-declared-by "Ana Gomez"
-saidby process next-call.m4a --out out/ --directory directory.yaml
+```
+Transcribe     process      recordings in, transcripts with speakers and tracks out
+After a run    review       correct the spans the machine is unsure about
+               enroll       store a voiceprint (needs recorded consent)
+               speakers     show, rename and merge speakers without reprocessing
+Set up         doctor       check this machine and say how to fix what is missing
+               models       list, download and locate models
+               directory    validate or create the directory file
+Measure        eval         score a run; arbitrate differences between two systems blind
 ```
 
-See [docs/directory-format.md](docs/directory-format.md).
+`saidby --help` and `saidby COMMAND --help` explain every option with examples. The full list is
+in the [command reference](https://github.com/khvostpola/saidby/blob/main/docs/cli-reference.md).
 
-A failed run keeps `.work/` so the next run resumes from the last finished stage;
-`--keep-intermediates` keeps it on success too. See [docs/cli.md](docs/cli.md).
+## How well does it work?
 
-## Measuring
+On two real phone calls in Spanish, against WhisperX: the terms of the directory spelled right
+85 to 88 % of the time against 12 to 20 %, speakers given the right name where WhisperX gives
+anonymous labels, and speaker confusion of 2 to 3 % against 6 to 11 %. On plain word errors it is
+a draw (ahead on one call, five words behind on the other). That is two calls and one language, so
+read [the benchmarks](https://github.com/khvostpola/saidby/blob/main/docs/benchmarks.md), including
+what they do not show.
 
-`saidby eval` scores a run against a hand-corrected reference and arbitrates blind the spans where two
-systems disagree. See [docs/evaluation.md](docs/evaluation.md).
+A 15-minute call takes about 2 minutes with a laptop GPU (5 with the glossary and the LLM) and
+about 6 to 7 on a 20-thread CPU.
 
-## Models
+## Status
 
-Models are never bundled and are only downloaded by an explicit command:
+Pre-alpha. It is developed and tested on Linux; the command line and the output formats may still
+change between 0.x versions. It is a library and a CLI, not a service: there is no server and no
+account. Models keep their own licenses (`saidby models licenses`).
 
-```bash
-saidby models list
-saidby models pull --all
-```
+## Documentation
 
-Processing always runs offline (`HF_HUB_OFFLINE=1`). A Hugging Face token (`HF_TOKEN`)
-is needed only for gated models such as `pyannote/speaker-diarization-community-1`;
-if the conditions have not been accepted, the error shows the URL where to accept them.
+- [Getting started](https://github.com/khvostpola/saidby/blob/main/docs/getting-started.md)
+- [How it works](https://github.com/khvostpola/saidby/blob/main/docs/how-it-works.md): stages, glossary, voiceprints, privacy
+- [Commands](https://github.com/khvostpola/saidby/blob/main/docs/commands.md) and the [reference](https://github.com/khvostpola/saidby/blob/main/docs/cli-reference.md)
+- [Directory format](https://github.com/khvostpola/saidby/blob/main/docs/directory-format.md)
+- [Glossary and LLM correction](https://github.com/khvostpola/saidby/blob/main/docs/glossary.md)
+- [Review and comparison](https://github.com/khvostpola/saidby/blob/main/docs/review.md)
+- [Evaluation](https://github.com/khvostpola/saidby/blob/main/docs/evaluation.md) and [benchmarks](https://github.com/khvostpola/saidby/blob/main/docs/benchmarks.md)
+- [Troubleshooting](https://github.com/khvostpola/saidby/blob/main/docs/troubleshooting.md)
 
-## Privacy
+## Contributing and license
 
-- No telemetry leaves the machine. Logs and telemetry are written locally and never
-  contain transcript text, names, glossary terms or voiceprints.
-- A test suite blocks any non-loopback network access during processing.
-
-## License
-
-Apache-2.0. See [LICENSE](LICENSE), [NOTICE](NOTICE) and
-[MODEL_LICENSES.md](MODEL_LICENSES.md). Contributions are accepted under the
-[Developer Certificate of Origin](CONTRIBUTING.md).
+See [CONTRIBUTING.md](https://github.com/khvostpola/saidby/blob/main/CONTRIBUTING.md): contributions
+are signed off under the Developer Certificate of Origin. Apache-2.0, see
+[LICENSE](https://github.com/khvostpola/saidby/blob/main/LICENSE),
+[NOTICE](https://github.com/khvostpola/saidby/blob/main/NOTICE) and
+[MODEL_LICENSES.md](https://github.com/khvostpola/saidby/blob/main/MODEL_LICENSES.md).

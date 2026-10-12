@@ -6,6 +6,18 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+### Added
+- Documentation: a getting-started guide, a how-it-works page with diagrams, a commands guide,
+  troubleshooting, benchmarks with their limits, and a generated command reference. Tests keep
+  links, anchors, documented commands and diagrams in sync.
+- `saidby --help` is grouped by what you are trying to do, `-h` works everywhere, every option and
+  argument is described, and commands show examples.
+
+### Fixed
+- `saidby.toml`: `compute_type` under `[asr]` was rejected. The file now has documented sections
+  (`saidby`, `asr`, `diarizer`, `identify`, `glossary`, `llm`), unknown keys are errors that name
+  the key, and a relative `directory` is resolved against the file.
+
 ## [0.4.1] - 2026-10-11
 
 ### Changed
