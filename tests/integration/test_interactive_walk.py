@@ -299,3 +299,18 @@ def test_a_failure_while_storing_voiceprints_does_not_end_the_walk(
     assert outcomes[0].voiceprints == 0
     assert "original recording not found: x" in out.getvalue()
     assert "no voiceprint was stored" in out.getvalue()
+
+
+def test_a_dropped_glossary_is_saved_or_flagged_as_for_this_run_only(work: Path) -> None:
+    (work / "saidby.toml").write_text('[glossary]\ndirectory = ["directory.yaml"]\n')
+    settings = _settings(None)
+    results = _run(work, settings)
+    plan = _plan(settings, [], {"directory": ""})
+    ui, out, _ = _session(["n"])
+    finish_run(ui, [FIXTURE], results, plan, [], None)
+    assert "none for this run only; the next run uses the configured one" in out.getvalue()
+    assert "directory" in (work / "saidby.toml").read_text()
+    ui, out, _ = _session([""])
+    finish_run(ui, [FIXTURE], results, plan, [], None)
+    assert tomllib.loads((work / "saidby.toml").read_text())["glossary"]["directory"] == []
+    assert "none for this run only" not in out.getvalue()

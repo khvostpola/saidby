@@ -924,6 +924,7 @@ msgid "language"
 msgstr ""
 
 #: src/saidby/interactive/plan.py:48 src/saidby/interactive/walk.py:271
+#: src/saidby/interactive/walk.py:279
 msgid "glossary"
 msgstr ""
 
@@ -983,8 +984,8 @@ msgstr ""
 msgid "Language of the recording? (es, en, pt...)"
 msgstr ""
 
-#: src/saidby/interactive/plan.py:148 src/saidby/interactive/plan.py:223
-#: src/saidby/interactive/plan.py:232
+#: src/saidby/interactive/plan.py:148 src/saidby/interactive/plan.py:220
+#: src/saidby/interactive/plan.py:229
 msgid "[Enter: detect it]"
 msgstr ""
 
@@ -1005,32 +1006,32 @@ msgstr ""
 msgid "Directory file (replaces the current ones; Enter for none)"
 msgstr ""
 
-#: src/saidby/interactive/plan.py:209
+#: src/saidby/interactive/plan.py:206
 #, python-brace-format
 msgid "choose one of: {names}"
 msgstr ""
 
-#: src/saidby/interactive/plan.py:213
+#: src/saidby/interactive/plan.py:210
 msgid "Change which one?"
 msgstr ""
 
-#: src/saidby/interactive/plan.py:222
+#: src/saidby/interactive/plan.py:219
 msgid "Language code (es, en, pt...)"
 msgstr ""
 
-#: src/saidby/interactive/plan.py:231
+#: src/saidby/interactive/plan.py:228
 msgid "How many people speak?"
 msgstr ""
 
-#: src/saidby/interactive/plan.py:243
+#: src/saidby/interactive/plan.py:240
 msgid "Output folder"
 msgstr ""
 
-#: src/saidby/interactive/plan.py:253
+#: src/saidby/interactive/plan.py:250
 msgid "type Enter, t, e or q"
 msgstr ""
 
-#: src/saidby/interactive/plan.py:259
+#: src/saidby/interactive/plan.py:256
 msgid "nothing was run"
 msgstr ""
 
@@ -1234,7 +1235,11 @@ msgstr ""
 msgid "settings"
 msgstr ""
 
-#: src/saidby/interactive/walk.py:284
+#: src/saidby/interactive/walk.py:278
+msgid "none for this run only; the next run uses the configured one"
+msgstr ""
+
+#: src/saidby/interactive/walk.py:287
 msgid "again"
 msgstr ""
 

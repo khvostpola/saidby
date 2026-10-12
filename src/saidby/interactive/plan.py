@@ -193,10 +193,7 @@ class Planner:
         )
         files = [Path(answer).expanduser()] if answer else []
         self.settings = self.settings.model_copy(update={"directory": files})
-        if answer:
-            self.chosen["directory"] = answer
-        else:
-            self.chosen.pop("directory", None)
+        self.chosen["directory"] = str(files[0]) if files else ""
 
     def _change(self) -> None:
         labels = self._labels()

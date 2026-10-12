@@ -160,7 +160,7 @@ def test_clearing_the_glossary_leaves_none(project: Path) -> None:
     plan = plan_run(ui, INPUTS, Settings.load())
     assert plan is not None
     assert plan.settings.directory == []
-    assert "directory" not in plan.chosen
+    assert plan.chosen["directory"] == ""
     assert "glossary  none" in out.getvalue()
 
 
@@ -232,3 +232,25 @@ def test_quitting_the_plan_never_builds_the_pipeline(
     result = runner.invoke(app, ["process", "call.m4a", "-i"])
     assert result.exit_code == 0, result.output
     assert FakePipeline.runs == []
+
+
+def test_a_glossary_typed_with_a_tilde_is_stored_as_a_real_path(
+    project: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    home = tmp_path / "home"
+    home.mkdir()
+    shared = _directory(home / "shared.yaml")
+    monkeypatch.setenv("HOME", str(home))
+    ui, _, _ = _session(["e", "glossary", "~/shared.yaml", ""])
+    plan = plan_run(ui, INPUTS, Settings.load())
+    assert plan is not None
+    assert plan.settings.directory == [shared]
+    assert plan.chosen["directory"] == str(shared)
+
+
+def test_dropping_the_glossary_is_remembered_as_a_choice(project: Path) -> None:
+    ui, _, _ = _session(["e", "glossary", "", ""])
+    plan = plan_run(ui, INPUTS, Settings.load())
+    assert plan is not None
+    assert plan.settings.directory == []
+    assert plan.chosen["directory"] == ""

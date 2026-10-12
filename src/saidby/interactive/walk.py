@@ -274,6 +274,9 @@ def finish_run(
     if finish.settings_file:
         saved_to = _("saved to {path}").format(path=show_path(finish.settings_file))
         ui.say(f"  {paint(_('settings').ljust(10), 'bold')}{saved_to}")
+    if plan.chosen.get("directory") == "" and "directory" not in finish.settings_saved:
+        note = _("none for this run only; the next run uses the configured one")
+        ui.say(f"  {paint(_('glossary').ljust(10), 'bold')}{note}")
     states: list[FolderState] = []
     for outcome in outcomes:
         state = read_state(outcome.out_dir)
