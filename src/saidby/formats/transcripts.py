@@ -7,6 +7,9 @@ from saidby.schema.speakers import SpeakerEntry
 from saidby.schema.transcript import Transcript, Word
 
 MAX_CUE_S = 8.0
+MIN_PAUSE_S = 0.3
+CLAUSE_ENDINGS = (".", "?", "!", "…", ";", ":", ",")
+CLOSING_MARKS = "\"'\u201d\u2019\u00bb)]"
 
 
 @dataclass
@@ -21,11 +24,32 @@ class Block:
         return "".join(w.word for w in self.words).strip()
 
 
+def _ends_clause(word: Word) -> bool:
+    return word.word.strip().rstrip(CLOSING_MARKS).endswith(CLAUSE_ENDINGS)
+
+
+def _cut_after(block: Block) -> int:
+    words = block.words
+    middle = (block.start + block.end) / 2
+    boundaries = range(len(words) - 1)
+
+    def pause(i: int) -> float:
+        return words[i + 1].start - words[i].end
+
+    def off_centre(i: int) -> float:
+        return abs(words[i].end - middle)
+
+    pauses = [i for i in boundaries if pause(i) >= MIN_PAUSE_S]
+    if pauses:
+        return max(pauses, key=lambda i: (pause(i), -off_centre(i)))
+    clauses = [i for i in boundaries if _ends_clause(words[i])]
+    return min(clauses or boundaries, key=off_centre)
+
+
 def _split_long(block: Block, max_s: float) -> list[Block]:
     if block.end - block.start <= max_s or len(block.words) < 2:
         return [block]
-    gaps = [(block.words[i + 1].start - block.words[i].end, i) for i in range(len(block.words) - 1)]
-    _, cut = max(gaps)
+    cut = _cut_after(block)
     left = Block(block.speaker, block.start, block.words[cut].end, block.words[: cut + 1])
     right = Block(block.speaker, block.words[cut + 1].start, block.end, block.words[cut + 1 :])
     return _split_long(left, max_s) + _split_long(right, max_s)

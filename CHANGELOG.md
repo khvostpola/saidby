@@ -37,6 +37,8 @@ All notable changes are documented here, following
 - The CPU usage in the progress line is measured on Windows too.
 - The language guessed for a new directory on Windows ("Spanish_Colombia" came out as "Sp").
 - A path pasted with the quotes that "Copy as path" adds is accepted in the guided questions.
+- `transcript.vtt`: a long block of words with no pause between them is cut after punctuation or
+  near its middle. It used to leave one cue of 8 s followed by one cue per word.
 
 ## [0.6.0] - 2026-10-12
 

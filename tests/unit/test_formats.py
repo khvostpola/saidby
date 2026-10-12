@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from saidby.formats.rttm import format_rttm, parse_rttm
-from saidby.formats.transcripts import blocks, render_txt, render_vtt, vtt_time
+from saidby.formats.transcripts import Block, blocks, render_txt, render_vtt, vtt_time
 from saidby.schema.diarization import Turn
 from saidby.schema.ids import slugify, unique_slugs
 from saidby.schema.speakers import SpeakerEntry
@@ -50,6 +50,59 @@ def test_vtt_cues_split_long_blocks() -> None:
     words = [Word(start=i * 2.0, end=i * 2.0 + 0.5, word=f" w{i}", speaker="S") for i in range(10)]
     t = Transcript(duration_s=20, segments=[Segment(start=0, end=19, words=words)])
     assert all(b.end - b.start <= 8.0 for b in blocks(t, split_segments=True, max_s=8.0))
+
+
+def _run_of_words(
+    count: int, *, marks: dict[int, str] | None = None, pauses: dict[int, float] | None = None
+) -> list[Word]:
+    marks, pauses = marks or {}, pauses or {}
+    words: list[Word] = []
+    clock = 0.0
+    for i in range(count):
+        clock += pauses.get(i, 0.0)
+        words.append(
+            Word(start=clock, end=clock + 0.5, word=f" w{i}{marks.get(i, '')}", speaker="S")
+        )
+        clock += 0.5
+    return words
+
+
+def _cues(words: list[Word]) -> list[Block]:
+    end = words[-1].end
+    t = Transcript(duration_s=end, segments=[Segment(start=0, end=end, words=words)])
+    return blocks(t, split_segments=True, max_s=8.0)
+
+
+def test_words_without_pauses_split_into_even_cues() -> None:
+    assert [len(c.words) for c in _cues(_run_of_words(20))] == [10, 10]
+    assert [len(c.words) for c in _cues(_run_of_words(60))] == [15, 15, 15, 15]
+
+
+def test_words_without_pauses_break_after_punctuation_near_the_middle() -> None:
+    cues = _cues(_run_of_words(20, marks={8: ",", 3: "."}))
+    assert [len(c.words) for c in cues] == [9, 11]
+
+
+def test_punctuation_is_found_behind_closing_quotes() -> None:
+    cues = _cues(_run_of_words(20, marks={8: '."'}))
+    assert [len(c.words) for c in cues] == [9, 11]
+
+
+def test_a_real_pause_wins_over_punctuation_and_the_middle() -> None:
+    cues = _cues(_run_of_words(20, marks={9: "."}, pauses={15: 0.6}))
+    assert [len(c.words) for c in cues] == [15, 5]
+
+
+def test_equal_pauses_cut_near_the_middle() -> None:
+    cues = _cues(_run_of_words(10, pauses={i: 1.5 for i in range(1, 10)}))
+    assert [len(c.words) for c in cues] == [3, 2, 3, 2]
+
+
+def test_splitting_keeps_every_word_in_order_and_within_the_limit() -> None:
+    words = _run_of_words(80, marks={11: ",", 40: "?"}, pauses={25: 0.4, 60: 1.2})
+    cues = _cues(words)
+    assert [w for c in cues for w in c.words] == words
+    assert all(c.end - c.start <= 8.0 for c in cues)
 
 
 def test_transcript_json_round_trip() -> None:
