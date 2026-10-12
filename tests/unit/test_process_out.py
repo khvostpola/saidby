@@ -16,9 +16,11 @@ runner = CliRunner()
 
 class _RecordingPipeline:
     runs: ClassVar[list[tuple[list[Path], Path]]] = []
+    settings_seen: ClassVar[list[Settings]] = []
 
     def __init__(self, settings: Settings, **_: Any) -> None:
         self.settings = settings
+        self.settings_seen.append(settings)
 
     def run(self, inputs: list[Path], out: Path) -> list[Any]:
         self.runs.append((inputs, out))
@@ -28,6 +30,7 @@ class _RecordingPipeline:
 @pytest.fixture(autouse=True)
 def recording(monkeypatch: pytest.MonkeyPatch) -> type[_RecordingPipeline]:
     _RecordingPipeline.runs = []
+    _RecordingPipeline.settings_seen = []
     monkeypatch.setattr(sys.modules["saidby.cli.process"], "Pipeline", _RecordingPipeline)
     return _RecordingPipeline
 
@@ -84,3 +87,22 @@ def test_out_from_the_environment(
     monkeypatch.setenv("SAIDBY_OUT", "from-env")
     assert runner.invoke(app, ["process", "call.m4a"]).exit_code == 0
     assert _output_folder(recording) == Path("from-env")
+
+
+def test_directory_flag_is_repeatable_and_replaces_the_configured_files(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, recording: type[_RecordingPipeline]
+) -> None:
+    (tmp_path / "saidby.toml").write_text('[glossary]\ndirectory = "from-config.yaml"\n')
+    monkeypatch.chdir(tmp_path)
+    args = ["process", "call.m4a", "--directory", "a.yaml", "--directory", "b.yaml"]
+    assert runner.invoke(app, args).exit_code == 0
+    assert recording.settings_seen[0].directory == [Path("a.yaml"), Path("b.yaml")]
+
+
+def test_directory_comes_from_the_project_file_without_the_flag(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, recording: type[_RecordingPipeline]
+) -> None:
+    (tmp_path / "saidby.toml").write_text('[glossary]\ndirectory = "from-config.yaml"\n')
+    monkeypatch.chdir(tmp_path)
+    assert runner.invoke(app, ["process", "call.m4a"]).exit_code == 0
+    assert recording.settings_seen[0].directory == [tmp_path / "from-config.yaml"]

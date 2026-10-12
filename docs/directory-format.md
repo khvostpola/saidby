@@ -46,3 +46,31 @@ A voiceprint stores the vector, never audio, plus the model, its revision, the p
 and the channel. Identification only uses voiceprints made with the same model and revision as
 the installed one; others are skipped with a warning in `manifest.json`. A name is assigned only
 with a cosine score of at least 0.5 and at least 3 s of speech; each person is used once.
+
+Identification also needs the consent: a voiceprint is used only if the `consent.yaml` next to
+the file that holds it has a record for that person. Otherwise it is skipped, counted in
+`voiceprints_skipped`, and `manifest.json` names the person and the file. Run `saidby enroll`
+again or add the record.
+
+## Several directory files
+
+`--directory` can be repeated, and `directory` in `saidby.toml` can be a list, so a shared
+file (your team, your own regulars) can sit under one for each project:
+
+```toml
+[glossary]
+directory = ["~/shared/team-directory.yaml", "directory.yaml"]   # far to near
+```
+
+Files are read from the farthest to the nearest, and the nearest wins:
+
+- **Terms** are combined; if the same term is in two files (ignoring case) the nearest entry is used.
+- **People** are combined by `id`; the nearest entry wins field by field, except the voiceprint,
+  which comes from the nearest file that has a usable one.
+- **`language`** is the nearest file's.
+- **Consent** is read next to each file, so a voiceprint never borrows a record from another file.
+- Writes (`saidby enroll`, `saidby review`) go to one file: the one you name with `--directory`,
+  or the last one configured.
+
+`manifest.json` lists every file under `directory.files`, with its `sha256`; `directory.path`
+and `directory.sha256` are those of the last file.

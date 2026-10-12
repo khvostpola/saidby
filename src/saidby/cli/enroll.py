@@ -55,13 +55,23 @@ def _resolve_consents(
     return resolved
 
 
+def _configured_directory() -> Path:
+    configured = Settings.load().directory
+    if not configured:
+        raise UsageError("no directory file: pass --directory or set one in saidby.toml")
+    return configured[-1]
+
+
 def enroll(
     out_dir: Annotated[
         Path,
         typer.Argument(help="Output folder of a finished run (the one `saidby process` wrote)."),
     ],
     speaker: Annotated[list[str], typer.Option("--speaker", help="LABEL=PERSON_ID")],
-    directory: Annotated[Path, typer.Option(help="Directory file to update")],
+    directory: Annotated[
+        Path | None,
+        typer.Option(help="Directory file to update (default: the last configured one)"),
+    ] = None,
     consent_file: Annotated[
         Path | None, typer.Option(help="consent.yaml (default: next to the directory)")
     ] = None,
@@ -78,6 +88,7 @@ def enroll(
     parsed = [item.partition("=") for item in speaker]
     if any(not label or not person for label, _, person in parsed):
         raise UsageError("expected --speaker LABEL=PERSON_ID")
+    directory = directory or _configured_directory()
     dir_model, raw = load_directory(directory)
     consent_path = consent_file or directory.with_name("consent.yaml")
     resolved = _resolve_consents(

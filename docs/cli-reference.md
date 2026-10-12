@@ -24,7 +24,7 @@ Arguments:
 | `--compare` | str |  | Also run this second diarizer and record where the two disagree. |
 | `--no-identify` | flag |  | Do not name speakers even if the directory has voiceprints. |
 | `--identify-threshold` | number |  | Minimum voiceprint similarity to assign a name (default 0.5). |
-| `--directory` | path |  | Directory YAML with people, voiceprints and terms; turns on the glossary. |
+| `--directory` | path |  | Directory YAML with people, voiceprints and terms; turns on the glossary. Repeat it to combine files (the last one wins). Replaces the files named in saidby.toml. |
 | `--no-bias` | flag |  | Skip the second, hotword-biased recognition pass. |
 | `--bias-mode` | str |  | full (default) biases all audio; windows (experimental) only near likely terms. |
 | `--no-transplant` | flag |  | Run the biased pass but do not merge its terms into the transcript. |
@@ -62,7 +62,7 @@ Arguments:
 | `--kinds` | str | `diarization,llm_rejected,low_confidence` | Comma list of: diarization, llm_rejected, low_confidence |
 | `--low-confidence` | number | `0.6` | Reviewed when word probability is below |
 | `--limit` | int range |  | Review at most this many spans |
-| `--directory` | path |  | Offer to add new variants here |
+| `--directory` | path |  | Offer to add new variants here (default: the last configured file) |
 | `--yes` | flag |  | Accept directory suggestions |
 
 ## `saidby enroll`
@@ -76,7 +76,7 @@ Arguments:
 | Option | Type | Default | What it does |
 |---|---|---|---|
 | `--speaker` | str |  | LABEL=PERSON_ID (required) |
-| `--directory` | path |  | Directory file to update (required) |
+| `--directory` | path |  | Directory file to update (default: the last configured one) |
 | `--consent-file` | path |  | consent.yaml (default: next to the directory) |
 | `--consent-source` | str |  | How consent was given |
 | `--consent-declared-by` | str |  | Who declared it |
@@ -118,7 +118,7 @@ Arguments:
 | Option | Type | Default | What it does |
 |---|---|---|---|
 | `--set` | str |  | LABEL=PERSON_ID or LABEL="Free name" (required) |
-| `--directory` | path |  | Directory to resolve person ids |
+| `--directory` | path |  | Directory to resolve person ids (default: the configured ones) |
 
 ### `saidby speakers merge`
 

@@ -104,7 +104,9 @@ def _run(
     **settings: Any,
 ) -> Path:
     pipeline = Pipeline(
-        Settings(device="cpu", language="es", directory=directory, **settings),
+        Settings(
+            device="cpu", language="es", directory=[directory] if directory else [], **settings
+        ),
         transcriber=transcriber,
         diarizer=FakeDiarizer(rttm=RTTM),
         llm=llm,
@@ -194,7 +196,7 @@ def test_correct_without_directory_is_a_usage_error(tmp_path: Path) -> None:
 def test_remote_llm_requires_explicit_permission(tmp_path: Path) -> None:
     directory = _directory(tmp_path)
     settings = Settings(
-        device="cpu", correct=True, directory=directory, llm_url="https://api.example.com"
+        device="cpu", correct=True, directory=[directory], llm_url="https://api.example.com"
     )
     with pytest.raises(UsageError, match="allow-remote-llm"):
         Pipeline(settings, progress=Progress("none")).run([FIXTURE], tmp_path)

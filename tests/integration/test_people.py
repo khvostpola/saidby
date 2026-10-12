@@ -55,12 +55,28 @@ def _directory(tmp_path: Path, enrolled: bool = True) -> Path:
             p["voiceprint"] = _voiceprint(str(p["id"]))
     path = tmp_path / "directory.yaml"
     path.write_text(yaml.safe_dump({"version": 1, "language": "es", "people": people}))
+    if enrolled:
+        records = [
+            {
+                "person": p["id"],
+                "source": "signed form",
+                "declared_by": p["name"],
+                "date": "2026-10-11",
+            }
+            for p in people
+        ]
+        (tmp_path / "consent.yaml").write_text(yaml.safe_dump(records))
     return path
 
 
 def _run(tmp_path: Path, directory: Path | None, **settings: object) -> Path:
     pipeline = Pipeline(
-        Settings(device="cpu", language="es", directory=directory, **settings),  # type: ignore[arg-type]
+        Settings(
+            device="cpu",
+            language="es",
+            directory=[directory] if directory else [],
+            **settings,  # type: ignore[arg-type]
+        ),
         transcriber=FakeTranscriber(),
         diarizer=FakeDiarizer(rttm=RTTM),
         embedder=FakeEmbedder(VOICES),
@@ -176,3 +192,49 @@ def test_rerun_with_new_names_removes_stale_tracks(tmp_path: Path) -> None:
     _run(tmp_path, _directory(tmp_path), keep_intermediates=True)
     assert (out / "tones_2spk_10s/speakers/alice.flac").exists()
     assert not (out / "tones_2spk_10s/speakers/SPEAKER_00.flac").exists()
+
+
+def test_two_directory_files_merge_and_the_manifest_records_both(tmp_path: Path) -> None:
+    shared = tmp_path / "shared"
+    shared.mkdir()
+    far = _directory(shared)
+    project = tmp_path / "project"
+    project.mkdir()
+    near = project / "directory.yaml"
+    near.write_text(
+        yaml.safe_dump(
+            {
+                "version": 1,
+                "language": "es",
+                "people": [{"id": "bob", "name": "Bobby", "context": "client"}],
+                "terms": [{"term": "Acme"}],
+            }
+        )
+    )
+    pipeline = Pipeline(
+        Settings(device="cpu", language="es", directory=[far, near]),
+        transcriber=FakeTranscriber(),
+        diarizer=FakeDiarizer(rttm=RTTM),
+        embedder=FakeEmbedder(VOICES),
+        progress=Progress("none"),
+    )
+    out = tmp_path / "out"
+    assert pipeline.run([FIXTURE], out)[0].status == "ok"
+    folder = out / "tones_2spk_10s"
+    names = {s.label: s.name for s in read_transcript(folder / "transcript.words.json").speakers}
+    assert names == {"SPEAKER_00": "Alice", "SPEAKER_01": "Bobby"}
+    record = read_manifest(folder / "manifest.json").directory
+    assert record is not None
+    assert [f["path"] for f in record["files"]] == [str(far), str(near)]
+    assert record["path"] == str(near)
+    assert (record["people"], record["terms"]) == (2, 1)
+
+
+def test_voiceprints_without_consent_are_skipped_and_reported(tmp_path: Path) -> None:
+    directory = _directory(tmp_path)
+    (tmp_path / "consent.yaml").unlink()
+    folder = _run(tmp_path, directory)
+    manifest = read_manifest(folder / "manifest.json")
+    assert any("has no consent record" in w and "alice" in w for w in manifest.warnings)
+    assert all(not s.identified for s in read_transcript(folder / "transcript.words.json").speakers)
+    assert "identify" not in [s.stage for s in manifest.stages]

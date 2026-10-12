@@ -10,7 +10,15 @@ All notable changes are documented here, following
 - `out` setting (`[saidby] out`, `SAIDBY_OUT`) with `saidby/` as the default, so
   `saidby process call.m4a` works without flags.
 
+- Several directory files at once: `--directory` can be repeated and `directory` in
+  `saidby.toml` can be a list (shared file under a project one). The nearest file wins, and the
+  manifest lists every file. `saidby enroll`, `saidby review` and `saidby speakers map` fall back
+  to the configured directory when `--directory` is not given.
+
 ### Changed
+- A voiceprint is only used to name speakers when the `consent.yaml` next to the file that
+  holds it has a record for that person. Voiceprints without one are skipped and reported in
+  the manifest (`voiceprints_skipped`).
 - `--out` is no longer required.
 - The global config file (`~/.config/saidby/config.toml`) is no longer ignored when a
   `saidby.toml` exists: the two are merged key by key and the project file wins. saidby now

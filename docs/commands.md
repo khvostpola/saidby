@@ -66,6 +66,9 @@ rest from the global file.
 - **`--config FILE`**: use exactly that file and ignore both of the above.
 
 Relative paths in a file, such as `directory`, are resolved against the file that declares them.
+`directory` can be a list; the lists of the global and project files are joined, far to near. A
+`--directory` on the command line (repeat it for several files) or `SAIDBY_DIRECTORY` (separated
+with `:` on Linux) replaces the files named in configuration.
 
 ```toml
 [saidby]
@@ -90,7 +93,7 @@ enabled = true
 threshold = 0.5
 
 [glossary]
-directory = "directory.yaml"   # relative to this file
+directory = "directory.yaml"   # relative to this file; or a list of files
 bias = true
 bias_mode = "full"             # or windows (experimental)
 transplant = true

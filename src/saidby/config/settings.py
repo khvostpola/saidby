@@ -6,7 +6,7 @@ import tomllib
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, PrivateAttr, ValidationError
+from pydantic import BaseModel, ConfigDict, PrivateAttr, ValidationError, field_validator
 
 from saidby.errors import UsageError
 
@@ -25,7 +25,7 @@ class Settings(BaseModel):
     deterministic: bool = False
     diarizer: str = "nemotron3"
     num_speakers: int | None = None
-    directory: Path | None = None
+    directory: list[Path] = []
     identify: bool = True
     identify_threshold: float = 0.5
     identify_min_speech: float = 3.0
@@ -49,6 +49,15 @@ class Settings(BaseModel):
 
     _sources: list[Path] = PrivateAttr(default_factory=list)
 
+    @field_validator("directory", mode="before")
+    @classmethod
+    def _directory_list(cls, value: Any) -> Any:
+        if value is None:
+            return []
+        if isinstance(value, str | Path):
+            return [value]
+        return value
+
     @property
     def sources(self) -> list[Path]:
         return list(self._sources)
@@ -60,7 +69,7 @@ class Settings(BaseModel):
         files = config_files(config_path)
         merged: dict[str, Any] = {}
         for path in files:
-            merged.update(_read_file(path))
+            _layer(merged, _read_file(path))
         merged.update(_from_env())
         merged.update({k: v for k, v in (overrides or {}).items() if v is not None})
         try:
@@ -133,7 +142,6 @@ TABLE_KEYS: dict[str, dict[str, str]] = {
         "allow_remote": "allow_remote_llm",
     },
 }
-PATH_FIELDS = ("directory", "out")
 
 
 def _flatten(data: dict[str, Any], source: Path) -> dict[str, Any]:
@@ -156,12 +164,31 @@ def _flatten(data: dict[str, Any], source: Path) -> dict[str, Any]:
         else:
             valid = ", ".join(["saidby", *TABLE_KEYS])
             raise UsageError(f"{source}: unknown section [{table}] (valid: {valid})")
-    for field in PATH_FIELDS:
-        relative_to_file = field != "out" or source != global_config_path()
-        value = flat.get(field)
-        if relative_to_file and isinstance(value, str) and not Path(value).is_absolute():
-            flat[field] = str(source.parent / value)
+    _resolve_paths(flat, source)
     return flat
+
+
+def _resolve_paths(flat: dict[str, Any], source: Path) -> None:
+    directory = flat.get("directory")
+    if directory is not None:
+        items = [directory] if isinstance(directory, str) else directory
+        if not isinstance(items, list) or not all(isinstance(item, str) for item in items):
+            raise UsageError(f"{source}: directory must be a path or a list of paths")
+        flat["directory"] = [
+            item if Path(item).is_absolute() else str(source.parent / item) for item in items
+        ]
+    out = flat.get("out")
+    if isinstance(out, str) and not Path(out).is_absolute() and source != global_config_path():
+        flat["out"] = str(source.parent / out)
+
+
+def _layer(merged: dict[str, Any], flat: dict[str, Any]) -> None:
+    for key, value in flat.items():
+        if key == "directory":
+            earlier = merged.get(key, [])
+            merged[key] = [*earlier, *(item for item in value if item not in earlier)]
+        else:
+            merged[key] = value
 
 
 def _read_file(path: Path) -> dict[str, Any]:
@@ -176,6 +203,7 @@ def _from_env() -> dict[str, Any]:
     result: dict[str, Any] = {}
     for field in Settings.model_fields:
         value = os.environ.get(ENV_PREFIX + field.upper())
-        if value is not None:
-            result[field] = value
+        if value is None:
+            continue
+        result[field] = [v for v in value.split(os.pathsep) if v] if field == "directory" else value
     return result

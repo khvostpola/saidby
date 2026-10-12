@@ -6,6 +6,7 @@ from typing import Annotated
 
 import typer
 
+from saidby.config.settings import Settings
 from saidby.errors import UsageError
 from saidby.formats.corrections_log import read_corrections, write_corrections
 from saidby.formats.directory_yaml import load_directory, save_directory
@@ -50,7 +51,10 @@ def review(
         float, typer.Option(help="Reviewed when word probability is below")
     ] = DEFAULT_LOW_P,
     limit: Annotated[int | None, typer.Option(min=1, help="Review at most this many spans")] = None,
-    directory: Annotated[Path | None, typer.Option(help="Offer to add new variants here")] = None,
+    directory: Annotated[
+        Path | None,
+        typer.Option(help="Offer to add new variants here (default: the last configured file)"),
+    ] = None,
     yes: Annotated[bool, typer.Option("--yes", help="Accept directory suggestions")] = False,
 ) -> None:
     """Review uncertain spans of a finished run and fix them by typing the right text.
@@ -95,8 +99,10 @@ def review(
         if changed:
             _save(folder, new_corrections)
     typer.echo(f"\nsaved {len(new_corrections)} text corrections")
-    if directory is not None and new_corrections:
-        _offer_directory(directory, new_corrections, yes)
+    configured = Settings.load().directory
+    target = directory or (configured[-1] if configured else None)
+    if target is not None and new_corrections:
+        _offer_directory(target, new_corrections, yes)
 
 
 def _save(folder: Folder, new_corrections: list[Correction]) -> None:

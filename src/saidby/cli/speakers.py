@@ -7,8 +7,9 @@ from typing import Annotated
 
 import typer
 
+from saidby.config.settings import Settings
 from saidby.errors import UsageError
-from saidby.formats.directory_yaml import load_directory
+from saidby.formats.directory_set import load_directory_set
 from saidby.speakers import remap
 
 app = typer.Typer(
@@ -36,10 +37,14 @@ def map_speaker(
     assign: Annotated[
         list[str], typer.Option("--set", help='LABEL=PERSON_ID or LABEL="Free name"')
     ],
-    directory: Annotated[Path | None, typer.Option(help="Directory to resolve person ids")] = None,
+    directory: Annotated[
+        list[Path] | None,
+        typer.Option(help="Directory to resolve person ids (default: the configured ones)"),
+    ] = None,
 ) -> None:
     """Give speakers a person id and name without reprocessing audio."""
-    people = {p.id: p.name for p in load_directory(directory)[0].people} if directory else {}
+    files = directory or Settings.load().directory
+    people = {p.id: p.name for p in load_directory_set(files).merged.people} if files else {}
     for item in assign:
         label, _, target = item.partition("=")
         if not label or not target:

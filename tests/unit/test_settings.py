@@ -52,7 +52,7 @@ allow_remote = false
         True,
     )
     assert (settings.diarizer, settings.num_speakers) == ("nemotron3", 2)
-    assert settings.directory == tmp_path / "team/directory.yaml"
+    assert settings.directory == [tmp_path / "team/directory.yaml"]
     assert (settings.bias_mode, settings.correct, settings.llm_url) == (
         "windows",
         True,
@@ -173,3 +173,45 @@ def test_outside_home_only_the_current_folder_counts(
     config = _write(elsewhere, '[saidby]\nlanguage = "es"\n')
     assert find_project_config(nested) is None
     assert find_project_config(elsewhere) == config.resolve()
+
+
+def test_directory_accepts_a_path_or_a_list_resolved_against_each_file(tmp_path: Path) -> None:
+    one = _write(tmp_path, '[glossary]\ndirectory = "a.yaml"\n')
+    assert Settings.load(one).directory == [tmp_path / "a.yaml"]
+    many = _write(tmp_path, '[glossary]\ndirectory = ["a.yaml", "/abs/b.yaml"]\n')
+    assert Settings.load(many).directory == [tmp_path / "a.yaml", Path("/abs/b.yaml")]
+
+
+def test_directory_must_be_text(tmp_path: Path) -> None:
+    with pytest.raises(UsageError, match="directory must be a path or a list of paths"):
+        Settings.load(_write(tmp_path, "[glossary]\ndirectory = [1]\n"))
+
+
+def test_directories_from_global_and_project_are_combined_far_to_near(
+    tmp_path: Path, isolated_user_config: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _global_config(
+        isolated_user_config, '[glossary]\ndirectory = ["/shared/team.yaml", "/shared/me.yaml"]\n'
+    )
+    project = tmp_path / "work"
+    project.mkdir()
+    _write(project, '[glossary]\ndirectory = ["/shared/me.yaml", "client.yaml"]\n')
+    monkeypatch.chdir(project)
+    assert Settings.load().directory == [
+        Path("/shared/team.yaml"),
+        Path("/shared/me.yaml"),
+        project.resolve() / "client.yaml",
+    ]
+
+
+def test_directories_from_the_environment_split_on_the_path_separator(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("SAIDBY_DIRECTORY", os.pathsep.join(["/a.yaml", "", "/b.yaml"]))
+    assert Settings.load().directory == [Path("/a.yaml"), Path("/b.yaml")]
+
+
+def test_command_line_directories_replace_the_configured_ones(tmp_path: Path) -> None:
+    config = _write(tmp_path, '[glossary]\ndirectory = "a.yaml"\n')
+    settings = Settings.load(config, {"directory": [Path("/x.yaml"), Path("/y.yaml")]})
+    assert settings.directory == [Path("/x.yaml"), Path("/y.yaml")]

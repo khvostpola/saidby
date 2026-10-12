@@ -18,7 +18,7 @@ from saidby.config.settings import Settings
 from saidby.errors import InputError, SaidbyError, StageError
 from saidby.formats.audio import SAMPLE_RATE, read_audio
 from saidby.formats.corrections_log import read_corrections, write_corrections
-from saidby.formats.directory_yaml import load_directory
+from saidby.formats.directory_set import DirectorySet, load_directory_set
 from saidby.formats.manifest import read_manifest, write_manifest
 from saidby.formats.rttm import write_rttm
 from saidby.formats.transcripts import render_txt, render_vtt
@@ -90,6 +90,7 @@ class Pipeline:
         self.glossary = GlossaryStages(self, llm)
         self.compare = CompareStage(self, compare_diarizer)
         self._directory: Directory | None = None
+        self._directories: DirectorySet | None = None
         self.run_id = str(uuid.uuid4())
         self._recs: list[Recording] = []
         self.device: DeviceInfo = DeviceInfo("cpu")
@@ -105,8 +106,10 @@ class Pipeline:
         if self.device.note:
             self.warnings.append(self.device.note)
         prepare(offline=True, want_cuda=self.device.kind == "cuda")
-        if self.settings.directory is not None:
-            self._directory, _ = load_directory(self.settings.directory)
+        if self.settings.directory:
+            self._directories = load_directory_set(self.settings.directory)
+            self._directory = self._directories.merged
+            self.warnings.extend(self._directories.skipped)
         self.glossary.preflight()
         try:
             if self.settings.strict_offline:
@@ -519,7 +522,8 @@ class Pipeline:
             "cached": cached,
             "identified": named,
             "unidentified": len(result.mapping) - named,
-            "voiceprints_skipped": result.voiceprints_skipped,
+            "voiceprints_skipped": result.voiceprints_skipped
+            + len(self._directories.skipped if self._directories else ()),
             "parts": [
                 engine.info.name,
                 engine.info.device or "cpu",
@@ -650,13 +654,16 @@ class Pipeline:
         return {"bias": self.settings.bias, **rec.glossary}
 
     def _directory_record(self) -> dict[str, Any] | None:
-        if self._directory is None or self.settings.directory is None:
+        if self._directories is None:
             return None
+        files = [
+            {"path": str(f.path), "sha256": file_sha256(f.path)} for f in self._directories.files
+        ]
         return {
-            "path": str(self.settings.directory),
-            "sha256": file_sha256(self.settings.directory),
-            "people": len(self._directory.people),
-            "terms": len(self._directory.terms),
+            **files[-1],
+            "files": files,
+            "people": len(self._directories.merged.people),
+            "terms": len(self._directories.merged.terms),
         }
 
     def _finalize(self, rec: Recording, total: int) -> RecordingResult:

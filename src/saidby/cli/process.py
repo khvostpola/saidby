@@ -118,9 +118,13 @@ def process(
         ),
     ] = None,
     directory: Annotated[
-        Path | None,
+        list[Path] | None,
         typer.Option(
-            help="Directory YAML with people, voiceprints and terms; turns on the glossary.",
+            help=(
+                "Directory YAML with people, voiceprints and terms; turns on the glossary. "
+                "Repeat it to combine files (the last one wins). Replaces the files named in "
+                "saidby.toml."
+            ),
             rich_help_panel=GLOSSARY,
         ),
     ] = None,
@@ -227,7 +231,7 @@ def process(
             "deterministic": deterministic or None,
             "diarizer": diarizer,
             "num_speakers": num_speakers,
-            "directory": directory,
+            "directory": directory or None,
             "identify": False if no_identify else None,
             "compare": compare,
             "bias_mode": bias_mode,
