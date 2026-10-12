@@ -13,6 +13,7 @@ file that failed.
 | `... is gated: accept its conditions at https://hf.co/...` | `pyannote-community1` needs you to accept its terms | Open the URL, accept, then set `HF_TOKEN` and pull again |
 | `... is not licensed for commercial use` | The model forbids commercial use | `--allow-noncommercial` if that is fine for you |
 | Runs on the CPU although you have a GPU | The GPU is not usable (see `saidby doctor`) | The message tells you which part: a CPU-only PyTorch (`uv tool install 'saidby[cuda]'`), missing CUDA 12 libraries (same extra) or a driver older than 580 |
+| The first lines (`starting`, `device`) take a few seconds | Loading PyTorch takes about a second, and the first GPU query of the day wakes a laptop GPU (about two seconds) | Nothing to fix; later runs are quicker. `saidby doctor` shows the same device check |
 | `CUDA failed with error out of memory` | Less than about 6 GB of free GPU memory | Close other GPU programs, or `--device cpu`, or `--asr-model tiny` |
 | Very slow on the CPU | large-v3 is big | `--asr-model tiny`; on a modern 20-thread CPU large-v3 runs at about 0.4 times real time |
 | `output folder holds results for a different input` (`input`) | The folder name collides with an earlier, different file | Use another `--out`, or `--force` to overwrite |
