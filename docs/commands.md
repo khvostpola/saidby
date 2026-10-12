@@ -142,17 +142,18 @@ can also be an environment variable: `SAIDBY_LANGUAGE=es`, `SAIDBY_DEVICE=cpu`,
 
 ## Exit codes
 
-| Code | Meaning | What to do |
-|---|---|---|
-| 0 | Success | |
-| 1 | Unexpected error | Run again with the same arguments; if it repeats, open an issue with `saidby doctor` output |
-| 2 | Usage or configuration error | The message names the option or key |
-| 3 | Input problem: missing or undecodable file, or the output folder holds another input | Check the path; `--force` to overwrite |
-| 4 | Model not installed, gated, or licensed for non-commercial use only | `saidby models pull KEY` |
-| 5 | No recorded consent for that person's voiceprint | Pass `--consent-source` and `--consent-declared-by` |
-| 6 | A stage failed, or more than one file failed | See `logs/run.log` in the failed folder |
-| 7 | The LLM is not available | Install `llama-server` or fix `--llm-url` |
-| 8 | Something tried to leave the machine under `--strict-offline` | |
-| 130 | Interrupted with Ctrl+C | Run again to resume |
+| Code | Id | Meaning | What to do |
+|---|---|---|---|
+| 0 | | Success | |
+| 1 | `error` | Unexpected error | Run again with the same arguments; if it repeats, open an issue with `saidby doctor` output |
+| 2 | `usage` | Usage or configuration error | The message names the option or key |
+| 3 | `input` | Input problem: missing or undecodable file, or the output folder holds another input | Check the path; `--force` to overwrite |
+| 4 | `model_unavailable` | Model not installed, gated, or licensed for non-commercial use only | `saidby models pull KEY` |
+| 5 | `consent_missing` | No recorded consent for that person's voiceprint | Pass `--consent-source` and `--consent-declared-by` |
+| 6 | `stage_failed` | A stage failed, or more than one file failed | See `logs/run.log` in the failed folder |
+| 7 | `llm_unavailable` | The LLM is not available | Install `llama-server` or fix `--llm-url` |
+| 8 | `network_attempt` | Something tried to leave the machine under `--strict-offline` | |
+| 130 | | Interrupted with Ctrl+C | Run again to resume |
 
-Errors print as `error: ClassName: message` on stderr, without a traceback.
+Errors print as `error: message  [id · exit N]` on stderr, without a traceback. The id and the
+number are the same whatever language the message is in.

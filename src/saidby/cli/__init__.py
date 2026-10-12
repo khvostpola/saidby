@@ -18,7 +18,7 @@ from saidby.cli.process import EPILOG as PROCESS_EPILOG
 from saidby.cli.process import process
 from saidby.cli.review import review
 from saidby.errors import SaidbyError
-from saidby.i18n import set_language
+from saidby.i18n import _, set_language
 
 RUN = "Transcribe"
 AFTER = "After a run"
@@ -96,5 +96,6 @@ def main() -> None:
     except KeyboardInterrupt:
         sys.exit(130)
     except SaidbyError as exc:
-        print(f"error: {type(exc).__name__}: {exc}", file=sys.stderr)
+        message = _("error: {message}").format(message=exc)
+        print(f"{message}  [{exc.error_id} · exit {exc.exit_code}]", file=sys.stderr)
         sys.exit(exc.exit_code)

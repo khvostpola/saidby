@@ -40,6 +40,9 @@ All notable changes are documented here, following
   to the configured directory when `--directory` is not given.
 
 ### Changed
+- Errors print as `error: message  [id · exit N]` instead of `error: ClassName: message`. The id
+  (`consent_missing`, `model_unavailable`...) and the number are stable, and are the way to look
+  an error up in the docs.
 - Stage lines are easier to read: steps have plain names (`audio`, `transcript`, `terms`,
   `speakers`, `names`), the speed is written out ("9.8x faster than the audio" instead of
   `0.103x`), and the quick steps (`transplant`, `align`, `tracks`, `outputs`) are counted in the

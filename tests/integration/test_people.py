@@ -169,7 +169,8 @@ def test_enroll_requires_consent_then_stores_voiceprint(tmp_path: Path) -> None:
     ]
     denied = subprocess.run(["saidby", *args], capture_output=True, text=True, check=False)
     assert denied.returncode == 5
-    assert "ConsentMissingError" in denied.stderr
+    assert "[consent_missing · exit 5]" in denied.stderr
+    assert "ConsentMissingError" not in denied.stderr
     assert "voiceprint" not in directory.read_text()
 
     allowed = runner.invoke(
