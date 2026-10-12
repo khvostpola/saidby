@@ -11,6 +11,7 @@ from saidby.runtime.prepare import preload_cublas
 from saidby.runtime.procs import which
 
 DeviceKind = Literal["cuda", "cpu"]
+DeviceReason = Literal["requested_cpu", "no_gpu", "gpu_unusable"]
 CUDA_EXTRA_HINT = "pip install 'saidby[cuda]'"
 CPU_TORCH_HINT = (
     "this install has the CPU build of PyTorch; for the GPU reinstall with the default index "
@@ -24,6 +25,7 @@ class DeviceInfo:
     name: str | None = None
     vram_total_mb: int | None = None
     note: str | None = None
+    reason: DeviceReason | None = None
 
 
 @dataclass(frozen=True)
@@ -113,7 +115,7 @@ def resolve_device(requested: str = "auto") -> DeviceInfo:
     if requested not in {"auto", "cuda", "cpu"}:
         raise UsageError(f"unknown device: {requested}")
     if requested == "cpu":
-        return DeviceInfo("cpu")
+        return DeviceInfo("cpu", reason="requested_cpu")
     gpu = read_gpu()
     problems = cuda_problems(gpu)
     if gpu is not None and not problems:
@@ -122,8 +124,9 @@ def resolve_device(requested: str = "auto") -> DeviceInfo:
         raise UsageError(
             "--device cuda requested but the GPU is not usable: " + "; ".join(problems)
         )
-    note = "running on CPU: " + problems[0] if gpu is not None else None
-    return DeviceInfo("cpu", note=note)
+    if gpu is None:
+        return DeviceInfo("cpu", reason="no_gpu")
+    return DeviceInfo("cpu", note="running on CPU: " + problems[0], reason="gpu_unusable")
 
 
 def detect_cuda() -> DeviceInfo | None:

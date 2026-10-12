@@ -14,6 +14,7 @@ import numpy as np
 from saidby.models import REGISTRY
 from saidby.models import store as model_store
 from saidby.runtime import device as dev
+from saidby.runtime.device_cache import write_cache
 from saidby.runtime.procs import tool_version
 
 Status = Literal["ok", "warn", "fail"]
@@ -98,6 +99,7 @@ def check_device(requested: str = "auto") -> Check:
         device = dev.resolve_device(requested)
     except Exception as exc:
         return Check("device", "fail", str(exc))
+    write_cache(device)
     if device.kind == "cuda":
         return Check("device", "ok", f"auto selects the GPU ({device.name})")
     return Check("device", "ok", "auto selects the CPU", device.note)

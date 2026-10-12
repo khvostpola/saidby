@@ -11,6 +11,7 @@ from saidby.errors import UsageError
 from saidby.models import store as model_store
 from saidby.runtime import device as dev
 from saidby.runtime import diagnose
+from saidby.runtime.device_cache import read_cache
 
 runner = CliRunner()
 GPU = dev.GpuFacts("Test GPU", 8000, "580.1")
@@ -35,14 +36,19 @@ def _world(
 def test_usable_gpu_is_selected(monkeypatch: pytest.MonkeyPatch) -> None:
     _world(monkeypatch)
     device = dev.resolve_device("auto")
-    assert (device.kind, device.name, device.note) == ("cuda", "Test GPU", None)
+    assert (device.kind, device.name, device.note, device.reason) == (
+        "cuda",
+        "Test GPU",
+        None,
+        None,
+    )
     assert dev.resolve_device("cuda").kind == "cuda"
 
 
 def test_no_gpu_means_cpu_without_noise(monkeypatch: pytest.MonkeyPatch) -> None:
     _world(monkeypatch, gpu=None)
     device = dev.resolve_device("auto")
-    assert (device.kind, device.note) == ("cpu", None)
+    assert (device.kind, device.note, device.reason) == ("cpu", None, "no_gpu")
     with pytest.raises(UsageError, match="no NVIDIA GPU"):
         dev.resolve_device("cuda")
 
@@ -53,6 +59,7 @@ def test_cpu_torch_with_a_gpu_present_falls_back_and_explains(
     _world(monkeypatch, build="cpu", torch_ready=False)
     device = dev.resolve_device("auto")
     assert device.kind == "cpu"
+    assert device.reason == "gpu_unusable"
     assert device.note is not None
     assert "CPU build of PyTorch" in device.note
     with pytest.raises(UsageError, match="saidby\\[cuda\\]"):
@@ -125,3 +132,18 @@ def test_smoke_test_skips_without_the_tiny_model(monkeypatch: pytest.MonkeyPatch
     check = diagnose.smoke_test()
     assert check.status == "warn"
     assert "asr:tiny" in (check.hint or "")
+
+
+def test_asking_for_the_cpu_says_so(monkeypatch: pytest.MonkeyPatch) -> None:
+    _world(monkeypatch)
+    device = dev.resolve_device("cpu")
+    assert (device.kind, device.reason, device.note) == ("cpu", "requested_cpu", None)
+
+
+def test_doctor_remembers_the_verdict_for_the_banner(monkeypatch: pytest.MonkeyPatch) -> None:
+    _world(monkeypatch, build="cpu", torch_ready=False)
+    assert read_cache() is None
+    diagnose.check_device("auto")
+    cached = read_cache()
+    assert cached is not None
+    assert (cached.kind, cached.reason) == ("cpu", "gpu_unusable")

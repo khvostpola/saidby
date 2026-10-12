@@ -18,8 +18,9 @@ later `bias`, `dialect`, `llm`, `review`).
 
 ## `manifest.json`
 
-Tool version, `status` (`ok`, `failed`, `interrupted`), source file with sha256, device,
-one record per stage (engine, model, revision, wall time, cached), speakers, files, warnings
+Tool version, `status` (`ok`, `failed`, `interrupted`), source file with sha256, device (what
+you asked for, what ran, the GPU name and memory, and `reason` when the CPU ran: `requested_cpu`,
+`no_gpu` or `gpu_unusable`), one record per stage (engine, model, revision, wall time, cached), speakers, files, warnings
 and, on failure, `failed_stage` and `error_type`.
 
 ## `logs/telemetry.jsonl`

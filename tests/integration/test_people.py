@@ -22,6 +22,7 @@ from saidby.formats.manifest import read_manifest
 from saidby.formats.rttm import read_rttm
 from saidby.formats.words_json import read_transcript
 from saidby.pipeline.runner import Pipeline
+from saidby.runtime.device_cache import read_cache
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / "fixtures/synthetic/tones_2spk_10s.flac"
@@ -238,3 +239,12 @@ def test_voiceprints_without_consent_are_skipped_and_reported(tmp_path: Path) ->
     assert any("has no consent record" in w and "alice" in w for w in manifest.warnings)
     assert all(not s.identified for s in read_transcript(folder / "transcript.words.json").speakers)
     assert "identify" not in [s.stage for s in manifest.stages]
+
+
+def test_the_run_records_why_it_used_the_cpu_and_remembers_the_device(tmp_path: Path) -> None:
+    folder = _run(tmp_path, None)
+    device = read_manifest(folder / "manifest.json").device
+    assert (device.used, device.reason) == ("cpu", "requested_cpu")
+    cached = read_cache()
+    assert cached is not None
+    assert (cached.kind, cached.reason) == ("cpu", "requested_cpu")

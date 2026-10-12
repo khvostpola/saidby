@@ -46,6 +46,7 @@ class DeviceRecord(BaseModel):
     used: str
     name: str | None = None
     vram_total_mb: int | None = None
+    reason: str | None = None
 
 
 class Manifest(BaseModel):

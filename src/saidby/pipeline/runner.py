@@ -34,6 +34,7 @@ from saidby.ports.registry import make_diarizer, make_embedder, make_transcriber
 from saidby.ports.transcriber import Transcriber
 from saidby.runtime import prepare
 from saidby.runtime.device import DeviceInfo, resolve_device
+from saidby.runtime.device_cache import write_cache
 from saidby.runtime.netguard import guard_network
 from saidby.schema.diarization import Diarization
 from saidby.schema.directory import Directory, Term
@@ -103,6 +104,7 @@ class Pipeline:
         started = datetime.now().astimezone()
         clock = time.perf_counter()
         self.device = resolve_device(self.settings.device)
+        write_cache(self.device)
         if self.device.note:
             self.warnings.append(self.device.note)
         prepare(offline=True, want_cuda=self.device.kind == "cuda")
@@ -707,6 +709,7 @@ class Pipeline:
                 used=self.device.kind,
                 name=self.device.name,
                 vram_total_mb=self.device.vram_total_mb,
+                reason=self.device.reason,
             ),
             stages=rec.stages,
             speakers=speakers,
