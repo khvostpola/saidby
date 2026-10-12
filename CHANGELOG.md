@@ -21,6 +21,11 @@ All notable changes are documented here, following
 - On Windows the commands saidby suggests are quoted for PowerShell.
 
 ### Fixed
+- Windows consoles: colours, the live progress line and the cassette work in Windows Terminal,
+  PowerShell and cmd. The console is switched to ANSI mode and `TERM` is no longer required.
+- Output redirected to a file on Windows is UTF-8 instead of the ANSI code page.
+- Requests to a local `llama-server` never go through the system proxy.
+- The CPU usage in the progress line is measured on Windows too.
 - The language guessed for a new directory on Windows ("Spanish_Colombia" came out as "Sp").
 - A path pasted with the quotes that "Copy as path" adds is accepted in the guided questions.
 

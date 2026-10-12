@@ -14,7 +14,7 @@ from typing import Any, ClassVar
 import pytest
 
 from saidby.engines.llm.llama_server import LlamaServerManager, find_binary
-from saidby.engines.llm.openai_compat import OpenAICompatClient, is_local_url
+from saidby.engines.llm.openai_compat import OpenAICompatClient, is_local_url, opener_for
 from saidby.errors import LlmUnavailableError
 from saidby.models import get_spec
 from saidby.models import store as model_store
@@ -177,3 +177,11 @@ def test_manager_fails_cleanly_when_process_dies(
 
 def test_registry_has_llm_model() -> None:
     assert get_spec("llm:qwen3.5-9b-q4").filename == "Qwen3.5-9B-Q4_K_M.gguf"
+
+
+def test_loopback_requests_skip_the_system_proxy(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("HTTP_PROXY", "http://proxy.invalid:3128")
+    local = opener_for("http://127.0.0.1:1234").handlers  # type: ignore[attr-defined]
+    assert all(not getattr(handler, "proxies", None) for handler in local)
+    remote = opener_for("http://llm.example.com").handlers  # type: ignore[attr-defined]
+    assert any(getattr(handler, "proxies", None) for handler in remote)

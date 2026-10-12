@@ -7,9 +7,18 @@ import subprocess
 import pytest
 
 from saidby.errors import InputError
-from saidby.runtime import usage
+from saidby.runtime import host, usage
 from saidby.runtime.device import DeviceInfo
-from saidby.runtime.usage import CpuMeter, CpuUsage, GpuUsage, Throttled, parse_gpu_usage
+from saidby.runtime.usage import (
+    CpuMeter,
+    CpuUsage,
+    GpuUsage,
+    Throttled,
+    cpu_totals,
+    parse_gpu_usage,
+    proc_stat_totals,
+    system_times_totals,
+)
 
 
 def test_nvidia_smi_output_is_parsed() -> None:
@@ -64,7 +73,7 @@ def test_cpu_load_comes_from_the_difference_between_two_reads(
 ) -> None:
     reads = iter([_stat(100, 900), _stat(190, 910)])
     monkeypatch.setattr(os, "cpu_count", lambda: 8)
-    meter = CpuMeter(lambda: next(reads))
+    meter = CpuMeter(lambda: proc_stat_totals(lambda: next(reads)))
     assert meter.sample() is None
     assert meter.sample() == CpuUsage(threads=8, util_pct=90)
 
@@ -74,20 +83,20 @@ def test_idle_time_including_iowait_is_not_load(monkeypatch: pytest.MonkeyPatch)
     second = "cpu  100 0 0 900 100 0 0 0\n"
     reads = iter([first, second])
     monkeypatch.setattr(os, "cpu_count", lambda: 4)
-    meter = CpuMeter(lambda: next(reads))
+    meter = CpuMeter(lambda: proc_stat_totals(lambda: next(reads)))
     meter.sample()
     assert meter.sample() == CpuUsage(4, 0)
 
 
 @pytest.mark.parametrize("bad", ["", "cpu", "cpu 1 2", "nonsense here"])
 def test_a_broken_proc_stat_is_no_sample(bad: str) -> None:
-    meter = CpuMeter(lambda: bad)
+    meter = CpuMeter(lambda: proc_stat_totals(lambda: bad))
     assert meter.sample() is None
     assert meter.sample() is None
 
 
 def test_no_time_passed_is_no_sample() -> None:
-    meter = CpuMeter(lambda: _stat(100, 900))
+    meter = CpuMeter(lambda: proc_stat_totals(lambda: _stat(100, 900)))
     meter.sample()
     assert meter.sample() is None
 
@@ -123,3 +132,20 @@ def test_a_timeout_is_no_sample(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(usage, "which", lambda name: "/usr/bin/nvidia-smi")
     monkeypatch.setattr(usage, "run_checked", slow)
     assert usage.read_gpu_usage() is None
+
+
+def test_windows_system_times_feed_the_same_meter(monkeypatch: pytest.MonkeyPatch) -> None:
+    reads = iter([(10_000, 9_000), (11_000, 9_100)])
+    monkeypatch.setattr(os, "cpu_count", lambda: 16)
+    meter = CpuMeter(lambda: next(reads))
+    assert meter.sample() is None
+    assert meter.sample() == CpuUsage(16, 90)
+
+
+def test_the_cpu_totals_come_from_the_system_in_use() -> None:
+    totals = cpu_totals()
+    if host.is_windows():
+        assert system_times_totals() is not None
+    else:
+        assert system_times_totals() is None
+    assert totals is None or totals[0] >= totals[1] >= 0

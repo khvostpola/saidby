@@ -8,16 +8,16 @@ import socket
 import subprocess
 import time
 import urllib.error
-import urllib.request
 from pathlib import Path
-from typing import Any
+from typing import IO, Any
 
-from saidby.engines.llm.openai_compat import OpenAICompatClient
+from saidby.engines.llm.openai_compat import LOOPBACK_OPENER, OpenAICompatClient
 from saidby.errors import LlmUnavailableError
 from saidby.i18n import _
 from saidby.models import get_spec
 from saidby.models import store as model_store
 from saidby.runtime.device import DeviceInfo
+from saidby.runtime.procs import spawn_managed
 from saidby.schema.engine import EngineInfo
 
 ENV_BINARY = "SAIDBY_LLAMA_SERVER"
@@ -51,7 +51,7 @@ def wait_healthy(url: str, timeout_s: float, proc: subprocess.Popen[Any]) -> Non
                 )
             )
         try:
-            with urllib.request.urlopen(url, timeout=2) as response:
+            with LOOPBACK_OPENER.open(url, timeout=2) as response:
                 if b'"ok"' in response.read():
                     return
         except (urllib.error.URLError, ConnectionError, TimeoutError):
@@ -78,6 +78,7 @@ class LlamaServerManager:
         self.log_path = log_path
         self.startup_timeout_s = startup_timeout_s
         self._proc: subprocess.Popen[Any] | None = None
+        self._log: IO[bytes] | None = None
         self._client: OpenAICompatClient | None = None
         spec = get_spec(f"llm:{model_key}")
         self.spec = spec
@@ -117,10 +118,10 @@ class LlamaServerManager:
             '{"enable_thinking": false}',
             "--no-webui",
         ]
-        log = self.log_path.open("ab") if self.log_path else subprocess.DEVNULL
+        self._log = self.log_path.open("ab") if self.log_path else None
         env = {**os.environ, "HF_HUB_OFFLINE": "1"}
-        self._proc = subprocess.Popen(
-            argv, stdout=log, stderr=subprocess.STDOUT, start_new_session=True, env=env
+        self._proc = spawn_managed(
+            argv, stdout=self._log if self._log else subprocess.DEVNULL, env=env
         )
         atexit.register(self.stop)
         try:
@@ -134,14 +135,16 @@ class LlamaServerManager:
 
     def stop(self) -> None:
         proc, self._proc = self._proc, None
-        if proc is None or proc.poll() is not None:
-            return
-        proc.terminate()
-        try:
-            proc.wait(timeout=10)
-        except subprocess.TimeoutExpired:
-            proc.kill()
-            proc.wait()
+        log, self._log = self._log, None
+        if proc is not None and proc.poll() is None:
+            proc.terminate()
+            try:
+                proc.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait()
+        if log is not None:
+            log.close()
 
     def complete_json(self, **kwargs: Any) -> dict[str, Any]:
         if self._client is None:

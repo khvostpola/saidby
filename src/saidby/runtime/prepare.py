@@ -10,6 +10,8 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from saidby.runtime import host
+
 CUBLAS_PATTERNS = ("libcublasLt.so.12*", "libcublas.so.12*")
 
 
@@ -41,6 +43,8 @@ def prepare(*, offline: bool = True, want_cuda: bool = True) -> RuntimeInfo:
     os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
     os.environ.setdefault("PYANNOTE_METRICS_ENABLED", "false")
     os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+    if host.is_windows():
+        os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
     loaded = preload_cublas() if want_cuda else []
     return RuntimeInfo(offline=offline, cublas_preloaded=loaded)
 

@@ -49,6 +49,8 @@ def read_gpu() -> GpuFacts | None:
             check=True,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=10,
             stdin=subprocess.DEVNULL,
         ).stdout.strip()

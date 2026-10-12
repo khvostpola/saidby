@@ -14,9 +14,16 @@ from saidby.ports.corrector import LlmTruncatedError
 from saidby.runtime.netguard import is_loopback
 from saidby.schema.engine import EngineInfo
 
+LOOPBACK_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
 
 def is_local_url(url: str) -> bool:
     return is_loopback(urlparse(url).hostname)
+
+
+def opener_for(url: str) -> urllib.request.OpenerDirector:
+    """Loopback never goes through a proxy; Windows would otherwise send it there."""
+    return LOOPBACK_OPENER if is_local_url(url) else urllib.request.build_opener()
 
 
 class OpenAICompatClient:
@@ -62,7 +69,7 @@ class OpenAICompatClient:
             f"{self.base_url}/v1/chat/completions", data=json.dumps(body).encode(), headers=headers
         )
         try:
-            with urllib.request.urlopen(request, timeout=timeout_s) as response:
+            with opener_for(self.base_url).open(request, timeout=timeout_s) as response:
                 content = json.load(response)["choices"][0]["message"]["content"]
         except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
             raise LlmUnavailableError(

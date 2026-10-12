@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
+import warnings
 from typing import Any
 
 import numpy as np
@@ -29,7 +30,10 @@ class PyannoteCommunity1Diarizer:
 
     def load(self) -> float:
         import torch
-        from pyannote.audio import Pipeline
+
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message="(?s).*torchcodec")
+            from pyannote.audio import Pipeline
 
         with Stopwatch() as watch:
             self._pipeline = Pipeline.from_pretrained(str(self.path))

@@ -3,17 +3,21 @@
 
 import os
 import subprocess
+import sys
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
 from saidby.errors import InputError
+from saidby.runtime import host
 from saidby.runtime.device import DeviceInfo
 from saidby.runtime.procs import run_checked, which
 
 GPU_QUERY = "memory.used,memory.total,utilization.gpu"
 PROC_STAT = Path("/proc/stat")
+
+Totals = tuple[int, int]
 
 
 @dataclass(frozen=True)
@@ -56,20 +60,45 @@ def _read_proc_stat() -> str:
     return PROC_STAT.read_text(encoding="utf-8")
 
 
-class CpuMeter:
-    def __init__(self, reader: Callable[[], str] = _read_proc_stat) -> None:
-        self._reader = reader
-        self._previous: tuple[int, int] | None = None
+def proc_stat_totals(reader: Callable[[], str] = _read_proc_stat) -> Totals | None:
+    """(busy plus idle, idle) jiffies from the first line of /proc/stat."""
+    try:
+        fields = [int(x) for x in reader().splitlines()[0].split()[1:]]
+    except (OSError, ValueError, IndexError):
+        return None
+    if len(fields) < 5:
+        return None
+    return sum(fields[:8]), fields[3] + fields[4]
 
-    def _totals(self) -> tuple[int, int] | None:
-        try:
-            fields = [int(x) for x in self._reader().splitlines()[0].split()[1:]]
-        except (OSError, ValueError, IndexError):
-            return None
-        if len(fields) < 5:
-            return None
-        idle = fields[3] + fields[4]
-        return sum(fields[:8]), idle
+
+def system_times_totals() -> Totals | None:
+    """(kernel plus user, idle) in 100 ns ticks from GetSystemTimes; kernel time includes idle."""
+    if sys.platform != "win32":
+        return None
+    import ctypes
+    from ctypes import wintypes
+
+    idle, kernel, user = wintypes.FILETIME(), wintypes.FILETIME(), wintypes.FILETIME()
+    ok = ctypes.windll.kernel32.GetSystemTimes(
+        ctypes.byref(idle), ctypes.byref(kernel), ctypes.byref(user)
+    )
+    if not ok:
+        return None
+
+    def ticks(moment: wintypes.FILETIME) -> int:
+        return (moment.dwHighDateTime << 32) | moment.dwLowDateTime
+
+    return ticks(kernel) + ticks(user), ticks(idle)
+
+
+def cpu_totals() -> Totals | None:
+    return system_times_totals() if host.is_windows() else proc_stat_totals()
+
+
+class CpuMeter:
+    def __init__(self, totals: Callable[[], Totals | None] = cpu_totals) -> None:
+        self._totals = totals
+        self._previous: Totals | None = None
 
     def sample(self) -> CpuUsage | None:
         now = self._totals()

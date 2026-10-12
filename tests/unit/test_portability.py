@@ -23,7 +23,13 @@ TEXT_RULES: dict[str, tuple[str, set[str]]] = {
         "the config folder comes from saidby.runtime.host",
         {"src/saidby/runtime/host.py", "src/saidby/cli/init.py", "src/saidby/cli/directory.py"},
     ),
+    "/proc/": ("system counters live in saidby.runtime.usage", {"src/saidby/runtime/usage.py"}),
+    "start_new_session": (
+        "helpers start through saidby.runtime.procs",
+        {"src/saidby/runtime/procs.py"},
+    ),
 }
+SUBPROCESS_CALLS = {"run", "Popen", "check_output", "check_call", "call"}
 
 
 def _python_files(tree: str) -> Iterator[Path]:
@@ -66,6 +72,23 @@ def _text_call(call: ast.Call) -> tuple[str, bool] | None:
     return kind, bool(set(mode) & WRITE_MODES)
 
 
+def _subprocess_text_call(call: ast.Call) -> bool:
+    func = call.func
+    if not (
+        isinstance(func, ast.Attribute)
+        and func.attr in SUBPROCESS_CALLS
+        and isinstance(func.value, ast.Name)
+        and func.value.id == "subprocess"
+    ):
+        return False
+    return any(
+        kw.arg in ("text", "universal_newlines")
+        and isinstance(kw.value, ast.Constant)
+        and bool(kw.value.value)
+        for kw in call.keywords
+    )
+
+
 def _calls(tree: str) -> Iterator[tuple[Path, ast.Call]]:
     for path in _python_files(tree):
         module = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
@@ -85,6 +108,16 @@ def test_every_text_file_call_names_its_encoding() -> None:
         for path, call in _calls(tree)
         if (found := _text_call(call)) and "encoding" not in _keywords(call)
         for kind, _writes in [found]
+    ]
+    assert problems == []
+
+
+def test_every_text_subprocess_names_its_encoding() -> None:
+    problems = [
+        f"{_where(path, call)}: subprocess text=True without encoding="
+        for tree in TREES
+        for path, call in _calls(tree)
+        if _subprocess_text_call(call) and "encoding" not in _keywords(call)
     ]
     assert problems == []
 

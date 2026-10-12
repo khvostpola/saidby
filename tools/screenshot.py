@@ -240,6 +240,8 @@ def measure(chrome: list[str], page: Path) -> tuple[int, int]:
         ],
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=True,
     ).stdout
     match = re.search(r'data-size="(\d+)x(\d+)"', dom)

@@ -4,9 +4,11 @@
 import shutil
 import subprocess
 from pathlib import Path
+from typing import IO, Any
 
 from saidby.errors import InputError
 from saidby.i18n import _
+from saidby.runtime import host
 
 
 def run_checked(
@@ -18,6 +20,8 @@ def run_checked(
             check=True,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=timeout,
             stdin=subprocess.DEVNULL,
         )
@@ -31,6 +35,20 @@ def run_checked(
 
 def which(name: str) -> str | None:
     return shutil.which(name)
+
+
+def spawn_managed(
+    argv: list[str], *, stdout: int | IO[Any], env: dict[str, str] | None = None
+) -> subprocess.Popen[bytes]:
+    """Start a helper server that saidby stops itself.
+
+    On POSIX it gets its own session, so a Ctrl+C aimed at saidby does not reach it before
+    `stop()` does. Windows ignores sessions: the child shares the console.
+    """
+    common: dict[str, Any] = {"stdout": stdout, "stderr": subprocess.STDOUT, "env": env}
+    if host.is_windows():
+        return subprocess.Popen(argv, **common)
+    return subprocess.Popen(argv, start_new_session=True, **common)
 
 
 def tool_version(name: str, flag: str = "-version") -> str | None:
