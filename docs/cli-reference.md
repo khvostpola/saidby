@@ -12,7 +12,7 @@ Arguments:
 
 | Option | Type | Default | What it does |
 |---|---|---|---|
-| `--out` | path |  | Folder for the results; one subfolder per input. (required) |
+| `--out` | path |  | Folder for the results, one subfolder per input (default: ./saidby). |
 | `--config` | path |  | A saidby.toml with defaults for the options below. |
 | `--language` | str |  | Recording language code (es, en, pt...). Detected from the audio if omitted. |
 | `--device` | str |  | auto (default): GPU if usable, else CPU. Or force cuda or cpu. |
@@ -41,10 +41,10 @@ Arguments:
 Examples:
 
 ```bash
-saidby process call.m4a --out out/ --language es
-saidby process a.mp4 b.mp3 --out out/ --directory directory.yaml
-saidby process call.m4a --out out/ --directory directory.yaml --correct
-saidby process call.m4a --out out/ --device cpu --asr-model tiny
+saidby process call.m4a --language es
+saidby process a.mp4 b.mp3 --directory directory.yaml
+saidby process call.m4a --out results/ --directory directory.yaml --correct
+saidby process call.m4a --device cpu --asr-model tiny
 ```
 
 ## `saidby review`

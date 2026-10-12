@@ -27,7 +27,7 @@ EPILOG = """\b
 Start here:
   saidby doctor                         check this machine
   saidby models pull --all              download the models (needs the network)
-  saidby process call.m4a --out out/    transcribe
+  saidby process call.m4a              transcribe
 
 Every command has its own help: saidby process --help, saidby review --help ...
 Documentation: https://github.com/khvostpola/saidby/tree/main/docs"""

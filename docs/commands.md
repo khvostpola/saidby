@@ -69,6 +69,7 @@ Relative paths in a file, such as `directory`, are resolved against the file tha
 
 ```toml
 [saidby]
+out = "saidby"             # where results go; relative to this file (default: ./saidby)
 device = "auto"            # auto, cuda or cpu
 language = "es"
 keep_intermediates = false

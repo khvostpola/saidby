@@ -20,13 +20,14 @@ PRIVACY = "Privacy"
 
 EPILOG = """\b
 Examples:
-  saidby process call.m4a --out out/ --language es
-  saidby process a.mp4 b.mp3 --out out/ --directory directory.yaml
-  saidby process call.m4a --out out/ --directory directory.yaml --correct
-  saidby process call.m4a --out out/ --device cpu --asr-model tiny
+  saidby process call.m4a --language es
+  saidby process a.mp4 b.mp3 --directory directory.yaml
+  saidby process call.m4a --out results/ --directory directory.yaml --correct
+  saidby process call.m4a --device cpu --asr-model tiny
 
-Each input gets its own folder under --out. A failed run keeps its work and the next
-run resumes from the last finished stage."""
+Each input gets its own folder under the output folder (./saidby unless you pass --out or set
+`out` in saidby.toml). A failed run keeps its work and the next run resumes from the last
+finished stage."""
 
 
 def process(
@@ -34,11 +35,13 @@ def process(
         list[Path], typer.Argument(help="Audio or video files (anything ffmpeg reads).")
     ],
     out: Annotated[
-        Path,
+        Path | None,
         typer.Option(
-            "--out", help="Folder for the results; one subfolder per input.", rich_help_panel=IO
+            "--out",
+            help="Folder for the results, one subfolder per input (default: ./saidby).",
+            rich_help_panel=IO,
         ),
-    ],
+    ] = None,
     config: Annotated[
         Path | None,
         typer.Option(help="A saidby.toml with defaults for the options below.", rich_help_panel=IO),
@@ -216,6 +219,7 @@ def process(
     settings = Settings.load(
         config,
         {
+            "out": out,
             "language": language,
             "device": device,
             "asr_model": asr_model,
@@ -241,7 +245,7 @@ def process(
             "progress": progress,
         },
     )
-    results = Pipeline(settings, progress=Progress(settings.progress)).run(inputs, out)
+    results = Pipeline(settings, progress=Progress(settings.progress)).run(inputs, settings.out)
     failed = [r for r in results if r.status != "ok"]
     if failed:
         code = failed[0].exit_code if len(failed) == 1 else StageError.exit_code

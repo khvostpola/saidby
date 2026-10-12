@@ -16,6 +16,7 @@ ENV_PREFIX = "SAIDBY_"
 class Settings(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    out: Path = Path("saidby")
     device: Literal["auto", "cuda", "cpu"] = "auto"
     language: str | None = None
     asr_engine: str = "faster-whisper"
@@ -132,7 +133,7 @@ TABLE_KEYS: dict[str, dict[str, str]] = {
         "allow_remote": "allow_remote_llm",
     },
 }
-PATH_FIELDS = ("directory",)
+PATH_FIELDS = ("directory", "out")
 
 
 def _flatten(data: dict[str, Any], source: Path) -> dict[str, Any]:
@@ -156,8 +157,10 @@ def _flatten(data: dict[str, Any], source: Path) -> dict[str, Any]:
             valid = ", ".join(["saidby", *TABLE_KEYS])
             raise UsageError(f"{source}: unknown section [{table}] (valid: {valid})")
     for field in PATH_FIELDS:
-        if isinstance(flat.get(field), str) and not Path(flat[field]).is_absolute():
-            flat[field] = str(source.parent / flat[field])
+        relative_to_file = field != "out" or source != global_config_path()
+        value = flat.get(field)
+        if relative_to_file and isinstance(value, str) and not Path(value).is_absolute():
+            flat[field] = str(source.parent / value)
     return flat
 
 
