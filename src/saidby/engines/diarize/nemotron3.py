@@ -36,6 +36,9 @@ class Nemotron3Diarizer:
 
     def load(self) -> float:
         from transformers import AutoModelForAudioFrameClassification, AutoProcessor
+        from transformers.utils import logging as hf_logging
+
+        hf_logging.disable_progress_bar()  # type: ignore[no-untyped-call]
 
         with Stopwatch() as watch:
             self._processor = AutoProcessor.from_pretrained(  # type: ignore[no-untyped-call]

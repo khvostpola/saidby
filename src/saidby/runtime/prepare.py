@@ -35,6 +35,7 @@ def prepare(*, offline: bool = True, want_cuda: bool = True) -> RuntimeInfo:
     if offline:
         os.environ["HF_HUB_OFFLINE"] = "1"
         os.environ["TRANSFORMERS_OFFLINE"] = "1"
+        os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
     os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
     os.environ.setdefault("PYANNOTE_METRICS_ENABLED", "false")
     os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")

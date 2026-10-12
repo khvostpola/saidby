@@ -111,6 +111,7 @@ class Pipeline:
                     return self._run(inputs, out_root)
             return self._run(inputs, out_root)
         finally:
+            self.progress.stop()
             self.glossary.release_llm()
 
     def _recordings(self, inputs: list[Path], out_root: Path) -> list[Recording]:
@@ -185,9 +186,11 @@ class Pipeline:
         telemetry_stage = stage
         rec.telemetry.emit("stage.start", stage=telemetry_stage, file_index=rec.index)
         started = time.perf_counter()
+        self.progress.stage_start(index=rec.index, total=total, slug=rec.slug, stage=stage)
         try:
             info = handler(rec)
         except KeyboardInterrupt:
+            self.progress.stop()
             raise
         except Exception as exc:
             rec.status = "failed"
@@ -208,6 +211,7 @@ class Pipeline:
             )
             return
         if info.pop("skipped", False):
+            self.progress.stop()
             return
         wall = round(time.perf_counter() - started, 3)
         engine: EngineInfo | None = info.pop("engine", None)
