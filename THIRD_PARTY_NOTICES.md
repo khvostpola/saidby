@@ -44,9 +44,7 @@ closure of the environment where it ran. Versions and CUDA wheels vary by platfo
 | numba | 0.68.0 | BSD-3-Clause |  |
 | numpy | 2.5.4 | BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0 |  |
 | nvidia-cublas | 13.1.1.3 | LicenseRef-NVIDIA-Proprietary | NVIDIA proprietary redistributable EULA; installed from PyPI, never redistributed by saidby |
-| nvidia-cublas-cu12 | 12.9.2.10 | LicenseRef-NVIDIA-Proprietary | NVIDIA proprietary redistributable EULA; installed from PyPI, never redistributed by saidby |
 | nvidia-cuda-nvrtc | 13.0.88 | LicenseRef-NVIDIA-Proprietary | NVIDIA proprietary redistributable EULA; installed from PyPI, never redistributed by saidby |
-| nvidia-cuda-nvrtc-cu12 | 12.9.86 | LicenseRef-NVIDIA-Proprietary | NVIDIA proprietary redistributable EULA; installed from PyPI, never redistributed by saidby |
 | nvidia-cudnn-cu13 | 9.24.0.43 | LicenseRef-NVIDIA-Proprietary | NVIDIA proprietary redistributable EULA; installed from PyPI, never redistributed by saidby |
 | nvidia-cusparselt-cu13 | 0.8.1 | NVIDIA Proprietary Software | NVIDIA proprietary redistributable EULA; installed from PyPI, never redistributed by saidby |
 | nvidia-nccl-cu13 | 2.30.7 | LicenseRef-NVIDIA-Proprietary | NVIDIA proprietary redistributable EULA; installed from PyPI, never redistributed by saidby |

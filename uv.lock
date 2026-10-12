@@ -3994,7 +3994,7 @@ wheels = [
 
 [[package]]
 name = "saidby"
-version = "0.4.0"
+version = "0.4.1"
 source = { editable = "." }
 dependencies = [
     { name = "ctranslate2" },
@@ -4002,7 +4002,6 @@ dependencies = [
     { name = "huggingface-hub" },
     { name = "librosa" },
     { name = "numpy" },
-    { name = "nvidia-cublas-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
     { name = "pydantic" },
     { name = "ruamel-yaml" },
     { name = "scipy" },
@@ -4015,6 +4014,9 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+cuda = [
+    { name = "nvidia-cublas-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+]
 eval = [
     { name = "jiwer" },
     { name = "pyannote-core" },
@@ -4049,7 +4051,7 @@ requires-dist = [
     { name = "jiwer", marker = "extra == 'eval'", specifier = ">=4.0" },
     { name = "librosa", specifier = ">=1.0" },
     { name = "numpy", specifier = ">=2.0" },
-    { name = "nvidia-cublas-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'", specifier = ">=12.9" },
+    { name = "nvidia-cublas-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'cuda'", specifier = ">=12.9" },
     { name = "pyannote-audio", marker = "extra == 'pyannote'", specifier = ">=4.0.7,<4.1" },
     { name = "pyannote-core", marker = "extra == 'eval'", specifier = ">=6.0" },
     { name = "pyannote-metrics", marker = "extra == 'eval'", specifier = ">=4.1" },
@@ -4063,7 +4065,7 @@ requires-dist = [
     { name = "transformers", specifier = ">=5.19,<6" },
     { name = "typer", specifier = ">=0.12" },
 ]
-provides-extras = ["pyannote", "eval"]
+provides-extras = ["cuda", "pyannote", "eval"]
 
 [package.metadata.requires-dev]
 dev = [

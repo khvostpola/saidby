@@ -6,6 +6,18 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-10-11
+
+### Changed
+- CUDA 12 cuBLAS moved to the `cuda` extra (`uv tool install 'saidby[cuda]'`). The default install no
+  longer pulls about 1 GB of NVIDIA libraries that CPU machines cannot use.
+- `saidby doctor` rewritten: one line per check with the command that fixes it, a driver check,
+  a check that PyTorch and CTranslate2 can both use the GPU, `--smoke` and `--device`.
+
+### Fixed
+- With a CPU build of PyTorch and an NVIDIA GPU present, `--device auto` chose the GPU and the
+  diarizer failed. It now falls back to the CPU and records the reason in `manifest.json`.
+
 ## [0.4.0] - 2026-10-11
 
 ### Added
