@@ -99,6 +99,8 @@ class Pipeline:
 
     def run(self, inputs: list[Path], out_root: Path) -> list[RecordingResult]:
         self.device = resolve_device(self.settings.device)
+        if self.device.note:
+            self.warnings.append(self.device.note)
         prepare(offline=True, want_cuda=self.device.kind == "cuda")
         if self.settings.directory is not None:
             self._directory, _ = load_directory(self.settings.directory)
@@ -125,6 +127,7 @@ class Pipeline:
                     out_dir=out_dir,
                     log=RunLog(out_dir / "logs" / "run.log"),
                     telemetry=TelemetrySink(out_dir / "logs" / "telemetry.jsonl", self.run_id),
+                    warnings=list(self.warnings),
                     created_at=datetime.now(UTC),
                 )
             )

@@ -1,6 +1,6 @@
 [project]
 name = "saidby"
-version = "0.4.0"
+version = "0.4.1"
 description = "Offline-first diarized transcription: CLI and Python library"
 readme = "README.md"
 license = "Apache-2.0"
@@ -33,10 +33,10 @@ dependencies = [
   "pydantic>=2.7,<3",
   "ruamel.yaml>=0.18",
   "typer>=0.12",
-  "nvidia-cublas-cu12>=12.9; sys_platform == 'linux' and platform_machine == 'x86_64'",
 ]
 
 [project.optional-dependencies]
+cuda = ["nvidia-cublas-cu12>=12.9; sys_platform == 'linux' and platform_machine == 'x86_64'"]
 pyannote = ["pyannote-audio>=4.0.7,<4.1"]
 eval = ["jiwer>=4.0", "pyannote-metrics>=4.1", "pyannote-core>=6.0"]
 
@@ -89,7 +89,7 @@ strict = true
 files = ["src", "tests", "tools"]
 
 [[tool.mypy.overrides]]
-module = ["faster_whisper.*", "pyarrow.*", "librosa.*", "pyannote.*", "transformers.*", "soundfile", "jiwer", "ruamel.*", "scipy.*"]
+module = ["faster_whisper.*", "ctranslate2.*", "pyarrow.*", "librosa.*", "pyannote.*", "transformers.*", "soundfile", "jiwer", "ruamel.*", "scipy.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
