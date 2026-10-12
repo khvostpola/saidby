@@ -243,3 +243,23 @@ def test_windows_mode_without_candidates_skips_second_pass(
     assert _words(folder)[1] == "akme"
     stages = [s.stage for s in read_manifest(folder / "manifest.json").stages]
     assert "asr_bias" not in stages
+
+
+def test_extra_terms_alone_drive_the_bias_pass_and_the_transplant(tmp_path: Path) -> None:
+    transcriber = ScriptedTranscriber()
+    folder = _run(tmp_path, transcriber, None, terms=["Acme"])
+    assert transcriber.hotwords_seen == [None, "Acme"]
+    assert "Acme" in _words(folder)
+    record = read_manifest(folder / "manifest.json").directory
+    assert record == {"files": [], "people": 0, "terms": 1, "extra_terms": 1}
+
+
+def test_extra_terms_join_the_directory_without_duplicating_its_terms(tmp_path: Path) -> None:
+    transcriber = ScriptedTranscriber()
+    folder = _run(tmp_path, transcriber, _directory(tmp_path), terms=["acme", "Rappi", "rappi"])
+    assert transcriber.hotwords_seen[1] == "Ana Acme Converge Rappi parce"
+    record = read_manifest(folder / "manifest.json").directory
+    assert record is not None
+    assert (record["terms"], record["extra_terms"]) == (4, 3)
+    assert "directory.yaml" in Path(record["path"]).name
+    assert "Rappi" not in (tmp_path / "directory.yaml").read_text()

@@ -43,7 +43,7 @@ class GlossaryStages:
         if not settings.correct:
             return
         if self.p._directory is None:
-            raise UsageError("--correct needs --directory with the terms to correct")
+            raise UsageError("--correct needs --directory or --term with the terms to correct")
         if settings.llm_url:
             if not is_local_url(settings.llm_url) and not settings.allow_remote_llm:
                 raise UsageError(

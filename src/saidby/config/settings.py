@@ -26,6 +26,7 @@ class Settings(BaseModel):
     diarizer: str = "nemotron3"
     num_speakers: int | None = None
     directory: list[Path] = []
+    terms: list[str] = []
     identify: bool = True
     identify_threshold: float = 0.5
     identify_min_speech: float = 3.0
@@ -128,6 +129,7 @@ TABLE_KEYS: dict[str, dict[str, str]] = {
     },
     "glossary": {
         "directory": "directory",
+        "terms": "terms",
         "bias": "bias",
         "bias_mode": "bias_mode",
         "transplant": "transplant",
@@ -205,5 +207,10 @@ def _from_env() -> dict[str, Any]:
         value = os.environ.get(ENV_PREFIX + field.upper())
         if value is None:
             continue
-        result[field] = [v for v in value.split(os.pathsep) if v] if field == "directory" else value
+        if field == "directory":
+            result[field] = [v for v in value.split(os.pathsep) if v]
+        elif field == "terms":
+            result[field] = [v.strip() for v in value.split(",") if v.strip()]
+        else:
+            result[field] = value
     return result

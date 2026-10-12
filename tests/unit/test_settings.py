@@ -215,3 +215,12 @@ def test_command_line_directories_replace_the_configured_ones(tmp_path: Path) ->
     config = _write(tmp_path, '[glossary]\ndirectory = "a.yaml"\n')
     settings = Settings.load(config, {"directory": [Path("/x.yaml"), Path("/y.yaml")]})
     assert settings.directory == [Path("/x.yaml"), Path("/y.yaml")]
+
+
+def test_terms_come_from_the_file_or_the_environment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config = _write(tmp_path, '[glossary]\nterms = ["Acme", "Rappi Pay"]\n')
+    assert Settings.load(config).terms == ["Acme", "Rappi Pay"]
+    monkeypatch.setenv("SAIDBY_TERMS", " Acme, ,Rappi Pay ")
+    assert Settings.load().terms == ["Acme", "Rappi Pay"]

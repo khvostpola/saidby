@@ -25,6 +25,7 @@ Arguments:
 | `--no-identify` | flag |  | Do not name speakers even if the directory has voiceprints. |
 | `--identify-threshold` | number |  | Minimum voiceprint similarity to assign a name (default 0.5). |
 | `--directory` | path |  | Directory YAML with people, voiceprints and terms; turns on the glossary. Repeat it to combine files (the last one wins). Replaces the files named in saidby.toml. |
+| `--term` | str |  | A term to spell right in this run only; repeat it for several. Not saved. |
 | `--no-bias` | flag |  | Skip the second, hotword-biased recognition pass. |
 | `--bias-mode` | str |  | full (default) biases all audio; windows (experimental) only near likely terms. |
 | `--no-transplant` | flag |  | Run the biased pass but do not merge its terms into the transcript. |
@@ -43,6 +44,7 @@ Examples:
 ```bash
 saidby process call.m4a --language es
 saidby process a.mp4 b.mp3 --directory directory.yaml
+saidby process call.m4a --term Acme --term "Rappi Pay"
 saidby process call.m4a --out results/ --directory directory.yaml --correct
 saidby process call.m4a --device cpu --asr-model tiny
 ```

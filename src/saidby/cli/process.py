@@ -22,6 +22,7 @@ EPILOG = """\b
 Examples:
   saidby process call.m4a --language es
   saidby process a.mp4 b.mp3 --directory directory.yaml
+  saidby process call.m4a --term Acme --term "Rappi Pay"
   saidby process call.m4a --out results/ --directory directory.yaml --correct
   saidby process call.m4a --device cpu --asr-model tiny
 
@@ -125,6 +126,14 @@ def process(
                 "Repeat it to combine files (the last one wins). Replaces the files named in "
                 "saidby.toml."
             ),
+            rich_help_panel=GLOSSARY,
+        ),
+    ] = None,
+    terms: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--term",
+            help="A term to spell right in this run only; repeat it for several. Not saved.",
             rich_help_panel=GLOSSARY,
         ),
     ] = None,
@@ -232,6 +241,7 @@ def process(
             "diarizer": diarizer,
             "num_speakers": num_speakers,
             "directory": directory or None,
+            "terms": terms or None,
             "identify": False if no_identify else None,
             "compare": compare,
             "bias_mode": bias_mode,

@@ -3,6 +3,16 @@
 Pass a directory (see [directory format](directory-format.md)) with `--directory` and saidby
 helps the recognizer spell your names and terms. Everything here runs on your machine.
 
+For a term that matters only in one recording, skip the file and pass it on the command line:
+
+```bash
+saidby process call.m4a --term Acme --term "Rappi Pay"
+```
+
+Extra terms join the directory for that run only, with the same bias, transplant and correction
+as the rest. Nothing is written anywhere; a term that is already in the directory is not
+duplicated. The manifest counts them under `directory.extra_terms`.
+
 ## Stages
 
 1. **Bias (`asr_bias`)**: a second transcription pass with the directory's names and terms as

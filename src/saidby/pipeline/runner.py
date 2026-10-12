@@ -36,6 +36,7 @@ from saidby.runtime import prepare
 from saidby.runtime.device import DeviceInfo, resolve_device
 from saidby.runtime.netguard import guard_network
 from saidby.schema.diarization import Diarization
+from saidby.schema.directory import Directory, Term
 from saidby.schema.ids import unique_slugs
 from saidby.schema.manifest import AudioInfo, DeviceRecord, Manifest, SourceInfo, StageRecord
 from saidby.schema.speakers import IdentificationResult
@@ -50,7 +51,6 @@ from saidby.telemetry.sink import TelemetrySink
 from saidby.telemetry.vram import VramPeak
 
 if TYPE_CHECKING:
-    from saidby.schema.directory import Directory
     from saidby.schema.engine import EngineInfo
     from saidby.schema.speakers import SpeakerEntry
 
@@ -106,10 +106,7 @@ class Pipeline:
         if self.device.note:
             self.warnings.append(self.device.note)
         prepare(offline=True, want_cuda=self.device.kind == "cuda")
-        if self.settings.directory:
-            self._directories = load_directory_set(self.settings.directory)
-            self._directory = self._directories.merged
-            self.warnings.extend(self._directories.skipped)
+        self._load_glossary()
         self.glossary.preflight()
         try:
             if self.settings.strict_offline:
@@ -128,6 +125,22 @@ class Pipeline:
                     files=len(self._recs),
                     failed=sum(1 for r in self._recs if r.status != "ok"),
                 )
+
+    def _load_glossary(self) -> None:
+        settings = self.settings
+        if settings.directory:
+            self._directories = load_directory_set(settings.directory)
+            self._directory = self._directories.merged
+            self.warnings.extend(self._directories.skipped)
+        if settings.terms:
+            base = self._directory or Directory(version=1, language=settings.language or "und")
+            seen = {t.term.casefold() for t in base.terms}
+            added: list[Term] = []
+            for text in settings.terms:
+                if text.casefold() not in seen:
+                    seen.add(text.casefold())
+                    added.append(Term(term=text))
+            self._directory = base.model_copy(update={"terms": [*base.terms, *added]})
 
     def _recordings(self, inputs: list[Path], out_root: Path) -> list[Recording]:
         slugs = unique_slugs([p.stem for p in inputs])
@@ -654,17 +667,22 @@ class Pipeline:
         return {"bias": self.settings.bias, **rec.glossary}
 
     def _directory_record(self) -> dict[str, Any] | None:
-        if self._directories is None:
+        if self._directory is None:
             return None
-        files = [
-            {"path": str(f.path), "sha256": file_sha256(f.path)} for f in self._directories.files
-        ]
-        return {
-            **files[-1],
+        files = (
+            [{"path": str(f.path), "sha256": file_sha256(f.path)} for f in self._directories.files]
+            if self._directories
+            else []
+        )
+        record: dict[str, Any] = {
+            **(files[-1] if files else {}),
             "files": files,
-            "people": len(self._directories.merged.people),
-            "terms": len(self._directories.merged.terms),
+            "people": len(self._directory.people),
+            "terms": len(self._directory.terms),
         }
+        if self.settings.terms:
+            record["extra_terms"] = len(self.settings.terms)
+        return record
 
     def _finalize(self, rec: Recording, total: int) -> RecordingResult:
         speakers = self._speakers.get(rec.slug, [])

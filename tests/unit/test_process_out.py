@@ -106,3 +106,12 @@ def test_directory_comes_from_the_project_file_without_the_flag(
     monkeypatch.chdir(tmp_path)
     assert runner.invoke(app, ["process", "call.m4a"]).exit_code == 0
     assert recording.settings_seen[0].directory == [tmp_path / "from-config.yaml"]
+
+
+def test_term_flag_is_repeatable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, recording: type[_RecordingPipeline]
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    args = ["process", "call.m4a", "--term", "Acme", "--term", "Rappi Pay"]
+    assert runner.invoke(app, args).exit_code == 0
+    assert recording.settings_seen[0].terms == ["Acme", "Rappi Pay"]
