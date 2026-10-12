@@ -2,12 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import json
-import os
 import sys
 import threading
 import time
 from datetime import datetime
 from typing import Any, TextIO
+
+from saidby.cli.term import Terminal, detect
 
 ACTIVITY = {
     "ingest": "converting the audio",
@@ -45,16 +46,14 @@ class Progress:
         stream: TextIO | None = None,
         delay_s: float = 0.4,
         interval_s: float = 0.5,
+        terminal: Terminal | None = None,
     ) -> None:
         self.mode = mode
         self.stream: TextIO = stream or sys.stderr
         self.delay_s = delay_s
         self.interval_s = interval_s
-        self.live = (
-            mode == "human"
-            and self.stream.isatty()
-            and os.environ.get("TERM", "") not in {"", "dumb"}
-        )
+        self.terminal = terminal or detect(self.stream)
+        self.live = mode == "human" and self.terminal.tty
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
         self._drew = False
@@ -77,7 +76,8 @@ class Progress:
         activity = ACTIVITY.get(stage, "working")
         while True:
             elapsed = fmt_clock(time.monotonic() - started)
-            self.stream.write(f"{CLEAR}[{index}/{total}] {stage:<10} {activity}...  {elapsed}")
+            line = f"[{index}/{total}] {stage:<10} {activity}...  {elapsed}"
+            self.stream.write(CLEAR + self.terminal.fit(line))
             self.stream.flush()
             self._drew = True
             if self._stop.wait(self.interval_s):

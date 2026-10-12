@@ -37,6 +37,8 @@ All notable changes are documented here, following
   `--config FILE` still means exactly that one file.
 
 ### Fixed
+- The live status line no longer wraps (and leaves stray text behind) on a narrow terminal: it is
+  cut to the terminal width.
 - `saidby review` no longer loses the edits you already made when a later answer fails (an
   unknown `@speaker`) or you press Ctrl+C: they are saved before the command stops.
 
