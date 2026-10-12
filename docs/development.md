@@ -43,3 +43,10 @@ Diagrams are Mermaid blocks inside the Markdown, which GitHub draws in the reade
 
 The tests also check that every link, image and anchor in the documentation resolves and that
 every `saidby ...` command shown in a code block exists with the options it uses.
+
+## Dependency notes
+
+PyAV 19.0.1, which faster-whisper installs, breaks `faster_whisper.decode_audio` with `open() got
+an unexpected keyword argument 'metadata_errors'`. saidby never calls it: `ingest` decodes with
+ffmpeg and the recognizer receives arrays, not file names. If a code path ever hands a file name
+to faster-whisper, limit `av` in `pyproject.toml` first.
