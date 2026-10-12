@@ -15,12 +15,11 @@ from saidby.cli import app
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
 
-import diagrams  # noqa: E402
 import gen_cli_reference  # noqa: E402
 
 DOCS = sorted([ROOT / "README.md", ROOT / "CONTRIBUTING.md", *(ROOT / "docs").glob("*.md")])
 LINK = re.compile(r"(?<!\!)\[[^\]]*\]\(([^)\s]+)\)")
-IMAGE = re.compile(r"!\[[^\]]*\]\(([^)\s]+)\)")
+IMAGE = re.compile(r"!\[[^\]]*\]\(([^)\s]+)\)|<img[^>]*\ssrc=\"([^\"]+)\"")
 FENCE = re.compile(r"```([a-z]*)\n(.*?)```", re.S)
 BASE = "https://github.com/khvostpola/saidby/blob/main/"
 RAW = "https://raw.githubusercontent.com/khvostpola/saidby/main/"
@@ -52,7 +51,8 @@ def _local(target: str, source: Path) -> tuple[Path, str] | None:
 def test_links_images_and_anchors_resolve(doc: Path) -> None:
     text = doc.read_text()
     broken = []
-    for target in [*LINK.findall(text), *IMAGE.findall(text)]:
+    images = [a or b for a, b in IMAGE.findall(text)]
+    for target in [*LINK.findall(text), *images]:
         resolved = _local(target, doc)
         if resolved is None:
             continue
@@ -110,20 +110,30 @@ def test_every_documented_command_and_option_exists(doc: str, line: str) -> None
     assert used <= known, f"{doc}: {line}: unknown option(s) {sorted(used - known)}"
 
 
-def test_diagrams_are_up_to_date(tmp_path: Path) -> None:
-    for name, build in diagrams.DIAGRAMS.items():
-        assert (ROOT / "docs/img" / f"{name}.svg").read_text() == build(), (
-            f"docs/img/{name}.svg is stale: run `uv run python tools/diagrams.py`"
-        )
-
-
 def test_cli_reference_is_up_to_date() -> None:
     assert (ROOT / "docs/cli-reference.md").read_text() == gen_cli_reference.render(), (
         "docs/cli-reference.md is stale: run `uv run python tools/gen_cli_reference.py`"
     )
 
 
-def test_every_svg_is_referenced_by_the_docs() -> None:
-    text = "\n".join(p.read_text() for p in DOCS)
-    for svg in (ROOT / "docs/img").glob("*.svg"):
-        assert svg.name in text, f"{svg.name} is not used anywhere"
+MERMAID = re.compile(r"```mermaid\n(.*?)```", re.S)
+DIAGRAM_TYPES = {"flowchart", "sequenceDiagram", "gantt", "stateDiagram-v2", "timeline"}
+
+
+def _mermaid_blocks() -> list[tuple[str, str]]:
+    return [(doc.name, block) for doc in DOCS for block in MERMAID.findall(doc.read_text())]
+
+
+def test_there_are_diagrams_and_readme_has_none() -> None:
+    assert len(_mermaid_blocks()) >= 5
+    assert "```mermaid" not in (ROOT / "README.md").read_text(), "PyPI does not render Mermaid"
+
+
+@pytest.mark.parametrize(("doc", "block"), _mermaid_blocks())
+def test_mermaid_blocks_are_well_formed(doc: str, block: str) -> None:
+    first = block.strip().splitlines()[0].split()[0]
+    assert first in DIAGRAM_TYPES, f"{doc}: unknown diagram type {first!r}"
+    assert block.count('"') % 2 == 0, f"{doc}: unbalanced quotes"
+    for opening, closing in ("[]", "()", "{}"):
+        assert block.count(opening) == block.count(closing), f"{doc}: unbalanced {opening}{closing}"
+    assert "<br>" not in block, f"{doc}: use <br/>"

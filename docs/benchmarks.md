@@ -52,6 +52,28 @@ likely terms (`--bias-mode windows`) was faster but found fewer: 41 %.
 | Plus glossary (second pass), voiceprints and the LLM | about 5 minutes |
 | CPU only, 20 threads, large-v3 int8 | recognizer 0.39 times real time, diarizer 0.05: about 6 to 7 minutes |
 
+Where the five minutes go, in one real run:
+
+```mermaid
+gantt
+    title A 15-minute call on a laptop GPU, with a directory and --correct
+    dateFormat X
+    axisFormat %M:%S
+    section Always
+    ingest                 :0, 1
+    transcribe             :1, 94
+    diarize                :247, 260
+    align, tracks, files   :305, 307
+    section With a directory
+    biased pass            :94, 247
+    identify               :260, 261
+    section With --correct
+    local LLM              :261, 305
+```
+
+The second pass over the audio takes half the time; the voiceprints take a second and the LLM
+under a minute. `--no-bias` skips the second pass.
+
 GPU memory peaks at 5.4 GB for the recognizer and 5.6 GB for the LLM; they never run at the same
 time.
 

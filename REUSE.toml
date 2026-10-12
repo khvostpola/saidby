@@ -4,7 +4,7 @@ version = 1
 path = [
   "**/*.md", "**/*.toml", "**/*.json", "**/*.yml", "**/*.yaml", ".gitignore", ".gitattributes",
   ".editorconfig", ".python-version", "uv.lock", "py.typed", "src/saidby/py.typed",
-  ".github/CODEOWNERS", "NOTICE", "LICENSE", "src/saidby/evaluation/arbitrate.html", "docs/img/*.svg",
+  ".github/CODEOWNERS", "NOTICE", "LICENSE", "src/saidby/evaluation/arbitrate.html",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 the saidby authors"
@@ -27,3 +27,9 @@ path = ["fixtures/conversations/**", "fixtures/MANIFEST.json", "fixtures/ATTRIBU
 precedence = "override"
 SPDX-FileCopyrightText = "Multilingual LibriSpeech authors and LibriVox readers"
 SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["docs/img/logo.svg"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 the saidby authors"
+SPDX-License-Identifier = "CC0-1.0"

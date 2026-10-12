@@ -18,12 +18,13 @@ Fixtures: `uv run python tools/build_fixtures.py synthetic` regenerates the tone
 
 ## Generated documentation
 
-Two files are generated and checked by the tests, so they cannot go stale:
+One file is generated and checked by the tests, so it cannot go stale:
 
 ```bash
 uv run python tools/gen_cli_reference.py   # docs/cli-reference.md, from the CLI's own help
-uv run python tools/diagrams.py            # docs/img/*.svg
 ```
+
+Diagrams are Mermaid blocks inside the Markdown, which GitHub draws in the reader's theme.
 
 The tests also check that every link, image and anchor in the documentation resolves and that
 every `saidby ...` command shown in a code block exists with the options it uses.

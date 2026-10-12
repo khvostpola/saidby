@@ -1,5 +1,7 @@
 # Documentation
 
+<img src="img/logo.svg" width="160" alt="A pixel-art cassette tape labelled saidby">
+
 **Start here**
 
 - [Getting started](getting-started.md): install, first transcript, naming speakers, your own terms.

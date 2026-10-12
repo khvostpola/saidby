@@ -7,7 +7,7 @@ All notable changes are documented here, following
 ## [Unreleased]
 
 ### Added
-- Documentation: a getting-started guide, a how-it-works page with diagrams, a commands guide,
+- Documentation: a getting-started guide, a how-it-works page with Mermaid diagrams (GitHub draws them in the reader's theme), a pixel-art cassette logo, a commands guide,
   troubleshooting, benchmarks with their limits, and a generated command reference. Tests keep
   links, anchors, documented commands and diagrams in sync.
 - `saidby --help` is grouped by what you are trying to do, `-h` works everywhere, every option and

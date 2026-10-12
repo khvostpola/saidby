@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/khvostpola/saidby/main/docs/img/logo.svg" width="260" alt="A pixel-art cassette tape labelled saidby">
+</p>
+
 # saidby
 
 **Who said what, and when, on your own machine.**
@@ -11,7 +15,13 @@ a command-line tool and a Python library.
 [![CI](https://github.com/khvostpola/saidby/actions/workflows/ci.yml/badge.svg)](https://github.com/khvostpola/saidby/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](https://github.com/khvostpola/saidby/blob/main/LICENSE)
 
-![From a recording to a folder of results](https://raw.githubusercontent.com/khvostpola/saidby/main/docs/img/pipeline.svg)
+```
+recording → ingest → transcribe → diarize → align → tracks → results folder
+                          │            │
+                  [bias + transplant]  [compare] [identify] [correct]     [ ] = only when you ask for it
+```
+
+How the stages fit, with diagrams: [how it works](https://github.com/khvostpola/saidby/blob/main/docs/how-it-works.md).
 
 ## What you get
 

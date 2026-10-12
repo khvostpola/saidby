@@ -81,7 +81,7 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "PL", "RUF", "PT", "N", "TC"]
 ignore = ["PLR0913", "PLR0917", "PLR2004", "PLC0415"]
 
 [tool.ruff.lint.per-file-ignores]
-"tools/diagrams.py" = ["E501"]
+"tools/logo.py" = ["PLR0912"]
 
 [tool.ruff.format]
 docstring-code-format = true

@@ -5,11 +5,30 @@ subtitles, and one audio track per person. Everything runs on your machine, in a
 of small stages. Each stage reads files, writes files, and can be skipped when its result is
 already there.
 
-![From a recording to a folder of results](img/pipeline.svg)
+```mermaid
+flowchart TB
+    rec(["☎️ Recording"]) --> ingest["📼 <b>ingest</b><br/>ffmpeg to 16 kHz mono"]
+    ingest --> asr["📠 <b>transcribe</b><br/>faster-whisper"]
+    asr --> diarize["📻 <b>diarize</b><br/>Nemotron-3"]
+    diarize --> align["<b>align</b><br/>each word gets a speaker"]
+    align --> tracks["🎚️ <b>tracks</b><br/>one FLAC per speaker"]
+    tracks --> out(["💾 Results folder"])
 
-Stages with a dashed border only run when you ask for them: a directory (`--directory`) turns on
-the glossary and the voiceprints, `--compare` adds a second diarizer and `--correct` adds the LLM.
-Without any of that you get the solid-border path: transcript, speakers and tracks.
+    asr -. "--directory" .-> bias["<b>bias + transplant</b><br/>a second pass that knows your terms"]
+    bias -.-> diarize
+    diarize -. "--compare" .-> compare["<b>compare</b><br/>a second diarizer"]
+    compare -.-> align
+    diarize -. "voiceprints" .-> identify["📇 <b>identify</b><br/>names the speakers"]
+    identify -. "--correct" .-> correct["<b>correct</b><br/>local LLM, strict limits"]
+    correct -.-> align
+
+    classDef opt stroke-dasharray: 6 4
+    class bias,compare,identify,correct opt
+```
+
+The solid line is what every run does: transcript, speakers and tracks. The dotted detours only
+run when you ask for them: a directory (`--directory`) turns on the glossary and the voiceprints,
+`--compare` adds a second diarizer and `--correct` adds the LLM.
 
 ## Stage by stage
 
@@ -55,7 +74,23 @@ succeeds and kept when it fails, so the next run starts from the last finished s
 
 ## Names and terms
 
-![How names and terms end up spelled right](img/glossary.svg)
+```mermaid
+flowchart TB
+    audio(["📼 Audio"]) --> plain["<b>Plain pass</b><br/>faithful to what is said,<br/>terms come out garbled"]
+    audio --> biased["<b>Biased pass</b><br/>your terms as hints,<br/>can skip passages"]
+    plain --> transplant["<b>Transplant</b><br/>keep the plain text,<br/>take only your words"]
+    biased --> transplant
+    transplant --> slang["<b>Slang unified</b><br/>variants become one spelling"]
+    slang --> final(["💾 Final transcript"])
+    slang -. "--correct" .-> llm["<b>LLM proposals</b><br/>1 to 3 words, a directory term"]
+    llm --> guard{"<b>Guardrails</b><br/>checked by code"}
+    guard -->|accepted| final
+    guard -->|rejected| log
+    final --- log[("corrections.jsonl<br/>every change, with its reason")]
+
+    classDef opt stroke-dasharray: 6 4
+    class llm opt
+```
 
 A recognizer does not know your company, your product or your colleagues. It writes what it
 heard, so "Acme" becomes "akme" and a name becomes a similar common word. Giving it a list of
@@ -80,7 +115,27 @@ silent. The numbers behind this design are in [benchmarks](benchmarks.md).
 
 ## People
 
-![Naming the speakers, with consent](img/people.svg)
+```mermaid
+sequenceDiagram
+    actor You
+    participant S as saidby
+    participant D as directory.yaml
+
+    Note over You,D: Once per person
+    You->>S: saidby enroll out/call --speaker SPEAKER_00=ana
+    alt consent recorded for ana
+        S->>D: store the voiceprint (numbers, never audio)
+    else no consent
+        S-->>You: refuses, exit code 5
+    end
+
+    Note over You,D: Every later run
+    You->>S: saidby process call.m4a --directory directory.yaml
+    S->>D: read the voiceprints
+    S->>S: compare each speaker's voice with each voiceprint
+    Note right of S: needs similarity of at least 0.5<br/>and 3 s of speech, one person per speaker
+    S-->>You: "Ana Gómez: ..." (or SPEAKER_01 if nobody matches)
+```
 
 A diarizer only says "speaker 0" and "speaker 1". To put names on them, saidby compares each
 speaker's voice with the voiceprints in your directory. A voiceprint is a short list of numbers
@@ -92,7 +147,13 @@ ones and tells you to enroll again instead of comparing numbers that mean differ
 
 ## Getting better
 
-![A loop that makes the next run better](img/loop.svg)
+```mermaid
+flowchart LR
+    run["<b>1. Run</b><br/>saidby process<br/>--directory --compare"] --> review["<b>2. Review</b><br/>saidby review out/call<br/>disagreements, rejected proposals,<br/>low-confidence words"]
+    review --> fix["<b>3. You fix it</b><br/>type the right text<br/>or who spoke"]
+    fix --> learn["<b>4. Directory learns</b><br/>new spellings become variants<br/>(with a backup)"]
+    learn -->|"the next run starts better"| run
+```
 
 No automatic system is right everywhere, so saidby is built around checking its work. With
 `--compare`, two diarizers vote on every span; where they disagree, a person should look.
