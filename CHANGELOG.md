@@ -6,6 +6,8 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-10-11
+
 ### Added
 - Documentation: a getting-started guide, a how-it-works page with Mermaid diagrams (GitHub draws them in the reader's theme), a pixel-art cassette logo, a commands guide,
   troubleshooting, benchmarks with their limits, and a generated command reference. Tests keep
