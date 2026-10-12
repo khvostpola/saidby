@@ -59,18 +59,19 @@ saidby process call.m4a --out out/ --language es
 ```
 
 ```
-[1/1] ingest      ffmpeg · 15:07 of audio   0:01
-[1/1] asr         faster-whisper · large-v3 · cuda · 15:07 of audio   1:33  0.103x
-[1/1] diarize     nemotron3 · cuda · 2 speakers   0:08  0.009x
-[1/1] align       word-to-speaker · 2 speakers   0:00
-[1/1] tracks      2 tracks · aligned FLAC   0:01
-[1/1] outputs     txt · vtt · words.json · rttm   0:00
-[1/1] done        out/call · 2 speakers
-[total]    1:52   started 9:27:10 PM · finished 9:29:02 PM · 15:07 of audio at 0.12x
+device      GPU · cuda · NVIDIA GeForce RTX 4060 Laptop GPU · 8 GB   (auto → cuda)
+[1/1] audio      ffmpeg · 15:07 of audio   0:01
+[1/1] transcript faster-whisper large-v3 · cuda   1:33 · 9.8x faster than the audio
+[1/1] speakers   nemotron3 · cuda · 2 speakers   0:08 · 113x faster than the audio
+[1/1] done       out/call · 2 speakers · 2 tracks
+[total]    1:52   started 9:27:10 PM · finished 9:29:02 PM · 15:07 of audio · 8.1x faster than the audio
 ```
 
-`0.103x` is how long it took relative to the length of the audio. The last line is the whole run:
-its duration, when it started and finished, and the speed over all the audio. Open `out/call/transcript.txt`:
+The first line says which device does the work. Then one line per step that takes time, with how
+fast it went compared with the length of the audio; the quick steps (aligning words, writing the
+tracks and files) are counted in the `done` line. The last line is the whole run: its duration,
+when it started and finished, and the speed over all the audio. `logs/run.log` and
+`--progress json` list every step. Open `out/call/transcript.txt`:
 
 ```
 [00:00:03] SPEAKER_00: Hola, buenas tardes, ¿cómo vas con el informe?

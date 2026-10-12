@@ -4,7 +4,7 @@
 import os
 
 from saidby.cli.term import Terminal
-from saidby.i18n import _
+from saidby.i18n import _, ngettext
 from saidby.runtime.device import DeviceInfo
 from saidby.runtime.usage import CpuUsage, GpuUsage, Usage
 
@@ -73,3 +73,55 @@ def format_usage(usage: Usage) -> str:
         return f"GPU {used:.1f}/{total:.1f} GB · {usage.util_pct}%"
     assert isinstance(usage, CpuUsage)
     return _("CPU {threads} threads · {pct}%").format(threads=usage.threads, pct=usage.util_pct)
+
+
+FOLDED = frozenset({"transplant", "align", "tracks", "outputs"})
+
+
+def stage_label(stage: str) -> str:
+    labels = {
+        "ingest": _("audio"),
+        "asr": _("transcript"),
+        "asr_bias": _("terms"),
+        "diarize": _("speakers"),
+        "compare": _("compare"),
+        "identify": _("names"),
+        "correct": _("correct"),
+    }
+    return labels.get(stage, stage)
+
+
+def label_width() -> int:
+    stages = ("ingest", "asr", "asr_bias", "diarize", "compare", "identify", "correct")
+    return max(10, *(len(stage_label(s)) for s in stages))
+
+
+def status_label(status: str) -> str:
+    labels = {
+        "done": _("done"),
+        "failed": _("failed"),
+        "interrupted": _("interrupted"),
+    }
+    return labels.get(status, status)
+
+
+def _compact(value: float) -> str:
+    text = f"{value:.0f}" if value >= 10 else f"{value:.1f}"
+    return text.removesuffix(".0")
+
+
+def speed_text(rtf: float) -> str:
+    if rtf <= 1:
+        return _("{factor}x faster than the audio").format(factor=_compact(1 / rtf))
+    return _("{factor}x slower than the audio").format(factor=_compact(rtf))
+
+
+def done_detail(speakers: int, tracks: int, terms_fixed: int) -> str:
+    parts = [ngettext("{n} speaker", "{n} speakers", speakers).format(n=speakers)]
+    if tracks:
+        parts.append(ngettext("{n} track", "{n} tracks", tracks).format(n=tracks))
+    if terms_fixed:
+        parts.append(
+            ngettext("{n} term fixed", "{n} terms fixed", terms_fixed).format(n=terms_fixed)
+        )
+    return " · ".join(parts)

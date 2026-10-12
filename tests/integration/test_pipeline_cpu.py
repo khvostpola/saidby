@@ -202,7 +202,7 @@ def test_human_progress_prints_the_device_line_first(
     lines = capsys.readouterr().err.strip().splitlines()
     assert lines[0].startswith("device")
     assert lines[0].endswith("(--device cpu)")
-    assert lines[1].startswith("[1/1] ingest")
+    assert lines[1].startswith("[1/1] audio")
 
 
 def test_json_progress_announces_each_model_load_once(
@@ -220,3 +220,22 @@ def test_json_progress_announces_each_model_load_once(
     assert loads == [("asr", "fake"), ("diarize", "fake")]
     asr = [e["event"] for e in events if e.get("stage") == "asr"]
     assert asr[:3] == ["stage.start", "stage.loading", "stage.end"]
+
+
+def test_human_progress_folds_the_instant_stages_into_the_done_line(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    pipeline = Pipeline(
+        Settings(device="cpu", language="es"),
+        transcriber=FakeTranscriber(),
+        diarizer=FakeDiarizer(rttm=RTTM),
+        progress=Progress("human"),
+    )
+    pipeline.run([FIXTURE], tmp_path)
+    lines = capsys.readouterr().err.strip().splitlines()
+    stages = [line.split()[1] for line in lines if line.startswith("[1/1]")]
+    assert stages == ["audio", "transcript", "speakers", "done"]
+    done = next(line for line in lines if line.startswith("[1/1] done"))
+    assert done.endswith("2 speakers · 2 tracks")
+    manifest = read_manifest(tmp_path / "tones_2spk_10s/manifest.json")
+    assert [s.stage for s in manifest.stages][-3:] == ["align", "tracks", "outputs"]

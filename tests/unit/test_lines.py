@@ -5,7 +5,17 @@ import os
 
 import pytest
 
-from saidby.cli.lines import activity_text, format_device, format_usage, loading_text
+from saidby.cli.lines import (
+    activity_text,
+    done_detail,
+    format_device,
+    format_usage,
+    label_width,
+    loading_text,
+    speed_text,
+    stage_label,
+    status_label,
+)
 from saidby.cli.term import Terminal
 from saidby.runtime.device import DeviceInfo
 from saidby.runtime.usage import CpuUsage, GpuUsage
@@ -78,3 +88,38 @@ def test_activity_and_loading_text() -> None:
     assert loading_text("large-v3", DeviceInfo("cuda")) == "loading large-v3 into the GPU"
     assert loading_text("large-v3", DeviceInfo("cpu", reason="no_gpu")) == "loading large-v3"
     assert loading_text("large-v3", None) == "loading large-v3"
+
+
+@pytest.mark.parametrize(
+    ("rtf", "text"),
+    [
+        (0.1, "10x faster than the audio"),
+        (0.0409, "24x faster than the audio"),
+        (0.25, "4x faster than the audio"),
+        (0.112, "8.9x faster than the audio"),
+        (1.0, "1x faster than the audio"),
+        (1.5, "1.5x slower than the audio"),
+        (12.0, "12x slower than the audio"),
+    ],
+)
+def test_speed_is_the_audio_time_over_the_work_time(rtf: float, text: str) -> None:
+    assert speed_text(rtf) == text
+
+
+def test_done_detail_counts_what_the_folded_stages_made() -> None:
+    assert done_detail(2, 2, 3) == "2 speakers · 2 tracks · 3 terms fixed"
+    assert done_detail(1, 1, 1) == "1 speaker · 1 track · 1 term fixed"
+    assert done_detail(0, 0, 0) == "0 speakers"
+
+
+def test_labels_and_the_shared_width() -> None:
+    assert [stage_label(s) for s in ("ingest", "asr", "asr_bias", "diarize", "identify")] == [
+        "audio",
+        "transcript",
+        "terms",
+        "speakers",
+        "names",
+    ]
+    assert stage_label("align") == "align"
+    assert label_width() == 10
+    assert status_label("done") == "done"

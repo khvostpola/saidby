@@ -133,8 +133,7 @@ class GlossaryStages:
             "hotwords_tokens": hot.tokens,
             "hotwords_truncated": hot.truncated,
             "parts": [
-                engine.info.name,
-                engine.info.model,
+                f"{engine.info.name} {engine.info.model}",
                 f"hotwords in {len(windows)} windows" if windows is not None else "with hotwords",
             ],
         }

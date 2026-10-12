@@ -36,6 +36,11 @@ All notable changes are documented here, following
   to the configured directory when `--directory` is not given.
 
 ### Changed
+- Stage lines are easier to read: steps have plain names (`audio`, `transcript`, `terms`,
+  `speakers`, `names`), the speed is written out ("9.8x faster than the audio" instead of
+  `0.103x`), and the quick steps (`transplant`, `align`, `tracks`, `outputs`) are counted in the
+  `done` line instead of getting a line each. The `[total]` line uses the same wording.
+  `logs/run.log`, the manifest and `--progress json` still list every step by its id.
 - A voiceprint is only used to name speakers when the `consent.yaml` next to the file that
   holds it has a record for that person. Voiceprints without one are skipped and reported in
   the manifest (`voiceprints_skipped`).

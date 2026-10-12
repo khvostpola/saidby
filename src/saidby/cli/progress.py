@@ -12,13 +12,19 @@ from typing import Any, TextIO
 
 from saidby import __version__
 from saidby.cli.lines import (
+    FOLDED,
     LABEL_WIDTH,
     activity_text,
     format_device,
     format_usage,
+    label_width,
     loading_text,
+    speed_text,
+    stage_label,
+    status_label,
 )
 from saidby.cli.term import Terminal, detect
+from saidby.i18n import _
 from saidby.runtime.device import DeviceInfo
 from saidby.runtime.usage import Probe
 
@@ -70,7 +76,7 @@ class Progress:
         if self.mode == "json":
             print(json.dumps({"event": "stage.start", "file": slug, "stage": stage}), flush=True)
         else:
-            prefix = f"[{index}/{total}] {stage:<10} "
+            prefix = f"[{index}/{total}] {stage_label(stage):<{label_width()}} "
             self._start_live(prefix, activity_text(stage), with_usage=True)
 
     def _start_live(self, prefix: str, activity: str, *, with_usage: bool = False) -> None:
@@ -188,9 +194,12 @@ class Progress:
                 **(extra or {}),
             }
             print(json.dumps(event), flush=True)
-        elif self.mode == "human":
-            tail = "cached" if cached else f"{fmt_clock(wall_s)}" + (f"  {rtf:.3f}x" if rtf else "")
-            self._line(f"[{index}/{total}] {stage:<10} {' · '.join(parts)}   {tail}")
+        elif self.mode == "human" and stage not in FOLDED:
+            tail = _("cached") if cached else fmt_clock(wall_s)
+            if rtf and not cached:
+                tail += f" · {speed_text(rtf)}"
+            label = f"{stage_label(stage):<{label_width()}}"
+            self._line(f"[{index}/{total}] {label} {' · '.join(parts)}   {tail}")
 
     def file_end(
         self, *, index: int, total: int, slug: str, status: str, out: str, detail: str
@@ -202,7 +211,9 @@ class Progress:
                 flush=True,
             )
         elif self.mode == "human":
-            self._line(f"[{index}/{total}] {status:<10} {out} · {detail}")
+            self._line(
+                f"[{index}/{total}] {status_label(status):<{label_width()}} {out} · {detail}"
+            )
 
     def stage_error(
         self, *, index: int, total: int, slug: str, stage: str, error_type: str
@@ -216,7 +227,8 @@ class Progress:
                 flush=True,
             )
         elif self.mode == "human":
-            self._line(f"[{index}/{total}] {stage:<10} failed: {error_type}")
+            label = f"{stage_label(stage):<{label_width()}}"
+            self._line(f"[{index}/{total}] {label} {_('failed')}: {error_type}")
 
     def summary(
         self,
@@ -250,7 +262,7 @@ class Progress:
             parts = [
                 f"started {fmt_moment(started)}",
                 f"finished {fmt_moment(finished, started)}",
-                f"{fmt_clock(audio_s)} of audio" + (f" at {rtf:.2f}x" if rtf else ""),
+                f"{fmt_clock(audio_s)} of audio" + (f" · {speed_text(rtf)}" if rtf else ""),
             ]
             if files > 1:
                 parts.append(f"{files} files")

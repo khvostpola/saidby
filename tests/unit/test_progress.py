@@ -40,7 +40,7 @@ def test_slow_stage_shows_a_live_line_then_the_final_one(monkeypatch: pytest.Mon
     time.sleep(0.3)
     _end(progress)
     text = stream.getvalue()
-    assert "[1/1] asr" in text
+    assert "[1/1] transcript" in text
     assert "transcribing..." in text
     assert text.count("transcribing...") >= 2
     assert text.rstrip().endswith("engine   0:01")
@@ -99,7 +99,8 @@ def test_summary_line_has_total_start_finish_and_audio() -> None:
     )
     line = stream.getvalue().strip()
     assert line == (
-        "[total]    0:35   started 9:27:10 PM · finished 9:27:45 PM · 3:46 of audio at 0.16x"
+        "[total]    0:35   started 9:27:10 PM · finished 9:27:45 PM · "
+        "3:46 of audio · 6.4x faster than the audio"
     )
 
 
@@ -299,3 +300,72 @@ def test_json_mode_announces_a_model_load(capsys: pytest.CaptureFixture[str]) ->
         "stage": "asr",
         "model": "large-v3",
     }
+
+
+def _stage_line(rtf: float | None, cached: bool = False, stage: str = "asr") -> str:
+    stream = io.StringIO()
+    Progress("human", stream=stream).stage_end(
+        index=1,
+        total=2,
+        slug="call",
+        stage=stage,
+        parts=["faster-whisper large-v3", "cuda"],
+        wall_s=25.0,
+        rtf=rtf,
+        cached=cached,
+    )
+    return stream.getvalue()
+
+
+def test_stage_lines_use_human_names_and_explain_the_speed() -> None:
+    assert _stage_line(0.112) == (
+        "[1/2] transcript faster-whisper large-v3 · cuda   0:25 · 8.9x faster than the audio\n"
+    )
+    assert _stage_line(None, stage="ingest") == (
+        "[1/2] audio      faster-whisper large-v3 · cuda   0:25\n"
+    )
+
+
+def test_a_slower_than_real_time_run_says_so() -> None:
+    assert "· 1.1x slower than the audio" in _stage_line(1.12)
+
+
+def test_a_cached_stage_says_cached_and_no_speed() -> None:
+    assert _stage_line(0.5, cached=True).endswith("   cached\n")
+
+
+@pytest.mark.parametrize("stage", ["transplant", "align", "tracks", "outputs"])
+def test_instant_stages_print_no_line(stage: str) -> None:
+    assert _stage_line(None, stage=stage) == ""
+
+
+def test_instant_stages_still_emit_their_json_events(capsys: pytest.CaptureFixture[str]) -> None:
+    progress = Progress("json")
+    progress.stage_end(
+        index=1, total=1, slug="call", stage="align", parts=[], wall_s=0.01, rtf=None, cached=False
+    )
+    assert json.loads(capsys.readouterr().out)["stage"] == "align"
+
+
+def test_the_done_line_carries_the_counts_of_the_folded_stages() -> None:
+    stream = io.StringIO()
+    Progress("human", stream=stream).file_end(
+        index=1,
+        total=1,
+        slug="call",
+        status="done",
+        out="saidby/call",
+        detail="2 speakers · 2 tracks · 3 terms fixed",
+    )
+    assert (
+        stream.getvalue()
+        == "[1/1] done       saidby/call · 2 speakers · 2 tracks · 3 terms fixed\n"
+    )
+
+
+def test_a_failed_stage_uses_its_human_name() -> None:
+    stream = io.StringIO()
+    Progress("human", stream=stream).stage_error(
+        index=1, total=1, slug="call", stage="diarize", error_type="StageError"
+    )
+    assert stream.getvalue() == "[1/1] speakers   failed: StageError\n"

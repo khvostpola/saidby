@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from saidby import __version__
+from saidby.cli.lines import done_detail
 from saidby.cli.progress import Progress, fmt_clock
 from saidby.config.settings import Settings
 from saidby.errors import InputError, SaidbyError, StageError
@@ -43,7 +44,7 @@ from saidby.schema.diarization import Diarization
 from saidby.schema.directory import Directory, Term
 from saidby.schema.ids import unique_slugs
 from saidby.schema.manifest import AudioInfo, DeviceRecord, Manifest, SourceInfo, StageRecord
-from saidby.schema.speakers import IdentificationResult
+from saidby.schema.speakers import IdentificationResult, SpeakerEntry
 from saidby.schema.telemetry import StageName
 from saidby.schema.transcript import Transcript
 from saidby.stages.align import assign_speakers
@@ -56,7 +57,6 @@ from saidby.telemetry.vram import VramPeak
 
 if TYPE_CHECKING:
     from saidby.schema.engine import EngineInfo
-    from saidby.schema.speakers import SpeakerEntry
 
 STAGES: tuple[StageName, ...] = (
     "ingest",
@@ -419,7 +419,7 @@ class Pipeline:
         )
         artifact = rec.work_dir / "transcript.asr.json"
         self.text[rec.slug] = TextArtifact(artifact, key)
-        parts = [engine.info.name, engine.info.model, engine.info.device or "cpu"]
+        parts = [f"{engine.info.name} {engine.info.model}", engine.info.device or "cpu"]
         if cache.is_fresh(rec.work_dir, "asr", key, [artifact]):
             transcript = read_transcript(artifact)
             return {
@@ -445,7 +445,7 @@ class Pipeline:
             "vram_peak_mb": vram.peak,
             "segments": len(transcript.segments),
             "words": len(transcript.words()),
-            "parts": [*parts, f"{fmt_clock(rec.duration_s)} of audio"],
+            "parts": parts,
         }
 
     def _diarizer_engine(self) -> Diarizer:
@@ -699,6 +699,13 @@ class Pipeline:
             record["extra_terms"] = len(self.settings.terms)
         return record
 
+    def _done_detail(self, rec: Recording, speakers: list[SpeakerEntry]) -> str:
+        fixed = sum(
+            int(rec.glossary.get(key, 0))
+            for key in ("transplant_swaps", "dialect_swaps", "llm_accepted")
+        )
+        return done_detail(len(speakers), sum(1 for s in speakers if s.track), fixed)
+
     def _finalize(self, rec: Recording, total: int) -> RecordingResult:
         speakers = self._speakers.get(rec.slug, [])
         manifest = Manifest(
@@ -755,7 +762,7 @@ class Pipeline:
         if rec.status == "ok" and not self.settings.keep_intermediates:
             shutil.rmtree(rec.work_dir, ignore_errors=True)
         detail = (
-            f"{len(speakers)} speakers"
+            self._done_detail(rec, speakers)
             if rec.status == "ok"
             else f"{rec.failed_stage}: {rec.error_type}"
         )
