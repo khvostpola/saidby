@@ -10,6 +10,9 @@ All notable changes are documented here, following
 - `out` setting (`[saidby] out`, `SAIDBY_OUT`) with `saidby/` as the default, so
   `saidby process call.m4a` works without flags.
 
+- `saidby directory add-person` and `saidby directory add-term` edit a directory file without
+  opening it, keeping comments and making a backup. Ids are made without accents:
+  `saidby speakers map` now turns "Gómez" into `gomez` instead of `g-mez`.
 - `--term` (repeatable, also `[glossary] terms` and `SAIDBY_TERMS`): terms for one run only,
   used by the bias pass, the transplant and `--correct` like directory terms, and never saved.
 - Several directory files at once: `--directory` can be repeated and `directory` in

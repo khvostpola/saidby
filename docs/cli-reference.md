@@ -171,7 +171,7 @@ Arguments:
 
 ## `saidby directory`
 
-Validate and create directory files.
+Validate, create and edit directory files.
 
 ### `saidby directory validate`
 
@@ -196,6 +196,38 @@ Arguments:
 | Option | Type | Default | What it does |
 |---|---|---|---|
 | `--language` | str | `es` | Recording language |
+
+### `saidby directory add-person`
+
+Add a person to a directory file, keeping its comments.
+
+Arguments:
+
+- `NAME`: The person's name as it should be written.
+
+| Option | Type | Default | What it does |
+|---|---|---|---|
+| `--id` | str |  | Id for the person (default: made from the name). |
+| `--alias` | str |  | Other name they go by; repeatable. |
+| `--variant` | str |  | A misspelling the recognizer makes; repeatable. |
+| `--context` | str |  | Role or relation, optional. |
+| `--directory` | path |  | Directory file to edit (default: the last configured one). |
+
+### `saidby directory add-term`
+
+Add a term to a directory file, keeping its comments.
+
+Arguments:
+
+- `TERM`: The term, spelled the way it should be written.
+
+| Option | Type | Default | What it does |
+|---|---|---|---|
+| `--variant` | str |  | A misspelling the recognizer makes; repeatable. |
+| `--confusion` | str |  | A real word it gets mistaken for; repeatable. |
+| `--context` | str |  | What it means, optional. |
+| `--dialect` | flag |  | Regional slang with one canonical spelling. |
+| `--directory` | path |  | Directory file to edit (default: the last configured one). |
 
 ## `saidby eval`
 

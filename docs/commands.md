@@ -30,6 +30,7 @@ Measure        eval         score a run and arbitrate differences between two sy
 | prove nothing leaves the machine | `saidby process ... --strict-offline` |
 | see which models and licenses are involved | `saidby models list` and `saidby models licenses` |
 | check my directory file | `saidby directory validate directory.yaml` |
+| add a person or a term | `saidby directory add-person "Ana Gómez"` / `saidby directory add-term Acme` |
 | measure against a hand-corrected reference | `saidby eval score reference.txt out/call` |
 
 ## Several files, one run

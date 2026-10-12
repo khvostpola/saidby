@@ -11,6 +11,7 @@ from saidby.config.settings import Settings
 from saidby.errors import UsageError
 from saidby.formats.directory_set import load_directory_set
 from saidby.speakers import remap
+from saidby.speakers.naming import person_id_for
 
 app = typer.Typer(
     help="Inspect, rename and merge speakers of a finished run.", no_args_is_help=True
@@ -52,7 +53,7 @@ def map_speaker(
         if target in people:
             remap.map_speaker(out_dir, label, target, people[target])
         else:
-            remap.map_speaker(out_dir, label, _slug(target), target)
+            remap.map_speaker(out_dir, label, person_id_for(target), target)
         typer.echo(f"{label} -> {target}")
 
 
@@ -68,10 +69,3 @@ def merge(
     """Merge speakers that the diarizer split by mistake."""
     remap.merge_speakers(out_dir, labels, into)
     typer.echo(f"merged {', '.join(labels)} into {into}")
-
-
-def _slug(name: str) -> str:
-    import re
-
-    slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:64]
-    return slug or "speaker"

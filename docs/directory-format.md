@@ -24,6 +24,19 @@ terms:
     type: dialect            # regional slang with a canonical spelling
 ```
 
+## Editing from the command line
+
+```bash
+saidby directory add-person "Ana Gómez" --alias Anita --context accountant
+saidby directory add-term Acme --variant akme --confusion acne
+saidby directory add-term chimba --dialect
+```
+
+Both commands edit one file (`--directory FILE`, or the last configured one), keep its comments,
+back it up first and refuse duplicates. The person's `id` is made from the name without accents
+(`ana-gomez`), with `-2`, `-3` if it is taken; pass `--id` to choose it, which is required when
+the name has no Latin letters.
+
 ## Voiceprints and consent
 
 `saidby enroll OUT_DIR --speaker SPEAKER_00=ana --directory directory.yaml` stores the vector
