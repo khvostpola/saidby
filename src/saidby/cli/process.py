@@ -7,6 +7,7 @@ from typing import Annotated
 
 import typer
 
+from saidby.cli.banner import show_compact
 from saidby.cli.next_steps import next_steps, read_state
 from saidby.cli.progress import Progress
 from saidby.cli.term import detect
@@ -262,6 +263,8 @@ def process(
             "progress": progress,
         },
     )
+    if settings.progress == "human":
+        show_compact(len(inputs), settings.out)
     results = Pipeline(settings, progress=Progress(settings.progress)).run(inputs, settings.out)
     if settings.progress == "human":
         states = [read_state(r.out_dir) for r in results if r.status == "ok"]

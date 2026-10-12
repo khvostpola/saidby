@@ -11,6 +11,7 @@ from saidby.cli import directory as directory_cli
 from saidby.cli import evaluate as evaluate_cli
 from saidby.cli import models as models_cli
 from saidby.cli import speakers as speakers_cli
+from saidby.cli.banner import show_home
 from saidby.cli.doctor import doctor
 from saidby.cli.enroll import enroll
 from saidby.cli.init import init
@@ -91,6 +92,8 @@ def root(
 
 def main() -> None:
     set_language()
+    if len(sys.argv) == 1:
+        show_home()
     try:
         app()
     except KeyboardInterrupt:

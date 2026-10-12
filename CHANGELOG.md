@@ -7,6 +7,11 @@ All notable changes are documented here, following
 ## [Unreleased]
 
 ### Added
+- The pixel-art cassette, drawn in the terminal with half-block characters. `saidby` with no
+  arguments shows it with the models, the device from the last run, the glossary and the
+  configuration in use; `saidby process` shows a three-row version. Plain text (or nothing)
+  without true color, on a narrow terminal, with `NO_COLOR`, in a pipe, or with `--progress
+  json` or `none`.
 - A run that leaves something to do now ends by saying what and the command for it: `name`
   (speakers without names, `saidby speakers map`) and `review` (doubtful spans, `saidby review`
   with how many). Nothing is printed when there is nothing to do, with `--progress json` or

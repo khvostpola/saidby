@@ -65,6 +65,16 @@ That is the load of the whole device, not only saidby's share, and it is left ou
 would not fit. When stderr is not a terminal you only get the result lines. Every run ends with a `[total]` line: how long it took, when it
 started and finished, and how much audio it covered.
 
+## The banner
+
+On a terminal, `saidby` with no arguments draws the pixel-art cassette with what it knows about
+your setup: the models, the device from the last run (it never probes the GPU just to draw a
+banner), the glossary and the configuration file in use. `saidby process` shows a three-row
+version before the device line. Both need a terminal that says it supports true color
+(`COLORTERM=truecolor`) and at least 60 columns; otherwise you get one plain line (bare `saidby`)
+or nothing (`process`). Nothing is drawn when stderr is not a terminal, with `--progress json` or
+`none`, or with `NO_COLOR` set.
+
 ## Progress for scripts
 
 `--progress json` prints one JSON event per line on stdout instead of the human lines, so

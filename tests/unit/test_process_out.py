@@ -115,3 +115,18 @@ def test_term_flag_is_repeatable(
     args = ["process", "call.m4a", "--term", "Acme", "--term", "Rappi Pay"]
     assert runner.invoke(app, args).exit_code == 0
     assert recording.settings_seen[0].terms == ["Acme", "Rappi Pay"]
+
+
+def test_process_shows_the_compact_banner_unless_progress_is_for_machines(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    shown: list[tuple[int, Path]] = []
+    monkeypatch.setattr(
+        sys.modules["saidby.cli.process"], "show_compact", lambda n, out: shown.append((n, out))
+    )
+    monkeypatch.chdir(tmp_path)
+    assert runner.invoke(app, ["process", "a.m4a", "b.m4a"]).exit_code == 0
+    assert shown == [(2, Path("saidby"))]
+    for mode in ("json", "none"):
+        assert runner.invoke(app, ["process", "a.m4a", "--progress", mode]).exit_code == 0
+    assert len(shown) == 1
