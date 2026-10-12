@@ -39,7 +39,10 @@ def _decide(folder: Folder, item: Item, answer: str) -> tuple[Correction | None,
 
 
 def review(
-    out_dir: Path,
+    out_dir: Annotated[
+        Path,
+        typer.Argument(help="Output folder of a finished run (the one `saidby process` wrote)."),
+    ],
     kinds: Annotated[str, typer.Option(help="Comma list of: " + ", ".join(KINDS))] = ",".join(
         KINDS
     ),

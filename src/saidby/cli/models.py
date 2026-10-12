@@ -60,7 +60,12 @@ def pull(
     keys: Annotated[list[str] | None, typer.Argument(help="Model keys to download")] = None,
     all_defaults: Annotated[bool, typer.Option("--all", help="Pull every default model")] = False,
     token: Annotated[str | None, typer.Option(help="Hugging Face token")] = None,
-    allow_noncommercial: Annotated[bool, typer.Option("--allow-noncommercial")] = False,
+    allow_noncommercial: Annotated[
+        bool,
+        typer.Option(
+            "--allow-noncommercial", help="Also pull models that are not for commercial use."
+        ),
+    ] = False,
 ) -> None:
     """Download models. This is the only command that uses the network."""
     prepare(offline=False, want_cuda=False)

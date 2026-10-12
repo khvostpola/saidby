@@ -17,14 +17,22 @@ app = typer.Typer(
 
 
 @app.command("show")
-def show(out_dir: Path) -> None:
+def show(
+    out_dir: Annotated[
+        Path,
+        typer.Argument(help="Output folder of a finished run (the one `saidby process` wrote)."),
+    ],
+) -> None:
     """List the speakers of an output folder."""
     typer.echo(json.dumps(remap.show(out_dir), indent=2))
 
 
 @app.command("map")
 def map_speaker(
-    out_dir: Path,
+    out_dir: Annotated[
+        Path,
+        typer.Argument(help="Output folder of a finished run (the one `saidby process` wrote)."),
+    ],
     assign: Annotated[
         list[str], typer.Option("--set", help='LABEL=PERSON_ID or LABEL="Free name"')
     ],
@@ -45,7 +53,10 @@ def map_speaker(
 
 @app.command("merge")
 def merge(
-    out_dir: Path,
+    out_dir: Annotated[
+        Path,
+        typer.Argument(help="Output folder of a finished run (the one `saidby process` wrote)."),
+    ],
     labels: Annotated[list[str], typer.Argument(help="Speakers to merge")],
     into: Annotated[str, typer.Option("--into", help="Speaker that keeps the merged speech")],
 ) -> None:

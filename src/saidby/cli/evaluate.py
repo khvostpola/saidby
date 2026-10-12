@@ -21,8 +21,10 @@ def _need_extra() -> UsageError:
 
 @app.command("score")
 def score(
-    reference: Path,
-    run_dir: Path,
+    reference: Annotated[
+        Path, typer.Argument(help="Hand-corrected reference file (see docs/evaluation.md).")
+    ],
+    run_dir: Annotated[Path, typer.Argument(help="Output folder of the run to score.")],
     directory: Annotated[Path | None, typer.Option(help="Directory for terms and dialect")] = None,
 ) -> None:
     """WER, directory terms spelled correctly and, if the reference names speakers, diarization."""
@@ -37,15 +39,19 @@ def score(
 
 @app.command("arbitrate-build")
 def arbitrate_build(
-    name: str,
-    label: str,
-    media: Path,
-    reference: Path,
-    candidate: Path,
-    baseline: Path,
+    name: Annotated[str, typer.Argument(help="Short name of this recording, used in clip ids.")],
+    label: Annotated[str, typer.Argument(help="Human-readable name shown in the page.")],
+    media: Annotated[Path, typer.Argument(help="The original recording (audio or video).")],
+    reference: Annotated[Path, typer.Argument(help="Hand-corrected reference of a stretch of it.")],
+    candidate: Annotated[Path, typer.Argument(help="Output folder of the system being evaluated.")],
+    baseline: Annotated[
+        Path, typer.Argument(help="Output folder of the system to compare against.")
+    ],
     out: Annotated[Path, typer.Option(help="Where to write clips and keys")] = Path("arbitration"),
-    directory: Annotated[Path | None, typer.Option()] = None,
-    seed: Annotated[int, typer.Option()] = 7,
+    directory: Annotated[
+        Path | None, typer.Option(help="Directory, to unify dialect terms before comparing.")
+    ] = None,
+    seed: Annotated[int, typer.Option(help="Seed for the A/B shuffle.")] = 7,
 ) -> None:
     """Build clips of every span where two runs disagree, with A and B shuffled."""
     from saidby.evaluation.arbitrate import build
@@ -57,8 +63,10 @@ def arbitrate_build(
 
 @app.command("arbitrate-serve")
 def arbitrate_serve(
-    out: Annotated[Path, typer.Option()] = Path("arbitration"),
-    port: Annotated[int, typer.Option()] = 8765,
+    out: Annotated[Path, typer.Option(help="Folder written by arbitrate-build.")] = Path(
+        "arbitration"
+    ),
+    port: Annotated[int, typer.Option(help="Local port to listen on.")] = 8765,
 ) -> None:
     """Serve the arbitration page on 127.0.0.1 (the clips are private audio; never publish them)."""
     from saidby.evaluation.arbitrate import serve
@@ -73,8 +81,12 @@ def arbitrate_serve(
 
 @app.command("arbitrate-score")
 def arbitrate_score(
-    out: Annotated[Path, typer.Option()] = Path("arbitration"),
-    directory: Annotated[Path | None, typer.Option()] = None,
+    out: Annotated[Path, typer.Option(help="Folder written by arbitrate-build.")] = Path(
+        "arbitration"
+    ),
+    directory: Annotated[
+        Path | None, typer.Option(help="Directory, to unify dialect terms before scoring.")
+    ] = None,
     margin: Annotated[
         float | None, typer.Option(help="Pre-registered non-inferiority margin, in WER points")
     ] = None,

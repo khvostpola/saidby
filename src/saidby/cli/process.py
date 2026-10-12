@@ -11,42 +11,208 @@ from saidby.config.settings import Settings
 from saidby.errors import StageError
 from saidby.pipeline.runner import Pipeline
 
+IO = "Input and output"
+ASR = "Speech recognition"
+SPEAKERS = "Speakers"
+GLOSSARY = "Glossary and correction"
+BEHAVIOR = "Run behavior"
+PRIVACY = "Privacy"
+
+EPILOG = """\b
+Examples:
+  saidby process call.m4a --out out/ --language es
+  saidby process a.mp4 b.mp3 --out out/ --directory directory.yaml
+  saidby process call.m4a --out out/ --directory directory.yaml --correct
+  saidby process call.m4a --out out/ --device cpu --asr-model tiny
+
+Each input gets its own folder under --out. A failed run keeps its work and the next
+run resumes from the last finished stage."""
+
 
 def process(
-    inputs: Annotated[list[Path], typer.Argument(help="Audio or video files")],
-    out: Annotated[Path, typer.Option("--out", help="Output folder")],
-    config: Annotated[Path | None, typer.Option(help="Path to a saidby.toml")] = None,
-    language: Annotated[str | None, typer.Option(help="Recording language, e.g. es")] = None,
-    device: Annotated[str | None, typer.Option(help="auto, cuda or cpu")] = None,
-    asr_model: Annotated[str | None, typer.Option(help="Model key or local path")] = None,
-    compute_type: Annotated[str | None, typer.Option()] = None,
+    inputs: Annotated[
+        list[Path], typer.Argument(help="Audio or video files (anything ffmpeg reads).")
+    ],
+    out: Annotated[
+        Path,
+        typer.Option(
+            "--out", help="Folder for the results; one subfolder per input.", rich_help_panel=IO
+        ),
+    ],
+    config: Annotated[
+        Path | None,
+        typer.Option(help="A saidby.toml with defaults for the options below.", rich_help_panel=IO),
+    ] = None,
+    language: Annotated[
+        str | None,
+        typer.Option(
+            help="Recording language code (es, en, pt...). Detected from the audio if omitted.",
+            rich_help_panel=ASR,
+        ),
+    ] = None,
+    device: Annotated[
+        str | None,
+        typer.Option(
+            help="auto (default): GPU if usable, else CPU. Or force cuda or cpu.",
+            rich_help_panel=ASR,
+        ),
+    ] = None,
+    asr_model: Annotated[
+        str | None,
+        typer.Option(
+            help="Recognition model: large-v3 (default), tiny, or a path to a CTranslate2 model.",
+            rich_help_panel=ASR,
+        ),
+    ] = None,
+    compute_type: Annotated[
+        str | None,
+        typer.Option(
+            help="auto (float16 on GPU, int8 on CPU), float16, int8, int8_float16 or float32.",
+            rich_help_panel=ASR,
+        ),
+    ] = None,
     deterministic: Annotated[
-        bool, typer.Option("--deterministic", help="Reproducible decoding")
+        bool,
+        typer.Option(
+            "--deterministic",
+            help="Same input, same output: temperature 0 and no conditioning on earlier text.",
+            rich_help_panel=ASR,
+        ),
     ] = False,
     diarizer: Annotated[
-        str | None, typer.Option(help="nemotron3, pyannote-community1 or fake")
+        str | None,
+        typer.Option(
+            help="Who-spoke-when engine: nemotron3 (default) or pyannote-community1 (extra).",
+            rich_help_panel=SPEAKERS,
+        ),
     ] = None,
-    num_speakers: Annotated[int | None, typer.Option(min=1)] = None,
+    num_speakers: Annotated[
+        int | None,
+        typer.Option(
+            min=1, help="Fix the number of speakers when you know it.", rich_help_panel=SPEAKERS
+        ),
+    ] = None,
+    compare: Annotated[
+        str | None,
+        typer.Option(
+            help="Also run this second diarizer and record where the two disagree.",
+            rich_help_panel=SPEAKERS,
+        ),
+    ] = None,
+    no_identify: Annotated[
+        bool,
+        typer.Option(
+            "--no-identify",
+            help="Do not name speakers even if the directory has voiceprints.",
+            rich_help_panel=SPEAKERS,
+        ),
+    ] = False,
+    identify_threshold: Annotated[
+        float | None,
+        typer.Option(
+            help="Minimum voiceprint similarity to assign a name (default 0.5).",
+            rich_help_panel=SPEAKERS,
+        ),
+    ] = None,
     directory: Annotated[
-        Path | None, typer.Option(help="Directory YAML with people and terms")
+        Path | None,
+        typer.Option(
+            help="Directory YAML with people, voiceprints and terms; turns on the glossary.",
+            rich_help_panel=GLOSSARY,
+        ),
     ] = None,
-    compare: Annotated[str | None, typer.Option(help="Second diarizer to compare against")] = None,
-    bias_mode: Annotated[str | None, typer.Option(help="full or windows")] = None,
-    no_identify: Annotated[bool, typer.Option("--no-identify")] = False,
-    no_bias: Annotated[bool, typer.Option("--no-bias")] = False,
-    no_transplant: Annotated[bool, typer.Option("--no-transplant")] = False,
-    correct: Annotated[bool, typer.Option("--correct", help="Fix terms with a local LLM")] = False,
-    llm_url: Annotated[str | None, typer.Option(help="OpenAI-compatible endpoint")] = None,
-    llm_binary: Annotated[str | None, typer.Option(help="Path to llama-server")] = None,
-    allow_remote_llm: Annotated[bool, typer.Option("--allow-remote-llm")] = False,
-    identify_threshold: Annotated[float | None, typer.Option()] = None,
-    keep_intermediates: Annotated[bool, typer.Option("--keep-intermediates")] = False,
-    force: Annotated[bool, typer.Option("--force")] = False,
-    fail_fast: Annotated[bool, typer.Option("--fail-fast")] = False,
-    strict_offline: Annotated[bool, typer.Option("--strict-offline")] = False,
-    progress: Annotated[str | None, typer.Option(help="human, json or none")] = None,
+    no_bias: Annotated[
+        bool,
+        typer.Option(
+            "--no-bias",
+            help="Skip the second, hotword-biased recognition pass.",
+            rich_help_panel=GLOSSARY,
+        ),
+    ] = False,
+    bias_mode: Annotated[
+        str | None,
+        typer.Option(
+            help="full (default) biases all audio; windows (experimental) only near likely terms.",
+            rich_help_panel=GLOSSARY,
+        ),
+    ] = None,
+    no_transplant: Annotated[
+        bool,
+        typer.Option(
+            "--no-transplant",
+            help="Run the biased pass but do not merge its terms into the transcript.",
+            rich_help_panel=GLOSSARY,
+        ),
+    ] = False,
+    correct: Annotated[
+        bool,
+        typer.Option(
+            "--correct",
+            help="Let a local LLM fix directory terms, within strict limits. Needs llama-server.",
+            rich_help_panel=GLOSSARY,
+        ),
+    ] = False,
+    llm_url: Annotated[
+        str | None,
+        typer.Option(
+            help="Use an OpenAI-compatible server you already run, not llama-server.",
+            rich_help_panel=GLOSSARY,
+        ),
+    ] = None,
+    llm_binary: Annotated[
+        str | None,
+        typer.Option(
+            help="Path to llama-server (default: PATH or SAIDBY_LLAMA_SERVER).",
+            rich_help_panel=GLOSSARY,
+        ),
+    ] = None,
+    allow_remote_llm: Annotated[
+        bool,
+        typer.Option(
+            "--allow-remote-llm",
+            help="Allow an LLM endpoint that is not on this machine.",
+            rich_help_panel=GLOSSARY,
+        ),
+    ] = False,
+    keep_intermediates: Annotated[
+        bool,
+        typer.Option(
+            "--keep-intermediates",
+            help="Keep the .work folder after success (it is kept on failure).",
+            rich_help_panel=BEHAVIOR,
+        ),
+    ] = False,
+    force: Annotated[
+        bool,
+        typer.Option(
+            "--force",
+            help="Overwrite an output folder that holds results for a different input.",
+            rich_help_panel=BEHAVIOR,
+        ),
+    ] = False,
+    fail_fast: Annotated[
+        bool,
+        typer.Option(
+            "--fail-fast", help="Stop at the first input that fails.", rich_help_panel=BEHAVIOR
+        ),
+    ] = False,
+    progress: Annotated[
+        str | None,
+        typer.Option(
+            help="human (default, on stderr), json (one event per line on stdout) or none.",
+            rich_help_panel=BEHAVIOR,
+        ),
+    ] = None,
+    strict_offline: Annotated[
+        bool,
+        typer.Option(
+            "--strict-offline",
+            help="Fail with exit code 8 if anything tries to leave this machine.",
+            rich_help_panel=PRIVACY,
+        ),
+    ] = False,
 ) -> None:
-    """Transcribe recordings into one output folder each."""
+    """Turn recordings into transcripts with speakers, timestamps and a track per speaker."""
     settings = Settings.load(
         config,
         {

@@ -29,7 +29,9 @@ terms:
 
 
 @app.command("validate")
-def validate(file: Path) -> None:
+def validate(
+    file: Annotated[Path, typer.Argument(help="Directory YAML file to check.")],
+) -> None:
     """Check a directory file against the schema."""
     directory, _ = load_directory(file)
     typer.echo(f"ok: {len(directory.people)} people, {len(directory.terms)} terms")
@@ -43,7 +45,8 @@ def schema() -> None:
 
 @app.command("init")
 def init(
-    file: Path, language: Annotated[str, typer.Option(help="Recording language")] = "es"
+    file: Annotated[Path, typer.Argument(help="Where to create the starter directory.")],
+    language: Annotated[str, typer.Option(help="Recording language")] = "es",
 ) -> None:
     """Create a starter directory file."""
     if file.exists():

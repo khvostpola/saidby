@@ -56,7 +56,10 @@ def _resolve_consents(
 
 
 def enroll(
-    out_dir: Path,
+    out_dir: Annotated[
+        Path,
+        typer.Argument(help="Output folder of a finished run (the one `saidby process` wrote)."),
+    ],
     speaker: Annotated[list[str], typer.Option("--speaker", help="LABEL=PERSON_ID")],
     directory: Annotated[Path, typer.Option(help="Directory file to update")],
     consent_file: Annotated[
@@ -66,8 +69,10 @@ def enroll(
     consent_declared_by: Annotated[str | None, typer.Option(help="Who declared it")] = None,
     consent_date: Annotated[str | None, typer.Option(help="YYYY-MM-DD, default today")] = None,
     channel: Annotated[str, typer.Option(help="Recording channel label")] = "mobile-call",
-    embedder_name: Annotated[str, typer.Option("--embedder")] = "wespeaker-resnet34",
-    device: Annotated[str, typer.Option()] = "auto",
+    embedder_name: Annotated[
+        str, typer.Option("--embedder", help="Voiceprint model.")
+    ] = "wespeaker-resnet34",
+    device: Annotated[str, typer.Option(help="auto, cuda or cpu.")] = "auto",
 ) -> None:
     """Store voiceprints of people who spoke in a finished run. Requires recorded consent."""
     parsed = [item.partition("=") for item in speaker]
