@@ -11,6 +11,7 @@ uv run reuse lint
 uv run python tools/third_party_notices.py --check
 ```
 
-CPU-only machines: `UV_TORCH_BACKEND=cpu uv sync`.
+CPU-only machines: `UV_TORCH_BACKEND=cpu uv sync --extra pyannote --extra eval` (the `cuda` extra
+adds about 1 GB of NVIDIA libraries that a CPU machine does not need).
 
 Fixtures: `uv run python tools/build_fixtures.py synthetic` regenerates the tone fixture.

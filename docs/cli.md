@@ -2,7 +2,7 @@
 
 ```
 saidby --version
-saidby doctor [--json]
+saidby doctor [--json] [--smoke] [--device auto|cuda|cpu]
 saidby models list | pull KEY... [--all] | licenses | path KEY
 saidby process INPUT... --out DIR [options]
 saidby review OUT_DIR [--kinds ...] [--limit N] [--directory FILE]
@@ -68,3 +68,12 @@ Configuration precedence: command line, `SAIDBY_*` environment variables, `saidb
 `transcript.vtt`, `diarization.rttm`, the tracks and `manifest.json` (it records each edit under
 `edits`) without reprocessing audio. Speaker labels (`SPEAKER_00`) never change; names and
 track file names do. Merge is for a person the diarizer split in two.
+
+## `saidby doctor`
+
+Checks Python, ffmpeg, the GPU and its driver, which PyTorch build is installed, whether
+PyTorch and CTranslate2 can both use the GPU, which device `--device auto` will pick, the default
+models, free disk for the model cache, optional extras, `llama-server` and the offline settings.
+Every warning or failure comes with the command that fixes it. The exit code is 1 only when
+something prevents processing (missing ffmpeg or models, for example). `--smoke` runs a few
+seconds of transcription with `asr:tiny`; `--json` gives the same checks for scripts.

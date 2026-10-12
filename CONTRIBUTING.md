@@ -10,8 +10,8 @@ uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run reu
 ```
 
 GPU tests are skipped by default; run them on a CUDA machine with `uv run pytest -m gpu`.
-On a machine without a GPU, install the CPU build of PyTorch with
-`UV_TORCH_BACKEND=cpu uv sync`.
+On a machine without a GPU, install the CPU build of PyTorch without the CUDA extra:
+`UV_TORCH_BACKEND=cpu uv sync --extra pyannote --extra eval`.
 
 ## Rules
 

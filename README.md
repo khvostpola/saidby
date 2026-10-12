@@ -13,17 +13,29 @@ spans so you can type the right text and feed new spellings back into the direct
 
 ## Install
 
+NVIDIA GPU (driver 580 or newer):
+
 ```bash
-uv tool install saidby
+uv tool install 'saidby[cuda]'
 ```
 
-For machines without an NVIDIA GPU, avoid downloading the CUDA build of PyTorch:
+No GPU (or you do not want the CUDA libraries, about 1 GB): use the CPU build of PyTorch.
 
 ```bash
 uv tool install saidby --index https://download.pytorch.org/whl/cpu --index-strategy unsafe-best-match
 ```
 
-Requirements: `ffmpeg` on the PATH and, for GPU use, an NVIDIA driver 580 or newer.
+You also need `ffmpeg` on the PATH. Then check the machine:
+
+```bash
+saidby doctor          # what works, what does not, and how to fix it
+saidby doctor --smoke  # also runs a short transcription with the tiny model
+```
+
+On a 20-thread desktop CPU, large-v3 (int8) transcribed at 0.39 times real time and the diarizer at
+0.05, so a 15-minute call takes about 6 minutes. Slower CPUs can use a smaller model with
+`--asr-model tiny` or `small`. If a GPU is present but not usable, saidby falls back to the CPU and
+says why in `manifest.json`.
 
 ## Quick start
 
