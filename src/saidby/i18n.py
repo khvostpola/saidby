@@ -54,8 +54,32 @@ def current_language() -> str:
     return _State.language
 
 
+class Message(str):
+    english: str
+
+    def __new__(cls, text: str, english: str) -> "Message":
+        instance = super().__new__(cls, text)
+        instance.english = english
+        return instance
+
+    def format(self, *args: object, **kwargs: object) -> "Message":
+        shown = str.format(self, *args, **kwargs)
+        plain_args = tuple(_in_english(a) for a in args)
+        plain_kwargs = {k: _in_english(v) for k, v in kwargs.items()}
+        return Message(shown, self.english.format(*plain_args, **plain_kwargs))
+
+
+def _in_english(value: object) -> object:
+    return value.english if isinstance(value, Message) else value
+
+
+def english_text(value: object) -> str:
+    first = value.args[0] if isinstance(value, BaseException) and value.args else value
+    return first.english if isinstance(first, Message) else str(value)
+
+
 def _(message: str) -> str:
-    return _State.translation.gettext(message)
+    return Message(_State.translation.gettext(message), message)
 
 
 def N_(message: str) -> str:  # noqa: N802
@@ -63,4 +87,5 @@ def N_(message: str) -> str:  # noqa: N802
 
 
 def ngettext(singular: str, plural: str, count: int) -> str:
-    return _State.translation.ngettext(singular, plural, count)
+    english = singular if count == 1 else plural
+    return Message(_State.translation.ngettext(singular, plural, count), english)

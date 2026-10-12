@@ -106,3 +106,22 @@ def test_the_plan_screen_and_yes_no_answers_work_in_spanish(
     ask = Ui(PLAIN, input_fn=lambda prompt: next(answers), out=io.StringIO())
     assert ask.confirm("¿Seguir?", default=False) is True
     assert ask.confirm("¿Seguir?", default=True) is False
+
+
+@needs_ffmpeg
+def test_failures_are_recorded_in_english_even_when_shown_in_spanish(tmp_path: Path) -> None:
+    set_language("es")
+    pipeline = Pipeline(
+        Settings(device="cpu", language="es"),
+        transcriber=FakeTranscriber(),
+        diarizer=FakeDiarizer(rttm=RTTM),
+        progress=Progress("none"),
+    )
+    missing = tmp_path / "nope.m4a"
+    result = pipeline.run([missing], tmp_path / "out")[0]
+    assert result.status == "failed"
+    manifest = json.loads((result.out_dir / "manifest.json").read_text())
+    assert manifest["error"] == f"input file not found: {missing}"
+    log = (result.out_dir / "logs" / "run.log").read_text()
+    assert f"InputError: input file not found: {missing}" in log
+    assert "no se encontró" not in log

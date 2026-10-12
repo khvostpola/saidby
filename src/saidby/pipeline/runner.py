@@ -24,7 +24,7 @@ from saidby.formats.manifest import read_manifest, write_manifest
 from saidby.formats.rttm import write_rttm
 from saidby.formats.transcripts import render_txt, render_vtt
 from saidby.formats.words_json import read_transcript, write_transcript
-from saidby.i18n import _, ngettext
+from saidby.i18n import _, english_text, ngettext
 from saidby.pipeline import cache
 from saidby.pipeline.compare_stage import CompareStage
 from saidby.pipeline.glossary_stages import GlossaryStages
@@ -237,9 +237,9 @@ class Pipeline:
             rec.status = "failed"
             rec.failed_stage = stage
             rec.error_type = type(exc).__name__
-            rec.error = str(exc)
+            rec.error = english_text(exc)
             rec.exit_code = exc.exit_code if isinstance(exc, SaidbyError) else StageError.exit_code
-            rec.log.fail(stage, f"{rec.error_type}: {exc}")
+            rec.log.fail(stage, f"{rec.error_type}: {rec.error}")
             rec.telemetry.emit(
                 "stage.error",
                 stage=telemetry_stage,
