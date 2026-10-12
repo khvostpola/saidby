@@ -44,15 +44,40 @@ Each input gets its own folder (`out/monday`, `out/tuesday`; duplicates get `-2`
 are loaded once, and each stage runs for all the files before the next stage starts. If one file
 fails, the others finish and the exit code tells you; `--fail-fast` stops at the first failure.
 
+## Progress
+
+Human lines go to stderr. A run starts with the device line, which says what will do the work and
+why:
+
+```
+device      GPU · cuda · NVIDIA GeForce RTX 4060 Laptop GPU · 8 GB   (auto → cuda)
+device      CPU · 8 threads   (auto → cpu: no NVIDIA GPU found)
+```
+
+If a GPU is present but cannot be used (for example PyTorch is the CPU build), the line says so
+and points to `saidby doctor`. On a terminal, the moments that take a while show what they are
+doing and for how long, and are replaced by the result when they finish: `starting` (loading
+PyTorch and CTranslate2), `device` (checking the GPU, which can take a couple of seconds the
+first time on a laptop) and each stage (`transcribing...  0:12`). When stderr is not a terminal
+you only get the result lines. Every run ends with a `[total]` line: how long it took, when it
+started and finished, and how much audio it covered.
+
 ## Progress for scripts
 
-`--progress json` prints one JSON event per line on stdout (`stage.start`, `stage.end`,
-`stage.skip`, `stage.error`, `file.end`, and a final `run.end` with the start and finish times,
-the total seconds, the audio seconds and how many files failed) instead of the human lines, so `saidby process ... --progress json >
-events.jsonl` gives a machine-readable log. The human lines go to stderr. On a terminal, a stage that takes more than a moment shows what it is
-doing and how long it has been at it (`transcribing...  0:12`), replaced by the result line when it
-finishes; when stderr is not a terminal you only get the result lines. Every run ends with a
-`[total]` line: how long it took, when it started and finished, and how much audio it covered.
+`--progress json` prints one JSON event per line on stdout instead of the human lines, so
+`saidby process ... --progress json > events.jsonl` gives a machine-readable log:
+
+| Event | When | Fields |
+|---|---|---|
+| `run.start` | the run begins | `saidby` (version) |
+| `device` | the device is chosen | `requested`, `used`, `name`, `vram_total_mb`, `reason` |
+| `stage.start` | a stage begins | `file`, `stage` |
+| `stage.end`, `stage.skip` | a stage finishes, or was already done | `file`, `stage`, `wall_s`, `rtf` |
+| `stage.error` | a stage fails | `file`, `stage`, `error_type` |
+| `file.end` | a file finishes | `file`, `status`, `out` |
+| `run.end` | the run ends | `started`, `finished`, `wall_s`, `audio_s`, `rtf`, `files`, `failed` |
+
+`reason` is `requested_cpu`, `no_gpu`, `gpu_unusable` or `null` when the GPU is used.
 
 ## Configuration
 

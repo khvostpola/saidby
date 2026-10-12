@@ -9,6 +9,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from saidby.cli.progress import CLEAR, Progress
+from saidby.runtime.device import DeviceInfo
 
 
 class Tty(io.StringIO):
@@ -136,3 +137,67 @@ def test_summary_is_silent_in_none_mode() -> None:
         started=start, finished=finish, wall_s=1, audio_s=1, files=1, failed=0
     )
     assert stream.getvalue() == ""
+
+
+def test_a_startup_phase_shows_a_live_line_and_leaves_nothing_behind(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("TERM", "xterm")
+    stream = Tty()
+    progress = Progress("human", stream=stream, delay_s=0.02, interval_s=0.02)
+    with progress.phase("device", "checking the GPU"):
+        time.sleep(0.15)
+    text = stream.getvalue()
+    assert "device      checking the GPU...  0:00" in text
+    assert text.endswith(CLEAR)
+    assert "\n" not in text
+
+
+def test_a_quick_phase_never_flashes(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("TERM", "xterm")
+    stream = Tty()
+    progress = Progress("human", stream=stream, delay_s=0.5, interval_s=0.5)
+    with progress.phase("starting", "loading PyTorch"):
+        pass
+    assert stream.getvalue() == ""
+
+
+def test_phases_print_nothing_when_not_a_terminal() -> None:
+    stream = io.StringIO()
+    progress = Progress("human", stream=stream, delay_s=0.01, interval_s=0.01)
+    with progress.phase("device", "checking the GPU"):
+        time.sleep(0.05)
+    assert stream.getvalue() == ""
+
+
+def test_the_device_line_is_printed_in_human_mode() -> None:
+    stream = io.StringIO()
+    Progress("human", stream=stream).device(DeviceInfo("cpu", reason="no_gpu"), "auto")
+    assert "(auto → cpu: no NVIDIA GPU found)" in stream.getvalue()
+
+
+def test_json_mode_announces_the_run_and_the_device(capsys: pytest.CaptureFixture[str]) -> None:
+    progress = Progress("json")
+    progress.run_start()
+    progress.device(DeviceInfo("cuda", "Test GPU", 8188), "auto")
+    first, second = [json.loads(x) for x in capsys.readouterr().out.splitlines()]
+    assert first["event"] == "run.start"
+    assert first["saidby"]
+    assert second == {
+        "event": "device",
+        "requested": "auto",
+        "used": "cuda",
+        "name": "Test GPU",
+        "vram_total_mb": 8188,
+        "reason": None,
+    }
+
+
+def test_none_mode_stays_silent(capsys: pytest.CaptureFixture[str]) -> None:
+    progress = Progress("none")
+    progress.run_start()
+    progress.device(DeviceInfo("cpu", reason="no_gpu"), "auto")
+    with progress.phase("device", "checking the GPU"):
+        pass
+    captured = capsys.readouterr()
+    assert (captured.out, captured.err) == ("", "")

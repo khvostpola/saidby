@@ -7,6 +7,9 @@ All notable changes are documented here, following
 ## [Unreleased]
 
 ### Added
+- Every run starts with a `device` line (GPU or CPU, and why), and on a terminal the start-up
+  shows `starting` and `device` live lines instead of looking frozen while PyTorch loads and the
+  GPU is checked. `--progress json` gains `run.start` and `device` events.
 - `manifest.json` says why the CPU ran (`device.reason`: `requested_cpu`, `no_gpu` or
   `gpu_unusable`). Every run and `saidby doctor` also remember the last device check in
   `~/.cache/saidby/device.json`, so the banner can show it without probing the GPU.

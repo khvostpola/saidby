@@ -5,10 +5,15 @@ import json
 import sys
 import threading
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, TextIO
 
+from saidby import __version__
+from saidby.cli.lines import LABEL_WIDTH, format_device
 from saidby.cli.term import Terminal, detect
+from saidby.runtime.device import DeviceInfo
 
 ACTIVITY = {
     "ingest": "converting the audio",
@@ -62,26 +67,58 @@ class Progress:
         self.stop()
         if self.mode == "json":
             print(json.dumps({"event": "stage.start", "file": slug, "stage": stage}), flush=True)
-        elif self.live:
-            self._stop = threading.Event()
-            self._drew = False
-            self._thread = threading.Thread(
-                target=self._tick, args=(index, total, stage, time.monotonic()), daemon=True
-            )
-            self._thread.start()
+        else:
+            self._start_live(f"[{index}/{total}] {stage:<10} ", ACTIVITY.get(stage, "working"))
 
-    def _tick(self, index: int, total: int, stage: str, started: float) -> None:
+    def _start_live(self, prefix: str, activity: str) -> None:
+        if not self.live:
+            return
+        self._stop = threading.Event()
+        self._drew = False
+        self._thread = threading.Thread(
+            target=self._tick, args=(prefix, activity, time.monotonic()), daemon=True
+        )
+        self._thread.start()
+
+    def _tick(self, prefix: str, activity: str, started: float) -> None:
         if self._stop.wait(self.delay_s):
             return
-        activity = ACTIVITY.get(stage, "working")
         while True:
             elapsed = fmt_clock(time.monotonic() - started)
-            line = f"[{index}/{total}] {stage:<10} {activity}...  {elapsed}"
-            self.stream.write(CLEAR + self.terminal.fit(line))
+            self.stream.write(CLEAR + self.terminal.fit(f"{prefix}{activity}...  {elapsed}"))
             self.stream.flush()
             self._drew = True
             if self._stop.wait(self.interval_s):
                 return
+
+    @contextmanager
+    def phase(self, label: str, activity: str) -> Iterator[None]:
+        self.stop()
+        self._start_live(f"{label:<{LABEL_WIDTH}} ", activity)
+        try:
+            yield
+        finally:
+            self.stop()
+
+    def run_start(self) -> None:
+        if self.mode == "json":
+            print(json.dumps({"event": "run.start", "saidby": __version__}), flush=True)
+
+    def device(self, device: DeviceInfo, requested: str) -> None:
+        self.stop()
+        if self.mode == "json":
+            event = {
+                "event": "device",
+                "requested": requested,
+                "used": device.kind,
+                "name": device.name,
+                "vram_total_mb": device.vram_total_mb,
+                "reason": device.reason,
+            }
+            print(json.dumps(event), flush=True)
+        elif self.mode == "human":
+            for line in format_device(device, requested, self.terminal):
+                self._line(line)
 
     def stop(self) -> None:
         if self._thread is None:

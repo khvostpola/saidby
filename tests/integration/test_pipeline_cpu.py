@@ -165,3 +165,41 @@ def test_run_ends_with_a_summary_line(tmp_path: Path, capsys: pytest.CaptureFixt
     assert "started" in last
     assert "finished" in last
     assert "0:10 of audio" in last
+
+
+def test_json_progress_announces_the_run_and_the_device_before_any_stage(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    pipeline = Pipeline(
+        Settings(device="cpu", language="es"),
+        transcriber=FakeTranscriber(),
+        diarizer=FakeDiarizer(rttm=RTTM),
+        progress=Progress("json"),
+    )
+    pipeline.run([FIXTURE], tmp_path)
+    events = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
+    names = [e["event"] for e in events]
+    assert names[:3] == ["run.start", "device", "stage.start"]
+    assert names[-1] == "run.end"
+    device = events[1]
+    assert (device["requested"], device["used"], device["reason"]) == (
+        "cpu",
+        "cpu",
+        "requested_cpu",
+    )
+
+
+def test_human_progress_prints_the_device_line_first(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    pipeline = Pipeline(
+        Settings(device="cpu", language="es"),
+        transcriber=FakeTranscriber(),
+        diarizer=FakeDiarizer(rttm=RTTM),
+        progress=Progress("human"),
+    )
+    pipeline.run([FIXTURE], tmp_path)
+    lines = capsys.readouterr().err.strip().splitlines()
+    assert lines[0].startswith("device")
+    assert lines[0].endswith("(--device cpu)")
+    assert lines[1].startswith("[1/1] ingest")

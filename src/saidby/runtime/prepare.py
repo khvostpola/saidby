@@ -1,8 +1,10 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
+import contextlib
 import ctypes
 import glob
+import importlib
 import importlib.util
 import os
 from dataclasses import dataclass, field
@@ -41,3 +43,9 @@ def prepare(*, offline: bool = True, want_cuda: bool = True) -> RuntimeInfo:
     os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
     loaded = preload_cublas() if want_cuda else []
     return RuntimeInfo(offline=offline, cublas_preloaded=loaded)
+
+
+def preload_runtime() -> None:
+    for name in ("torch", "ctranslate2"):
+        with contextlib.suppress(ImportError):
+            importlib.import_module(name)

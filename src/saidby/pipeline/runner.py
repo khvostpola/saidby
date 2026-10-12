@@ -23,6 +23,7 @@ from saidby.formats.manifest import read_manifest, write_manifest
 from saidby.formats.rttm import write_rttm
 from saidby.formats.transcripts import render_txt, render_vtt
 from saidby.formats.words_json import read_transcript, write_transcript
+from saidby.i18n import _
 from saidby.pipeline import cache
 from saidby.pipeline.compare_stage import CompareStage
 from saidby.pipeline.glossary_stages import GlossaryStages
@@ -36,6 +37,7 @@ from saidby.runtime import prepare
 from saidby.runtime.device import DeviceInfo, resolve_device
 from saidby.runtime.device_cache import write_cache
 from saidby.runtime.netguard import guard_network
+from saidby.runtime.prepare import preload_runtime
 from saidby.schema.diarization import Diarization
 from saidby.schema.directory import Directory, Term
 from saidby.schema.ids import unique_slugs
@@ -103,8 +105,13 @@ class Pipeline:
     def run(self, inputs: list[Path], out_root: Path) -> list[RecordingResult]:
         started = datetime.now().astimezone()
         clock = time.perf_counter()
-        self.device = resolve_device(self.settings.device)
+        self.progress.run_start()
+        with self.progress.phase(_("starting"), _("loading PyTorch and CTranslate2")):
+            preload_runtime()
+        with self.progress.phase(_("device"), _("checking the GPU")):
+            self.device = resolve_device(self.settings.device)
         write_cache(self.device)
+        self.progress.device(self.device, self.settings.device)
         if self.device.note:
             self.warnings.append(self.device.note)
         prepare(offline=True, want_cuda=self.device.kind == "cuda")
