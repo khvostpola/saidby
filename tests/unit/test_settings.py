@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
+import os
 from pathlib import Path
 
 import pytest
@@ -89,3 +90,8 @@ def test_bad_files_explain_themselves(tmp_path: Path, body: str, message: str) -
 def test_missing_explicit_file(tmp_path: Path) -> None:
     with pytest.raises(UsageError, match="not found"):
         Settings.load(tmp_path / "nope.toml")
+
+
+def test_suite_never_reads_the_real_user_config(isolated_user_config: Path) -> None:
+    assert os.environ["XDG_CONFIG_HOME"] == str(isolated_user_config / "config")
+    assert not [key for key in os.environ if key.startswith("SAIDBY_")]
