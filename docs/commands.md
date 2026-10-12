@@ -20,6 +20,7 @@ Measure        eval         score a run and arbitrate differences between two sy
 |---|---|
 | know if my machine can run it | `saidby doctor` (add `--smoke` for a real test) |
 | download the models | `saidby models pull --all` |
+| stop retyping the same options | `saidby init` (this folder) or `saidby init --global` |
 | transcribe one or several files | `saidby process a.m4a b.mp4 --out out/ --language es` |
 | use my names and terms | `saidby process ... --directory directory.yaml` |
 | name the speakers | `saidby enroll` once per person, then `process --directory` |
@@ -66,7 +67,8 @@ rest from the global file.
   the current folder is checked, so a stray file in a shared parent is never read.
 - **`--config FILE`**: use exactly that file and ignore both of the above.
 
-Relative paths in a file, such as `directory`, are resolved against the file that declares them.
+Relative paths in a file, such as `directory`, are resolved against the file that declares them,
+and `~` means your home folder. `saidby init` writes a starter project file for you.
 `directory` can be a list; the lists of the global and project files are joined, far to near. A
 `--directory` on the command line (repeat it for several files) or `SAIDBY_DIRECTORY` (separated
 with `:` on Linux) replaces the files named in configuration.

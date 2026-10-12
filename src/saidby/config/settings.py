@@ -176,12 +176,15 @@ def _resolve_paths(flat: dict[str, Any], source: Path) -> None:
         items = [directory] if isinstance(directory, str) else directory
         if not isinstance(items, list) or not all(isinstance(item, str) for item in items):
             raise UsageError(f"{source}: directory must be a path or a list of paths")
-        flat["directory"] = [
-            item if Path(item).is_absolute() else str(source.parent / item) for item in items
-        ]
+        flat["directory"] = [_anchor(item, source) for item in items]
     out = flat.get("out")
-    if isinstance(out, str) and not Path(out).is_absolute() and source != global_config_path():
-        flat["out"] = str(source.parent / out)
+    if isinstance(out, str) and source != global_config_path():
+        flat["out"] = _anchor(out, source)
+
+
+def _anchor(item: str, source: Path) -> str:
+    path = Path(item).expanduser()
+    return str(path if path.is_absolute() else source.parent / path)
 
 
 def _layer(merged: dict[str, Any], flat: dict[str, Any]) -> None:

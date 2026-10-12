@@ -87,6 +87,16 @@ Arguments:
 | `--embedder` | str | `wespeaker-resnet34` | Voiceprint model. |
 | `--device` | str | `auto` | auto, cuda or cpu. |
 
+## `saidby init`
+
+Create saidby.toml, directory.yaml and consent.yaml, so the next run needs no flags.
+
+| Option | Type | Default | What it does |
+|---|---|---|---|
+| `--language` | str |  | Language of your recordings, such as es or en (default: asks). |
+| `--yes` | flag |  | Do not ask: take the language option or the default. |
+| `--global` | flag |  | Set up ~/.config/saidby for every folder, not this one. |
+
 ## `saidby doctor`
 
 Check that this machine can run saidby and say how to fix what is missing.

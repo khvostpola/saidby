@@ -10,6 +10,10 @@ All notable changes are documented here, following
 - `out` setting (`[saidby] out`, `SAIDBY_OUT`) with `saidby/` as the default, so
   `saidby process call.m4a` works without flags.
 
+- `saidby init` creates `saidby.toml`, `directory.yaml` and `consent.yaml` in the current folder
+  (or `~/.config/saidby/` with `--global`) after asking the language and whether to reuse the
+  global glossary. It never overwrites a file that is already there. `~` now works in paths
+  inside configuration files.
 - `saidby directory add-person` and `saidby directory add-term` edit a directory file without
   opening it, keeping comments and making a backup. Ids are made without accents:
   `saidby speakers map` now turns "Gómez" into `gomez` instead of `g-mez`.

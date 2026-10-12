@@ -13,6 +13,7 @@ from saidby.cli import models as models_cli
 from saidby.cli import speakers as speakers_cli
 from saidby.cli.doctor import doctor
 from saidby.cli.enroll import enroll
+from saidby.cli.init import init
 from saidby.cli.process import EPILOG as PROCESS_EPILOG
 from saidby.cli.process import process
 from saidby.cli.review import review
@@ -47,6 +48,7 @@ app.command("process", rich_help_panel=RUN, epilog=PROCESS_EPILOG)(process)
 app.command("review", rich_help_panel=AFTER)(review)
 app.command("enroll", rich_help_panel=AFTER)(enroll)
 app.add_typer(speakers_cli.app, name="speakers", rich_help_panel=AFTER)
+app.command("init", rich_help_panel=SETUP)(init)
 app.command("doctor", rich_help_panel=SETUP)(doctor)
 app.add_typer(models_cli.app, name="models", rich_help_panel=SETUP)
 app.add_typer(directory_cli.app, name="directory", rich_help_panel=SETUP)

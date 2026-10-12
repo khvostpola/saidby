@@ -80,6 +80,16 @@ its duration, when it started and finished, and the speed over all the audio. Op
 The other files are described in [how it works](how-it-works.md#the-folder-you-get). Pass
 `--language` when you know it: it is faster and more accurate than detecting it.
 
+To stop retyping it, set the folder up once:
+
+```bash
+saidby init --language es
+```
+
+It writes `saidby.toml` (language and output folder), an empty `directory.yaml` and a
+`consent.yaml`. From then on `saidby process call.m4a` needs no flags in that folder. Run
+`saidby init --global` instead to set defaults for every folder.
+
 ## 5. Put names on the speakers
 
 Create a directory and add the people:

@@ -224,3 +224,14 @@ def test_terms_come_from_the_file_or_the_environment(
     assert Settings.load(config).terms == ["Acme", "Rappi Pay"]
     monkeypatch.setenv("SAIDBY_TERMS", " Acme, ,Rappi Pay ")
     assert Settings.load().terms == ["Acme", "Rappi Pay"]
+
+
+def test_a_tilde_in_a_path_means_the_home_folder(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path / "me"))
+    config = _write(tmp_path, '[glossary]\ndirectory = ["~/team.yaml", "local.yaml"]\n')
+    assert Settings.load(config).directory == [
+        tmp_path / "me" / "team.yaml",
+        tmp_path / "local.yaml",
+    ]
