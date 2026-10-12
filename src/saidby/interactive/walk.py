@@ -255,7 +255,9 @@ def finish_run(
     if device:
         ui.say(f"  {paint(_('device').ljust(10), 'bold')}{device}")
     for outcome in outcomes:
-        ui.say(f"  {paint(outcome.out_dir.name, 'bold')}  {_outcome_line(outcome)}")
+        name = outcome.out_dir.name
+        label = name.ljust(10) if len(name) < 10 else f"{name}  "
+        ui.say(f"  {paint(label, 'bold')}{_outcome_line(outcome)}")
     if finish.terms_saved:
         count = len(finish.terms_saved)
         saved = ngettext("{n} term saved to {path}", "{n} terms saved to {path}", count)
