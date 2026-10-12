@@ -16,7 +16,12 @@ from saidby.schema.transcript import Segment, Transcript, Word
 
 class FasterWhisperTranscriber:
     def __init__(
-        self, model: str, device: DeviceInfo, compute_type: str = "auto", beam_size: int = 5
+        self,
+        model: str,
+        device: DeviceInfo,
+        compute_type: str = "auto",
+        beam_size: int = 5,
+        deterministic: bool = False,
     ) -> None:
         self.spec, self.path, key = resolve_model("asr", model)
         self.device = device
@@ -26,6 +31,7 @@ class FasterWhisperTranscriber:
             else ("float16" if device.kind == "cuda" else "int8")
         )
         self.beam_size = beam_size
+        self.deterministic = deterministic
         self._model: faster_whisper.WhisperModel | None = None
         self._tokenizer: Any = None
         self.info = EngineInfo(
@@ -53,6 +59,11 @@ class FasterWhisperTranscriber:
         self._model = None
         release_memory()
 
+    def _decoding_options(self) -> dict[str, Any]:
+        if not self.deterministic:
+            return {}
+        return {"temperature": 0.0, "condition_on_previous_text": False}
+
     def count_tokens(self, text: str) -> int:
         if self._tokenizer is None:
             from tokenizers import Tokenizer
@@ -79,6 +90,7 @@ class FasterWhisperTranscriber:
             beam_size=self.beam_size,
             initial_prompt=initial_prompt,
             hotwords=hotwords,
+            **self._decoding_options(),
             clip_timestamps=[x for window in clip_windows for x in window] if clip_windows else "0",
         )
         built = []

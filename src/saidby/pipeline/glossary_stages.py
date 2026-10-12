@@ -109,7 +109,10 @@ class GlossaryStages:
                 "windows": _sha(window_part),
             },
             engine=engine.info,
-            options={"language": self.p.settings.language},
+            options={
+                "language": self.p.settings.language,
+                "deterministic": self.p.settings.deterministic,
+            },
         )
         artifact = rec.work_dir / "transcript.bias.json"
         rec.glossary.update(

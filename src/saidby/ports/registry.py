@@ -12,12 +12,17 @@ DIARIZERS = ("nemotron3", "pyannote-community1", "fake")
 
 
 def make_transcriber(
-    name: str, *, model: str, device: DeviceInfo, compute_type: str = "auto"
+    name: str,
+    *,
+    model: str,
+    device: DeviceInfo,
+    compute_type: str = "auto",
+    deterministic: bool = False,
 ) -> Transcriber:
     if name == "faster-whisper":
         from saidby.engines.asr.faster_whisper import FasterWhisperTranscriber
 
-        return FasterWhisperTranscriber(model, device, compute_type)
+        return FasterWhisperTranscriber(model, device, compute_type, deterministic=deterministic)
     if name == "fake":
         from saidby.engines.asr.fake import FakeTranscriber
 

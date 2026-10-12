@@ -20,6 +20,9 @@ def process(
     device: Annotated[str | None, typer.Option(help="auto, cuda or cpu")] = None,
     asr_model: Annotated[str | None, typer.Option(help="Model key or local path")] = None,
     compute_type: Annotated[str | None, typer.Option()] = None,
+    deterministic: Annotated[
+        bool, typer.Option("--deterministic", help="Reproducible decoding")
+    ] = False,
     diarizer: Annotated[
         str | None, typer.Option(help="nemotron3, pyannote-community1 or fake")
     ] = None,
@@ -51,6 +54,7 @@ def process(
             "device": device,
             "asr_model": asr_model,
             "compute_type": compute_type,
+            "deterministic": deterministic or None,
             "diarizer": diarizer,
             "num_speakers": num_speakers,
             "directory": directory,

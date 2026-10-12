@@ -21,6 +21,7 @@ class Settings(BaseModel):
     asr_engine: str = "faster-whisper"
     asr_model: str = "large-v3"
     compute_type: str = "auto"
+    deterministic: bool = False
     diarizer: str = "nemotron3"
     num_speakers: int | None = None
     directory: Path | None = None

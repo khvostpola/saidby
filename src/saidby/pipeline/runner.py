@@ -351,6 +351,7 @@ class Pipeline:
                 model=self.settings.asr_model,
                 device=self.device,
                 compute_type=self.settings.compute_type,
+                deterministic=self.settings.deterministic,
             )
         return self._transcriber
 
@@ -360,7 +361,10 @@ class Pipeline:
             "asr",
             inputs={"audio": self._audio_sha[rec.slug]},
             engine=engine.info,
-            options={"language": self.settings.language},
+            options={
+                "language": self.settings.language,
+                "deterministic": self.settings.deterministic,
+            },
         )
         artifact = rec.work_dir / "transcript.asr.json"
         self.text[rec.slug] = TextArtifact(artifact, key)
