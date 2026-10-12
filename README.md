@@ -81,6 +81,7 @@ saidby models pull --all      # downloads the models, about 3.5 GB; the only ste
 ```bash
 saidby init --language es                                          # once per folder: no more flags
 saidby process call.m4a                                            # transcript, speakers, tracks in ./saidby/
+saidby process call.m4a -i                                         # the same, guided: a plan, then listen and name the voices
 saidby directory add-term Acme --variant akme                      # your people and terms
 saidby review saidby/call                                          # fix the doubtful spans
 ```
