@@ -7,6 +7,8 @@ All notable changes are documented here, following
 ## [Unreleased]
 
 ### Added
+- Message translation support: `--ui-lang` (or `SAIDBY_UI_LANG`, or your system language) picks
+  the language of messages, with English for anything not translated. No translations ship yet.
 - `out` setting (`[saidby] out`, `SAIDBY_OUT`) with `saidby/` as the default, so
   `saidby process call.m4a` works without flags.
 

@@ -18,6 +18,7 @@ from saidby.cli.process import EPILOG as PROCESS_EPILOG
 from saidby.cli.process import process
 from saidby.cli.review import review
 from saidby.errors import SaidbyError
+from saidby.i18n import set_language
 
 RUN = "Transcribe"
 AFTER = "After a run"
@@ -61,6 +62,12 @@ def _version(value: bool) -> None:
         raise typer.Exit()
 
 
+def _ui_language(value: str | None) -> str | None:
+    if value is not None:
+        set_language(value)
+    return value
+
+
 @app.callback()
 def root(
     version: Annotated[
@@ -69,11 +76,21 @@ def root(
             "--version", callback=_version, is_eager=True, help="Show the version and exit."
         ),
     ] = False,
+    ui_lang: Annotated[
+        str | None,
+        typer.Option(
+            "--ui-lang",
+            callback=_ui_language,
+            is_eager=True,
+            help="Language of messages, such as es (default: your system language).",
+        ),
+    ] = None,
 ) -> None:
     pass
 
 
 def main() -> None:
+    set_language()
     try:
         app()
     except KeyboardInterrupt:
