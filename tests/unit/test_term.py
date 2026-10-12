@@ -17,17 +17,24 @@ class Tty(io.StringIO):
         return True
 
 
+@pytest.fixture
+def posix(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(host, "is_windows", lambda: False)
+
+
 def test_a_plain_stream_is_not_a_terminal() -> None:
     term = detect(io.StringIO(), {"TERM": "xterm", "COLORTERM": "truecolor"})
     assert (term.tty, term.color, term.truecolor) == (False, False, False)
 
 
 @pytest.mark.parametrize("term_value", ["", "dumb"])
+@pytest.mark.usefixtures("posix")
 def test_dumb_terminals_get_no_features(term_value: str) -> None:
     term = detect(Tty(), {"TERM": term_value})
     assert (term.tty, term.color) == (False, False)
 
 
+@pytest.mark.usefixtures("posix")
 def test_color_and_truecolor_are_detected() -> None:
     plain = detect(Tty(), {"TERM": "xterm"})
     assert (plain.tty, plain.color, plain.truecolor) == (True, True, False)
@@ -35,6 +42,7 @@ def test_color_and_truecolor_are_detected() -> None:
         assert detect(Tty(), {"TERM": "xterm", "COLORTERM": value}).truecolor
 
 
+@pytest.mark.usefixtures("posix")
 def test_no_color_turns_off_color_but_not_the_terminal() -> None:
     term = detect(Tty(), {"TERM": "xterm", "NO_COLOR": "1", "COLORTERM": "truecolor"})
     assert (term.tty, term.color, term.truecolor) == (True, False, False)
@@ -95,8 +103,8 @@ def test_enabling_ansi_processing_never_raises() -> None:
 
 def test_redirected_streams_become_utf8_on_windows(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(host, "is_windows", lambda: True)
-    out = io.TextIOWrapper(io.BytesIO(), encoding="cp1252")
-    err = io.TextIOWrapper(io.BytesIO(), encoding="cp1252")
+    out = io.TextIOWrapper(io.BytesIO(), encoding="cp1252", newline="\n")
+    err = io.TextIOWrapper(io.BytesIO(), encoding="cp1252", newline="\n")
     monkeypatch.setattr(sys, "stdout", out)
     monkeypatch.setattr(sys, "stderr", err)
     monkeypatch.setattr(sys, "stdin", io.TextIOWrapper(io.BytesIO(b"s\xed\n"), encoding="cp1252"))

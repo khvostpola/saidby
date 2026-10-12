@@ -250,7 +250,7 @@ def _glossary_and_config_rows() -> tuple[list[InfoRow], bool]:
     if settings.sources:
         names = ", ".join(show_path(p) for p in settings.sources)
         language = settings.language or _("auto")
-        output = f"{show_path(settings.out)}/"
+        output = show_path(settings.out) + os.sep
         rows.append(InfoRow("ok", _("Config"), f"{names} · {language} · {_('output')} {output}"))
         return rows, True
     rows.append(InfoRow("off", _("Config"), _("none found, using defaults")))
@@ -294,7 +294,7 @@ def show_compact(
     if not (term.tty and term.truecolor and term.columns >= COMPACT_MIN_COLUMNS):
         return
     count = ngettext("{n} file", "{n} files", files).format(n=files)
-    second = f"{count} · {_('output')} {show_path(output)}/"
+    second = f"{count} · {_('output')} {show_path(output)}{os.sep}"
     third = _("Ctrl+C is safe: running again resumes where it stopped")
     try:
         _emit([*compact_lines(term, second, third), ""], out)

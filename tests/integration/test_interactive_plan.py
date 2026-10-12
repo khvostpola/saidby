@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import io
+import os
 import sys
 from collections.abc import Callable
 from pathlib import Path
@@ -19,6 +20,7 @@ from saidby.interactive.plan import plan_run, split_terms
 
 PLAIN = Terminal(tty=True, color=False, truecolor=False, columns=100)
 runner = CliRunner()
+HERE = "." + os.sep
 INPUTS = [Path("call.m4a")]
 
 
@@ -60,9 +62,9 @@ def test_the_plan_shows_each_value_and_where_it_comes_from(project: Path) -> Non
     assert len(prompts) == 1
     text = out.getvalue()
     assert "Ready to process 2 files" in text
-    assert "directory.yaml · 1 person · 2 terms  ./saidby.toml" in text
-    assert "language  es  ./saidby.toml" in text
-    assert "./saidby/  default" in text
+    assert f"directory.yaml · 1 person · 2 terms  {HERE}saidby.toml" in text
+    assert f"language  es  {HERE}saidby.toml" in text
+    assert f"{HERE}saidby{os.sep}  default" in text
     assert "Enter start   t terms for this recording   e change something   q quit" in text
     assert plan.chosen == {}
     assert plan.added_terms == []

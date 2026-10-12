@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -104,7 +105,7 @@ class Planner:
                 str(settings.num_speakers) if settings.num_speakers else _("detect the number"),
                 "num_speakers",
             ),
-            ("output", labels["output"], f"{show_path(settings.out)}/", "out"),
+            ("output", labels["output"], show_path(settings.out) + os.sep, "out"),
             ("terms", labels["terms"], ", ".join(terms) if terms else _("none"), "terms"),
         ]
         count = len(self.inputs)

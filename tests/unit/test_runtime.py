@@ -79,6 +79,13 @@ def test_nvidia_wheel_folders_are_found_by_package(
     monkeypatch.setattr(importlib.util, "find_spec", lambda name: None)
     assert nvidia_package_dirs("cublas", "bin") == []
 
+    def no_parent(name: str) -> None:
+        raise ModuleNotFoundError("No module named 'nvidia'")
+
+    monkeypatch.setattr(importlib.util, "find_spec", no_parent)
+    assert nvidia_package_dirs("cublas", "bin") == []
+    assert preload_cuda_libs() == []
+
 
 def test_preloading_without_the_wheels_loads_nothing(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(importlib.util, "find_spec", lambda name: None)

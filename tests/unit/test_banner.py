@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import io
+import os
 import re
 import sys
 from datetime import UTC, datetime, timedelta
@@ -30,6 +31,8 @@ from saidby.cli.term import Terminal
 from saidby.runtime.device import DeviceInfo
 from saidby.runtime.device_cache import write_cache
 
+HERE = "." + os.sep
+OUT = f"{HERE}saidby{os.sep}"
 TRUE = Terminal(tty=True, color=True, truecolor=True, columns=100)
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 NOW = datetime(2026, 10, 12, 12, 0, tzinfo=UTC)
@@ -154,8 +157,8 @@ def test_process_gets_the_compact_banner_only_on_a_color_terminal() -> None:
     lines = _compact(TRUE)
     assert len(lines) == 4
     assert lines[3] == ""
-    assert plain(lines)[1].endswith("1 file · output ./saidby/")
-    assert plain(_compact(TRUE, 3))[1].endswith("3 files · output ./saidby/")
+    assert plain(lines)[1].endswith(f"1 file · output {OUT}")
+    assert plain(_compact(TRUE, 3))[1].endswith(f"3 files · output {OUT}")
     assert _compact(Terminal(tty=False, color=False, truecolor=False, columns=100)) == []
     assert _compact(Terminal(tty=True, color=False, truecolor=False, columns=100)) == []
     assert _compact(Terminal(tty=True, color=True, truecolor=True, columns=40)) == []
@@ -247,8 +250,8 @@ def test_glossary_and_config_rows_describe_the_folder(
     rows, has_config = gather_rows()
     assert has_config
     by_label = {r.label: r for r in rows}
-    assert by_label["Glossary"].value == "./directory.yaml · 1 person · 2 terms"
-    assert by_label["Config"].value == "./saidby.toml · es · output ./saidby/"
+    assert by_label["Glossary"].value == f"{HERE}directory.yaml · 1 person · 2 terms"
+    assert by_label["Config"].value == f"{HERE}saidby.toml · es · output {OUT}"
 
 
 def test_a_broken_config_shows_up_as_an_alert_row(

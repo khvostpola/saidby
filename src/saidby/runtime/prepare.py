@@ -31,7 +31,10 @@ class RuntimeInfo:
 
 def nvidia_package_dirs(package: str, subdir: str) -> list[Path]:
     """The `lib` or `bin` folders of an installed `nvidia-<package>-cu12` wheel."""
-    spec = importlib.util.find_spec(f"nvidia.{package}")
+    try:
+        spec = importlib.util.find_spec(f"nvidia.{package}")
+    except ModuleNotFoundError:
+        return []
     if spec is None or not spec.submodule_search_locations:
         return []
     folders = [Path(location) / subdir for location in spec.submodule_search_locations]
