@@ -2,27 +2,31 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import json
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 
-from saidby.runtime import device_cache
+from saidby.runtime import device_cache, host
 from saidby.runtime.device import DeviceInfo
 from saidby.runtime.device_cache import cache_path, read_cache, write_cache
 
 MOMENT = datetime(2026, 10, 12, 8, 30, tzinfo=UTC)
 
 
-def test_the_cache_lives_under_the_xdg_cache_folder(isolated_user_config: Path) -> None:
-    assert cache_path() == isolated_user_config / "cache" / "saidby" / "device.json"
+def test_the_cache_lives_in_the_user_cache_folder(isolated_home: Path) -> None:
+    assert cache_path() == host.cache_dir() / "device.json"
+    assert cache_path() == isolated_home / "cache" / "saidby" / "device.json"
 
 
+@pytest.mark.skipif(host.is_windows(), reason="XDG folders are a POSIX convention")
 def test_empty_xdg_cache_home_falls_back_to_dot_cache(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, set_home: Callable[[Path], None]
 ) -> None:
+    monkeypatch.delenv("SAIDBY_CACHE_DIR")
     monkeypatch.setenv("XDG_CACHE_HOME", "")
-    monkeypatch.setenv("HOME", str(tmp_path))
+    set_home(tmp_path)
     assert cache_path() == tmp_path / ".cache" / "saidby" / "device.json"
 
 
@@ -54,7 +58,7 @@ def test_the_reason_for_cpu_is_kept() -> None:
 def test_a_damaged_file_is_no_verdict(body: str) -> None:
     path = cache_path()
     path.parent.mkdir(parents=True)
-    path.write_text(body)
+    path.write_text(body, encoding="utf-8")
     assert read_cache() is None
 
 
@@ -68,15 +72,15 @@ def test_writing_never_fails_when_the_folder_is_not_writable(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     blocker = tmp_path / "blocker"
-    blocker.write_text("a file where a folder should be")
-    monkeypatch.setenv("XDG_CACHE_HOME", str(blocker))
+    blocker.write_text("a file where a folder should be", encoding="utf-8")
+    monkeypatch.setenv("SAIDBY_CACHE_DIR", str(blocker))
     write_cache(DeviceInfo("cpu", reason="no_gpu"))
     assert read_cache() is None
 
 
 def test_the_file_is_small_plain_json() -> None:
     write_cache(DeviceInfo("cpu", reason="no_gpu"), MOMENT)
-    data = json.loads(cache_path().read_text())
+    data = json.loads(cache_path().read_text(encoding="utf-8"))
     assert data["schema"] == "saidby.device/1"
     assert set(data) == {
         "schema",

@@ -10,6 +10,7 @@ from pydantic import BaseModel, ConfigDict, PrivateAttr, ValidationError, field_
 
 from saidby.errors import UsageError
 from saidby.i18n import _
+from saidby.runtime import host
 
 ENV_PREFIX = "SAIDBY_"
 ORIGIN_ENV = "env"
@@ -103,8 +104,7 @@ class Settings(BaseModel):
 
 
 def global_config_path() -> Path:
-    base = os.environ.get("XDG_CONFIG_HOME") or str(Path.home() / ".config")
-    return Path(base) / "saidby" / "config.toml"
+    return host.config_dir() / "config.toml"
 
 
 def find_project_config(start: Path | None = None) -> Path | None:
@@ -226,7 +226,10 @@ def _read_file(path: Path) -> dict[str, Any]:
     try:
         data = tomllib.loads(path.read_text(encoding="utf-8"))
     except tomllib.TOMLDecodeError as exc:
-        raise UsageError(_("{path}: not valid TOML: {exc}").format(path=path, exc=exc)) from exc
+        message = _("{path}: not valid TOML: {exc}").format(path=path, exc=exc)
+        if "escape" in str(exc).lower():
+            message += _("; write Windows paths with forward slashes or inside single quotes")
+        raise UsageError(message) from exc
     return _flatten(data, path)
 
 

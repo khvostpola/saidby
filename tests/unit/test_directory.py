@@ -10,6 +10,7 @@ from typer.testing import CliRunner
 from saidby.cli import app
 from saidby.errors import InputError, UsageError
 from saidby.formats.directory_yaml import load_directory, save_directory
+from saidby.runtime import host
 from saidby.schema.directory import Directory
 
 runner = CliRunner()
@@ -33,7 +34,7 @@ terms:
 
 def test_valid_directory_loads(tmp_path: Path) -> None:
     path = tmp_path / "d.yaml"
-    path.write_text(SAMPLE)
+    path.write_text(SAMPLE, encoding="utf-8")
     directory, _ = load_directory(path)
     assert directory.people[0].id == "p-001"
     assert directory.terms[1].type == "dialect"
@@ -55,20 +56,20 @@ def test_invalid_directories_are_rejected(tmp_path: Path, mutation: object) -> N
     data = yaml.safe_load(SAMPLE)
     mutation(data)  # type: ignore[operator]
     path = tmp_path / "bad.yaml"
-    path.write_text(yaml.safe_dump(data))
+    path.write_text(yaml.safe_dump(data), encoding="utf-8")
     with pytest.raises(InputError):
         load_directory(path)
 
 
 def test_save_keeps_comments_and_makes_backup(tmp_path: Path) -> None:
     path = tmp_path / "d.yaml"
-    path.write_text(SAMPLE)
+    path.write_text(SAMPLE, encoding="utf-8")
     _, raw = load_directory(path)
     raw["people"][0]["context"] = "owner"
     backup = save_directory(path, raw)
     assert backup is not None
-    assert backup.read_text() == SAMPLE
-    saved = path.read_text()
+    assert backup.read_text(encoding="utf-8") == SAMPLE
+    saved = path.read_text(encoding="utf-8")
     assert "# team directory" in saved
     assert "# the owner" in saved
     assert "context: owner" in saved
@@ -85,7 +86,7 @@ def test_cli_validate_schema_and_init(tmp_path: Path) -> None:
 
 def _sample(tmp_path: Path) -> Path:
     path = tmp_path / "d.yaml"
-    path.write_text(SAMPLE)
+    path.write_text(SAMPLE, encoding="utf-8")
     return path
 
 
@@ -117,7 +118,7 @@ def test_add_person_derives_the_id_and_keeps_comments(tmp_path: Path) -> None:
         ["Ana Maria"],
         "accountant",
     )
-    saved = path.read_text()
+    saved = path.read_text(encoding="utf-8")
     assert "# team directory" in saved
     assert "# the owner" in saved
     assert list(tmp_path.glob("d.bak-*.yaml"))
@@ -188,14 +189,16 @@ def test_edits_go_to_the_last_configured_directory_by_default(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     shared = tmp_path / "shared.yaml"
-    shared.write_text(SAMPLE)
+    shared.write_text(SAMPLE, encoding="utf-8")
     project = tmp_path / "project.yaml"
-    project.write_text(SAMPLE)
-    (tmp_path / "saidby.toml").write_text(f'[glossary]\ndirectory = ["{shared}", "project.yaml"]\n')
+    project.write_text(SAMPLE, encoding="utf-8")
+    (tmp_path / "saidby.toml").write_text(
+        f'[glossary]\ndirectory = ["{shared.as_posix()}", "project.yaml"]\n', encoding="utf-8"
+    )
     monkeypatch.chdir(tmp_path)
     assert runner.invoke(app, ["directory", "add-term", "Rappi"]).exit_code == 0
-    assert "Rappi" in project.read_text()
-    assert "Rappi" not in shared.read_text()
+    assert "Rappi" in project.read_text(encoding="utf-8")
+    assert "Rappi" not in shared.read_text(encoding="utf-8")
 
 
 def test_edits_without_any_directory_say_how_to_fix_it(
@@ -208,11 +211,11 @@ def test_edits_without_any_directory_say_how_to_fix_it(
 
 
 def test_init_global_creates_the_shared_directory(
-    tmp_path: Path, isolated_user_config: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, isolated_home: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.chdir(tmp_path)
     assert runner.invoke(app, ["directory", "init", "--global", "--language", "en"]).exit_code == 0
-    shared = isolated_user_config / "config" / "saidby" / "directory.yaml"
+    shared = host.config_dir() / "directory.yaml"
     assert load_directory(shared)[0].language == "en"
     assert runner.invoke(app, ["directory", "init", "--global"]).exit_code != 0
     assert isinstance(runner.invoke(app, ["directory", "init"]).exception, UsageError)
@@ -239,22 +242,22 @@ people:
 def test_saving_keeps_the_list_indentation_the_file_already_uses(tmp_path: Path) -> None:
     for text, marker in ((INDENTED, "\n  - id: ana\n"), (FLUSH, "\n- id: ana\n")):
         path = tmp_path / f"d{len(text)}.yaml"
-        path.write_text(text)
+        path.write_text(text, encoding="utf-8")
         _, raw = load_directory(path)
         raw["people"].append({"id": "ben", "name": "Ben"})
         save_directory(path, raw)
-        saved = path.read_text()
+        saved = path.read_text(encoding="utf-8")
         assert marker in saved
         assert saved.count("- id:") == 2
 
 
 def test_a_file_that_is_new_to_lists_defaults_to_the_documented_style(tmp_path: Path) -> None:
     path = tmp_path / "d.yaml"
-    path.write_text("version: 1\nlanguage: es\n# nothing yet\n")
+    path.write_text("version: 1\nlanguage: es\n# nothing yet\n", encoding="utf-8")
     _, raw = load_directory(path)
     raw["people"] = [{"id": "ana", "name": "Ana"}]
     save_directory(path, raw)
-    assert "\npeople:\n  - id: ana\n    name: Ana\n" in path.read_text()
+    assert "\npeople:\n  - id: ana\n    name: Ana\n" in path.read_text(encoding="utf-8")
 
 
 def test_a_root_list_such_as_consent_stays_flush_left(tmp_path: Path) -> None:
@@ -262,21 +265,21 @@ def test_a_root_list_such_as_consent_stays_flush_left(tmp_path: Path) -> None:
     from saidby.schema.directory import ConsentRecord
 
     path = tmp_path / "consent.yaml"
-    path.write_text("# consent records\n")
+    path.write_text("# consent records\n", encoding="utf-8")
     records, raw = load_consents(path)
     assert records == []
     record = ConsentRecord(person="ana", source="form", declared_by="Ana", date="2026-10-12")  # type: ignore[arg-type]
     append_consent(path, raw, record)
-    assert path.read_text().startswith("- person: ana\n")
+    assert path.read_text(encoding="utf-8").startswith("- person: ana\n")
     records, raw = load_consents(path)
     append_consent(path, raw, record.model_copy(update={"person": "ben"}))
-    assert path.read_text().count("\n- person:") == 1
-    assert path.read_text().startswith("- person: ana\n")
+    assert path.read_text(encoding="utf-8").count("\n- person:") == 1
+    assert path.read_text(encoding="utf-8").startswith("- person: ana\n")
 
 
 def test_two_saves_in_the_same_second_keep_both_backups(tmp_path: Path) -> None:
     path = tmp_path / "d.yaml"
-    path.write_text("version: 1\nlanguage: es\npeople: []\n")
+    path.write_text("version: 1\nlanguage: es\npeople: []\n", encoding="utf-8")
     _, raw = load_directory(path)
     raw["people"].append({"id": "ana", "name": "Ana"})
     first = save_directory(path, raw)
@@ -285,6 +288,6 @@ def test_two_saves_in_the_same_second_keep_both_backups(tmp_path: Path) -> None:
     assert first is not None
     assert second is not None
     assert first != second
-    assert "ana" not in first.read_text()
-    assert "ana" in second.read_text()
-    assert "ben" not in second.read_text()
+    assert "ana" not in first.read_text(encoding="utf-8")
+    assert "ana" in second.read_text(encoding="utf-8")
+    assert "ben" not in second.read_text(encoding="utf-8")

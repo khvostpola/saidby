@@ -178,44 +178,44 @@ msgstr "Ctrl+C es seguro: al correr de nuevo se retoma donde quedó"
 msgid "ok: {people}, {terms}"
 msgstr "ok: {people}, {terms}"
 
-#: src/saidby/cli/directory.py:72
+#: src/saidby/cli/directory.py:76
 msgid "give a file name, or use --global"
 msgstr "da un nombre de archivo, o usa --global"
 
-#: src/saidby/cli/directory.py:75
+#: src/saidby/cli/directory.py:79
 #, python-brace-format
 msgid "{target} already exists"
 msgstr "{target} ya existe"
 
-#: src/saidby/cli/directory.py:78
+#: src/saidby/cli/directory.py:82
 #, python-brace-format
 msgid "created {target}"
 msgstr "se creó {target}"
 
-#: src/saidby/cli/directory.py:86 src/saidby/cli/enroll.py:33
+#: src/saidby/cli/directory.py:90 src/saidby/cli/enroll.py:33
 msgid "no directory file: pass --directory or set one in saidby.toml"
 msgstr "no hay archivo de directorio: pasa --directory o defínelo en saidby.toml"
 
-#: src/saidby/cli/directory.py:110
+#: src/saidby/cli/directory.py:114
 msgid "cannot make an id from that name; pass --id"
 msgstr "no se puede hacer un id con ese nombre; pasa --id"
 
-#: src/saidby/cli/directory.py:123
+#: src/saidby/cli/directory.py:127
 #, python-brace-format
 msgid "added {chosen} ({name}) to {file} (backup: {backup})"
 msgstr "se agregó {chosen} ({name}) a {file} (copia: {backup})"
 
-#: src/saidby/cli/directory.py:125
+#: src/saidby/cli/directory.py:129
 #, python-brace-format
 msgid "added {chosen} ({name}) to {file}"
 msgstr "se agregó {chosen} ({name}) a {file}"
 
-#: src/saidby/cli/directory.py:159
+#: src/saidby/cli/directory.py:163
 #, python-brace-format
 msgid "added {term} to {file} (backup: {backup})"
 msgstr "se agregó {term} a {file} (copia: {backup})"
 
-#: src/saidby/cli/directory.py:161
+#: src/saidby/cli/directory.py:165
 #, python-brace-format
 msgid "added {term} to {file}"
 msgstr "se agregó {term} a {file}"
@@ -236,29 +236,29 @@ msgstr[1] "{n} problemas por arreglar antes de procesar"
 msgid "ready"
 msgstr "listo"
 
-#: src/saidby/cli/enroll.py:84
+#: src/saidby/cli/enroll.py:88
 msgid "pass --speaker LABEL=PERSON, or -i to be asked for each voice"
 msgstr "pasa --speaker ETIQUETA=PERSONA, o -i para que te pregunte por cada voz"
 
-#: src/saidby/cli/enroll.py:87
+#: src/saidby/cli/enroll.py:91
 msgid "expected --speaker LABEL=PERSON (an id or a name)"
 msgstr "se esperaba --speaker ETIQUETA=PERSONA (un id o un nombre)"
 
-#: src/saidby/cli/enroll.py:96
+#: src/saidby/cli/enroll.py:100
 #, python-brace-format
 msgid "{key!r} is not in the directory; add the person first (saidby directory add-person)"
 msgstr "{key!r} no está en el directorio; agrega primero a la persona (saidby directory add-person)"
 
-#: src/saidby/cli/enroll.py:123
+#: src/saidby/cli/enroll.py:127
 #, python-brace-format
 msgid "backup: {backup}"
 msgstr "copia: {backup}"
 
-#: src/saidby/cli/enroll.py:138
+#: src/saidby/cli/enroll.py:142
 msgid "use either --speaker or -i, not both"
 msgstr "usa --speaker o -i, no los dos"
 
-#: src/saidby/cli/enroll.py:142
+#: src/saidby/cli/enroll.py:146
 msgid ""
 "-i asks about consent itself; do not combine it with --consent-source, --consent-declared-by or "
 "--consent-date"
@@ -266,7 +266,7 @@ msgstr ""
 "-i pregunta por el consentimiento; no lo combines con --consent-source, --consent-declared-by ni "
 "--consent-date"
 
-#: src/saidby/cli/enroll.py:165
+#: src/saidby/cli/enroll.py:169
 #, python-brace-format
 msgid ""
 "warning: saidby process only reads {expected}, next to the directory file; the voiceprint stays "
@@ -279,61 +279,61 @@ msgstr ""
 msgid "this command needs the evaluation extra: pip install 'saidby[eval]'"
 msgstr "este comando necesita el extra de evaluación: pip install 'saidby[eval]'"
 
-#: src/saidby/cli/init.py:29
+#: src/saidby/cli/init.py:30
 #, python-brace-format
 msgid "  kept   {name:<16} already there, not touched"
 msgstr "  intacto {name:<16} ya estaba, no se tocó"
 
-#: src/saidby/cli/init.py:32
+#: src/saidby/cli/init.py:33
 #, python-brace-format
 msgid "  wrote  {name:<16} {note}"
 msgstr "  creado  {name:<16} {note}"
 
-#: src/saidby/cli/init.py:52
+#: src/saidby/cli/init.py:57
 msgid "Language of your recordings"
 msgstr "Idioma de tus grabaciones"
 
-#: src/saidby/cli/init.py:61
+#: src/saidby/cli/init.py:66
 #, python-brace-format
 msgid "Use the global glossary {shorten_home} here too?"
 msgstr "¿Usar también aquí el glosario global {shorten_home}?"
 
-#: src/saidby/cli/init.py:70
+#: src/saidby/cli/init.py:75
 #, python-brace-format
 msgid "Setting up {folder}"
 msgstr "Preparando {folder}"
 
-#: src/saidby/cli/init.py:71
+#: src/saidby/cli/init.py:76
 #, python-brace-format
 msgid "language {language}"
 msgstr "idioma {language}"
 
-#: src/saidby/cli/init.py:73
+#: src/saidby/cli/init.py:78
 msgid "output ./saidby/"
 msgstr "salida ./saidby/"
 
-#: src/saidby/cli/init.py:77
+#: src/saidby/cli/init.py:82
 #, python-brace-format
 msgid "glossary {files}"
 msgstr "glosario {files}"
 
-#: src/saidby/cli/init.py:80
+#: src/saidby/cli/init.py:85
 msgid "empty, with hints"
 msgstr "vacío, con indicaciones"
 
-#: src/saidby/cli/init.py:81
+#: src/saidby/cli/init.py:86
 msgid "empty"
 msgstr "vacío"
 
-#: src/saidby/cli/init.py:82
+#: src/saidby/cli/init.py:87
 msgid "every folder"
 msgstr "todas las carpetas"
 
-#: src/saidby/cli/init.py:82
+#: src/saidby/cli/init.py:87
 msgid "this folder"
 msgstr "esta carpeta"
 
-#: src/saidby/cli/init.py:84
+#: src/saidby/cli/init.py:89
 #, python-brace-format
 msgid "Done. In {where}, `saidby process call.m4a` needs no flags now."
 msgstr "Listo. En {where}, `saidby process llamada.m4a` ya no necesita opciones."
@@ -521,7 +521,7 @@ msgstr[1] "{n} tramos dudosos"
 msgid "review"
 msgstr "revisar"
 
-#: src/saidby/cli/process.py:314
+#: src/saidby/cli/process.py:320
 msgid "-i needs the human progress output; do not combine it with --progress"
 msgstr "-i necesita la salida de progreso `human`; no la combines con --progress"
 
@@ -644,92 +644,96 @@ msgstr "habla"
 msgid "track"
 msgstr "pista"
 
-#: src/saidby/cli/speakers.py:113
+#: src/saidby/cli/speakers.py:117
 msgid "pass --set LABEL=PERSON, or -i to listen and name each voice"
 msgstr "pasa --set ETIQUETA=PERSONA, o -i para escuchar y nombrar cada voz"
 
-#: src/saidby/cli/speakers.py:118
+#: src/saidby/cli/speakers.py:122
 #, python-brace-format
 msgid "expected LABEL=VALUE, got {item!r}"
 msgstr "se esperaba ETIQUETA=VALOR, llegó {item!r}"
 
-#: src/saidby/cli/speakers.py:124
+#: src/saidby/cli/speakers.py:129
 #, python-brace-format
 msgid "added {id} ({name}) to {value}{note}"
 msgstr "se agregó {id} ({name}) a {value}{note}"
 
-#: src/saidby/cli/speakers.py:138
+#: src/saidby/cli/speakers.py:143
 msgid "use either --set or -i, not both"
 msgstr "usa --set o -i, no los dos"
 
-#: src/saidby/cli/speakers.py:140
+#: src/saidby/cli/speakers.py:145
 #, python-brace-format
 msgid "Speakers in {folder}"
 msgstr "Hablantes en {folder}"
 
-#: src/saidby/cli/speakers.py:147
+#: src/saidby/cli/speakers.py:150
 #, python-brace-format
 msgid "{name!r} is not in the directory. Add it to {file}?"
 msgstr "{name!r} no está en el directorio. ¿Agregarlo a {file}?"
 
-#: src/saidby/cli/speakers.py:162
+#: src/saidby/cli/speakers.py:165
 #, python-brace-format
 msgid "merged {items} into {into}"
 msgstr "se fusionó {items} en {into}"
 
-#: src/saidby/cli/ui.py:29
+#: src/saidby/cli/ui.py:34
 #, python-brace-format
 msgid "interactive mode needs a terminal; without one, use: {command}"
 msgstr "el modo interactivo necesita una terminal; sin ella, usa: {command}"
 
-#: src/saidby/cli/ui.py:131
+#: src/saidby/cli/ui.py:141
 msgid "[Y/n]"
 msgstr "[S/n]"
 
-#: src/saidby/cli/ui.py:131
+#: src/saidby/cli/ui.py:141
 msgid "[y/N]"
 msgstr "[s/N]"
 
-#: src/saidby/cli/ui.py:134
+#: src/saidby/cli/ui.py:144
 msgid "type y or n"
 msgstr "escribe s o n"
 
-#: src/saidby/config/settings.py:97
+#: src/saidby/config/settings.py:99
 #, python-brace-format
 msgid "invalid configuration: {where}: {msg}"
 msgstr "configuración inválida: {where}: {msg}"
 
-#: src/saidby/config/settings.py:125
+#: src/saidby/config/settings.py:126
 #, python-brace-format
 msgid "config file not found: {explicit}"
 msgstr "no se encontró el archivo de configuración: {explicit}"
 
-#: src/saidby/config/settings.py:174
+#: src/saidby/config/settings.py:175
 #, python-brace-format
 msgid "{source}: unknown key(s) in [saidby]: {items}"
 msgstr "{source}: claves desconocidas en [saidby]: {items}"
 
-#: src/saidby/config/settings.py:185
+#: src/saidby/config/settings.py:186
 #, python-brace-format
 msgid "{source}: unknown key(s) in [{table}]: {items} (valid: {valid})"
 msgstr "{source}: claves desconocidas en [{table}]: {items} (válidas: {valid})"
 
-#: src/saidby/config/settings.py:193
+#: src/saidby/config/settings.py:194
 #, python-brace-format
 msgid "{source}: unknown section [{table}] (valid: {valid})"
 msgstr "{source}: sección desconocida [{table}] (válidas: {valid})"
 
-#: src/saidby/config/settings.py:207
+#: src/saidby/config/settings.py:208
 #, python-brace-format
 msgid "{source}: directory must be a path or a list of paths"
 msgstr "{source}: directory debe ser una ruta o una lista de rutas"
 
-#: src/saidby/config/settings.py:228
+#: src/saidby/config/settings.py:229
 #, python-brace-format
 msgid "{path}: not valid TOML: {exc}"
 msgstr "{path}: no es TOML válido: {exc}"
 
-#: src/saidby/config/writer.py:44
+#: src/saidby/config/settings.py:231
+msgid "; write Windows paths with forward slashes or inside single quotes"
+msgstr "; escribe las rutas de Windows con barras diagonales o entre comillas simples"
+
+#: src/saidby/config/writer.py:48
 #, python-brace-format
 msgid "{language!r} is not a language code such as es, en or pt"
 msgstr "{language!r} no es un código de idioma como es, en o pt"
@@ -757,7 +761,7 @@ msgstr "no se puede alcanzar el servidor LLM {base_url}: {exc}"
 msgid "LLM returned incomplete JSON"
 msgstr "el LLM devolvió un JSON incompleto"
 
-#: src/saidby/evaluation/arbitrate.py:240
+#: src/saidby/evaluation/arbitrate.py:244
 #, python-brace-format
 msgid "nothing to serve in {out}; run `saidby eval arbitrate-build` first"
 msgstr "no hay nada que servir en {out}; corre primero `saidby eval arbitrate-build`"
@@ -1593,22 +1597,22 @@ msgstr "{person}: {seconds} s de habla"
 msgid "cannot make an id from {name!r}; use saidby directory add-person with --id"
 msgstr "no se puede hacer un id con {name!r}; usa saidby directory add-person con --id"
 
-#: src/saidby/speakers/remap.py:26
+#: src/saidby/speakers/remap.py:27
 #, python-brace-format
 msgid "not a saidby output folder: {out_dir}"
 msgstr "no es una carpeta de salida de saidby: {out_dir}"
 
-#: src/saidby/speakers/remap.py:41
+#: src/saidby/speakers/remap.py:42
 #, python-brace-format
 msgid "unknown speaker {label!r}; known: {known}"
 msgstr "hablante desconocido {label!r}; conocidos: {known}"
 
-#: src/saidby/speakers/remap.py:93
+#: src/saidby/speakers/remap.py:98
 #, python-brace-format
 msgid "{person_id!r} is already used by another speaker; use merge instead"
 msgstr "{person_id!r} ya lo usa otro hablante; usa merge en su lugar"
 
-#: src/saidby/speakers/remap.py:125
+#: src/saidby/speakers/remap.py:138
 msgid "cannot merge a speaker into itself"
 msgstr "no se puede fusionar un hablante consigo mismo"
 

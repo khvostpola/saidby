@@ -10,6 +10,7 @@ from typer.testing import CliRunner
 
 from saidby.cli import app
 from saidby.config.settings import Settings
+from saidby.runtime import host
 
 runner = CliRunner()
 
@@ -51,7 +52,7 @@ def test_out_defaults_to_a_saidby_folder(
 def test_out_flag_wins_over_the_project_file(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, recording: type[_RecordingPipeline]
 ) -> None:
-    (tmp_path / "saidby.toml").write_text('[saidby]\nout = "results"\n')
+    (tmp_path / "saidby.toml").write_text('[saidby]\nout = "results"\n', encoding="utf-8")
     monkeypatch.chdir(tmp_path)
     assert runner.invoke(app, ["process", "call.m4a", "--out", "elsewhere"]).exit_code == 0
     assert _output_folder(recording) == Path("elsewhere")
@@ -60,7 +61,7 @@ def test_out_flag_wins_over_the_project_file(
 def test_out_from_the_project_file_is_relative_to_that_file(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, recording: type[_RecordingPipeline]
 ) -> None:
-    (tmp_path / "saidby.toml").write_text('[saidby]\nout = "results"\n')
+    (tmp_path / "saidby.toml").write_text('[saidby]\nout = "results"\n', encoding="utf-8")
     monkeypatch.chdir(tmp_path)
     assert runner.invoke(app, ["process", "call.m4a"]).exit_code == 0
     assert _output_folder(recording) == tmp_path / "results"
@@ -69,12 +70,12 @@ def test_out_from_the_project_file_is_relative_to_that_file(
 def test_out_from_the_global_file_stays_relative_to_the_current_folder(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
-    isolated_user_config: Path,
+    isolated_home: Path,
     recording: type[_RecordingPipeline],
 ) -> None:
-    config = isolated_user_config / "config" / "saidby" / "config.toml"
+    config = host.config_dir() / "config.toml"
     config.parent.mkdir(parents=True)
-    config.write_text('[saidby]\nout = "results"\n')
+    config.write_text('[saidby]\nout = "results"\n', encoding="utf-8")
     monkeypatch.chdir(tmp_path)
     assert runner.invoke(app, ["process", "call.m4a"]).exit_code == 0
     assert _output_folder(recording) == Path("results")
@@ -92,7 +93,9 @@ def test_out_from_the_environment(
 def test_directory_flag_is_repeatable_and_replaces_the_configured_files(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, recording: type[_RecordingPipeline]
 ) -> None:
-    (tmp_path / "saidby.toml").write_text('[glossary]\ndirectory = "from-config.yaml"\n')
+    (tmp_path / "saidby.toml").write_text(
+        '[glossary]\ndirectory = "from-config.yaml"\n', encoding="utf-8"
+    )
     monkeypatch.chdir(tmp_path)
     args = ["process", "call.m4a", "--directory", "a.yaml", "--directory", "b.yaml"]
     assert runner.invoke(app, args).exit_code == 0
@@ -102,7 +105,9 @@ def test_directory_flag_is_repeatable_and_replaces_the_configured_files(
 def test_directory_comes_from_the_project_file_without_the_flag(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, recording: type[_RecordingPipeline]
 ) -> None:
-    (tmp_path / "saidby.toml").write_text('[glossary]\ndirectory = "from-config.yaml"\n')
+    (tmp_path / "saidby.toml").write_text(
+        '[glossary]\ndirectory = "from-config.yaml"\n', encoding="utf-8"
+    )
     monkeypatch.chdir(tmp_path)
     assert runner.invoke(app, ["process", "call.m4a"]).exit_code == 0
     assert recording.settings_seen[0].directory == [tmp_path / "from-config.yaml"]

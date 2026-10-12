@@ -2,17 +2,19 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
 
 from saidby.config.settings import Settings, find_project_config, global_config_path
 from saidby.errors import UsageError
+from saidby.runtime import host
 
 
 def _write(tmp_path: Path, body: str) -> Path:
     path = tmp_path / "saidby.toml"
-    path.write_text(body)
+    path.write_text(body, encoding="utf-8")
     return path
 
 
@@ -92,23 +94,27 @@ def test_missing_explicit_file(tmp_path: Path) -> None:
         Settings.load(tmp_path / "nope.toml")
 
 
-def test_suite_never_reads_the_real_user_config(isolated_user_config: Path) -> None:
-    assert os.environ["XDG_CONFIG_HOME"] == str(isolated_user_config / "config")
-    assert [key for key in os.environ if key.startswith("SAIDBY_")] == ["SAIDBY_UI_LANG"]
+def test_suite_never_reads_the_real_user_config(isolated_home: Path) -> None:
+    assert os.environ["XDG_CONFIG_HOME"] == str(isolated_home / "config")
+    assert sorted(key for key in os.environ if key.startswith("SAIDBY_")) == [
+        "SAIDBY_CACHE_DIR",
+        "SAIDBY_CONFIG_DIR",
+        "SAIDBY_UI_LANG",
+    ]
 
 
 def _global_config(home: Path, body: str) -> Path:
     path = home / "config" / "saidby" / "config.toml"
     path.parent.mkdir(parents=True)
-    path.write_text(body)
+    path.write_text(body, encoding="utf-8")
     return path
 
 
 def test_global_and_project_files_merge_key_by_key(
-    tmp_path: Path, isolated_user_config: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, isolated_home: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     global_file = _global_config(
-        isolated_user_config, '[saidby]\nlanguage = "es"\ndevice = "cpu"\n[asr]\nmodel = "tiny"\n'
+        isolated_home, '[saidby]\nlanguage = "es"\ndevice = "cpu"\n[asr]\nmodel = "tiny"\n'
     )
     project = tmp_path / "work"
     project.mkdir()
@@ -119,10 +125,8 @@ def test_global_and_project_files_merge_key_by_key(
     assert settings.sources == [global_file, project_file.resolve()]
 
 
-def test_explicit_config_ignores_the_global_file(
-    tmp_path: Path, isolated_user_config: Path
-) -> None:
-    _global_config(isolated_user_config, '[saidby]\nlanguage = "es"\n')
+def test_explicit_config_ignores_the_global_file(tmp_path: Path, isolated_home: Path) -> None:
+    _global_config(isolated_home, '[saidby]\nlanguage = "es"\n')
     settings = Settings.load(_write(tmp_path, '[saidby]\ndevice = "cpu"\n'))
     assert settings.language is None
     assert len(settings.sources) == 1
@@ -135,18 +139,20 @@ def test_no_config_files_means_defaults(tmp_path: Path, monkeypatch: pytest.Monk
     assert settings.language is None
 
 
+@pytest.mark.skipif(host.is_windows(), reason="XDG folders are a POSIX convention")
 def test_empty_xdg_config_home_falls_back_to_dot_config(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, set_home: Callable[[Path], None]
 ) -> None:
+    monkeypatch.delenv("SAIDBY_CONFIG_DIR")
     monkeypatch.setenv("XDG_CONFIG_HOME", "")
-    monkeypatch.setenv("HOME", str(tmp_path))
+    set_home(tmp_path)
     assert global_config_path() == tmp_path / ".config" / "saidby" / "config.toml"
 
 
 def test_project_file_is_found_walking_up_inside_home(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, set_home: Callable[[Path], None]
 ) -> None:
-    monkeypatch.setenv("HOME", str(tmp_path))
+    set_home(tmp_path)
     project = tmp_path / "clients" / "acme"
     deep = project / "recordings" / "2026"
     deep.mkdir(parents=True)
@@ -154,19 +160,19 @@ def test_project_file_is_found_walking_up_inside_home(
     assert find_project_config(deep) == config.resolve()
 
 
-def test_walk_up_stops_at_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_walk_up_stops_at_home(tmp_path: Path, set_home: Callable[[Path], None]) -> None:
     home = tmp_path / "home"
     work = home / "work"
     work.mkdir(parents=True)
     _write(tmp_path, '[saidby]\nlanguage = "es"\n')
-    monkeypatch.setenv("HOME", str(home))
+    set_home(home)
     assert find_project_config(work) is None
 
 
 def test_outside_home_only_the_current_folder_counts(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, set_home: Callable[[Path], None]
 ) -> None:
-    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    set_home(tmp_path / "home")
     elsewhere = tmp_path / "elsewhere"
     nested = elsewhere / "nested"
     nested.mkdir(parents=True)
@@ -178,8 +184,9 @@ def test_outside_home_only_the_current_folder_counts(
 def test_directory_accepts_a_path_or_a_list_resolved_against_each_file(tmp_path: Path) -> None:
     one = _write(tmp_path, '[glossary]\ndirectory = "a.yaml"\n')
     assert Settings.load(one).directory == [tmp_path / "a.yaml"]
-    many = _write(tmp_path, '[glossary]\ndirectory = ["a.yaml", "/abs/b.yaml"]\n')
-    assert Settings.load(many).directory == [tmp_path / "a.yaml", Path("/abs/b.yaml")]
+    absolute = tmp_path / "abs" / "b.yaml"
+    many = _write(tmp_path, f'[glossary]\ndirectory = ["a.yaml", "{absolute.as_posix()}"]\n')
+    assert Settings.load(many).directory == [tmp_path / "a.yaml", absolute]
 
 
 def test_directory_must_be_text(tmp_path: Path) -> None:
@@ -188,27 +195,29 @@ def test_directory_must_be_text(tmp_path: Path) -> None:
 
 
 def test_the_project_directory_list_replaces_the_global_one(
-    tmp_path: Path, isolated_user_config: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, isolated_home: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    team, me = (tmp_path / "shared" / "team.yaml"), (tmp_path / "shared" / "me.yaml")
     _global_config(
-        isolated_user_config, '[glossary]\ndirectory = ["/shared/team.yaml", "/shared/me.yaml"]\n'
+        isolated_home, f'[glossary]\ndirectory = ["{team.as_posix()}", "{me.as_posix()}"]\n'
     )
     project = tmp_path / "work"
     project.mkdir()
-    _write(project, '[glossary]\ndirectory = ["/shared/me.yaml", "client.yaml"]\n')
+    _write(project, f'[glossary]\ndirectory = ["{me.as_posix()}", "client.yaml"]\n')
     monkeypatch.chdir(project)
-    assert Settings.load().directory == [Path("/shared/me.yaml"), project.resolve() / "client.yaml"]
+    assert Settings.load().directory == [me, project.resolve() / "client.yaml"]
 
 
 def test_the_global_directory_list_applies_when_the_project_names_none(
-    tmp_path: Path, isolated_user_config: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, isolated_home: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    _global_config(isolated_user_config, '[glossary]\ndirectory = ["/shared/team.yaml"]\n')
+    team = tmp_path / "shared" / "team.yaml"
+    _global_config(isolated_home, f'[glossary]\ndirectory = ["{team.as_posix()}"]\n')
     project = tmp_path / "work"
     project.mkdir()
     _write(project, '[saidby]\nlanguage = "es"\n')
     monkeypatch.chdir(project)
-    assert Settings.load().directory == [Path("/shared/team.yaml")]
+    assert Settings.load().directory == [team]
 
 
 def test_directories_from_the_environment_split_on_the_path_separator(
@@ -234,9 +243,9 @@ def test_terms_come_from_the_file_or_the_environment(
 
 
 def test_a_tilde_in_a_path_means_the_home_folder(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, set_home: Callable[[Path], None]
 ) -> None:
-    monkeypatch.setenv("HOME", str(tmp_path / "me"))
+    set_home(tmp_path / "me")
     config = _write(tmp_path, '[glossary]\ndirectory = ["~/team.yaml", "local.yaml"]\n')
     assert Settings.load(config).directory == [
         tmp_path / "me" / "team.yaml",
@@ -245,13 +254,15 @@ def test_a_tilde_in_a_path_means_the_home_folder(
 
 
 def test_every_value_remembers_where_it_came_from(
-    isolated_user_config: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    isolated_home: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     global_file = global_config_path()
     global_file.parent.mkdir(parents=True, exist_ok=True)
-    global_file.write_text('[saidby]\nlanguage = "es"\ndevice = "cpu"\n')
+    global_file.write_text('[saidby]\nlanguage = "es"\ndevice = "cpu"\n', encoding="utf-8")
     project = tmp_path / "saidby.toml"
-    project.write_text('[saidby]\nlanguage = "pt"\n[glossary]\nterms = ["Acme"]\n')
+    project.write_text(
+        '[saidby]\nlanguage = "pt"\n[glossary]\nterms = ["Acme"]\n', encoding="utf-8"
+    )
     monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("SAIDBY_ASR_MODEL", "tiny")
     settings = Settings.load(overrides={"num_speakers": 2})
@@ -270,7 +281,7 @@ def test_interactive_is_on_unless_a_file_or_the_environment_turns_it_off(
 ) -> None:
     monkeypatch.chdir(tmp_path)
     assert Settings.load().interactive is True
-    (tmp_path / "saidby.toml").write_text("[saidby]\ninteractive = false\n")
+    (tmp_path / "saidby.toml").write_text("[saidby]\ninteractive = false\n", encoding="utf-8")
     assert Settings.load().interactive is False
     monkeypatch.setenv("SAIDBY_INTERACTIVE", "true")
     assert Settings.load().interactive is True

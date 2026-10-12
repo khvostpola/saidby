@@ -11,6 +11,7 @@ keywords = ["speech-to-text", "diarization", "whisper", "offline", "spanish"]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Environment :: Console",
+  "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX :: Linux",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.12",
@@ -30,6 +31,7 @@ dependencies = [
   "numpy>=2.0",
   "scipy>=1.13",
   "soundfile>=0.13",
+  "platformdirs>=4",
   "pydantic>=2.7,<3",
   "ruamel.yaml>=0.18",
   "typer>=0.12",

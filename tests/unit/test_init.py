@@ -13,6 +13,7 @@ from saidby.config.settings import Settings
 from saidby.config.writer import check_language, default_language, update_config
 from saidby.errors import UsageError
 from saidby.formats.directory_yaml import load_directory
+from saidby.runtime import host
 
 runner = CliRunner()
 
@@ -44,7 +45,7 @@ def test_the_starter_directory_takes_people_and_terms_in_block_style(
     assert runner.invoke(app, ["init", "--yes", "--language", "es"]).exit_code == 0
     assert runner.invoke(app, ["directory", "add-person", "Ana Gómez"]).exit_code == 0
     assert runner.invoke(app, ["directory", "add-term", "Acme"]).exit_code == 0
-    text = (tmp_path / "directory.yaml").read_text()
+    text = (tmp_path / "directory.yaml").read_text(encoding="utf-8")
     assert "[" not in text
     assert "# People whose voices you want named" in text
     directory, _ = load_directory(tmp_path / "directory.yaml")
@@ -56,26 +57,26 @@ def test_init_never_overwrites_existing_files(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.chdir(tmp_path)
-    (tmp_path / "saidby.toml").write_text('[saidby]\nlanguage = "pt"\n')
+    (tmp_path / "saidby.toml").write_text('[saidby]\nlanguage = "pt"\n', encoding="utf-8")
     result = runner.invoke(app, ["init", "--yes", "--language", "es"])
     assert result.exit_code == 0, result.output
     assert "kept   saidby.toml" in result.output
-    assert (tmp_path / "saidby.toml").read_text() == '[saidby]\nlanguage = "pt"\n'
+    assert (tmp_path / "saidby.toml").read_text(encoding="utf-8") == '[saidby]\nlanguage = "pt"\n'
     assert (tmp_path / "directory.yaml").is_file()
 
 
 def test_init_global_writes_the_user_config_folder(
-    tmp_path: Path, isolated_user_config: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, isolated_home: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.chdir(tmp_path)
     assert runner.invoke(app, ["init", "--global", "--yes", "--language", "en"]).exit_code == 0
-    folder = isolated_user_config / "config" / "saidby"
+    folder = host.config_dir()
     assert sorted(p.name for p in folder.iterdir()) == [
         "config.toml",
         "consent.yaml",
         "directory.yaml",
     ]
-    assert "out" not in (folder / "config.toml").read_text()
+    assert "out" not in (folder / "config.toml").read_text(encoding="utf-8")
     settings = Settings.load()
     assert settings.language == "en"
     assert settings.directory == [folder / "directory.yaml"]
@@ -83,11 +84,11 @@ def test_init_global_writes_the_user_config_folder(
 
 
 def test_init_asks_for_the_language_and_the_global_glossary(
-    tmp_path: Path, isolated_user_config: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, isolated_home: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    shared = isolated_user_config / "config" / "saidby" / "directory.yaml"
+    shared = host.config_dir() / "directory.yaml"
     shared.parent.mkdir(parents=True)
-    shared.write_text("version: 1\nlanguage: es\n")
+    shared.write_text("version: 1\nlanguage: es\n", encoding="utf-8")
     work = tmp_path / "work"
     work.mkdir()
     monkeypatch.chdir(work)
@@ -100,12 +101,14 @@ def test_init_asks_for_the_language_and_the_global_glossary(
 
 
 def test_declining_the_global_glossary_leaves_it_out(
-    tmp_path: Path, isolated_user_config: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, isolated_home: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    shared = isolated_user_config / "config" / "saidby" / "directory.yaml"
+    shared = host.config_dir() / "directory.yaml"
     shared.parent.mkdir(parents=True)
-    shared.write_text("version: 1\nlanguage: es\n")
-    (shared.parent / "config.toml").write_text('[glossary]\ndirectory = ["directory.yaml"]\n')
+    shared.write_text("version: 1\nlanguage: es\n", encoding="utf-8")
+    (shared.parent / "config.toml").write_text(
+        '[glossary]\ndirectory = ["directory.yaml"]\n', encoding="utf-8"
+    )
     work = tmp_path / "work"
     work.mkdir()
     monkeypatch.chdir(work)
@@ -138,7 +141,7 @@ def test_default_language_comes_from_the_environment(
 def test_update_config_creates_a_file_with_only_what_it_was_given(tmp_path: Path) -> None:
     path = tmp_path / "saidby.toml"
     assert update_config(path, language="es", out="results", directory=["directory.yaml"]) is None
-    assert tomllib.loads(path.read_text()) == {
+    assert tomllib.loads(path.read_text(encoding="utf-8")) == {
         "saidby": {"language": "es", "out": "results"},
         "glossary": {"directory": ["directory.yaml"]},
     }
@@ -148,12 +151,13 @@ def test_update_config_keeps_comments_and_other_keys_and_makes_a_backup(tmp_path
     path = tmp_path / "saidby.toml"
     path.write_text(
         '# my settings\n[saidby]\nlanguage = "en"  # english\ndevice = "cpu"\n'
-        '[asr]\nmodel = "tiny"\n[glossary]\ndirectory = "old.yaml"\nbias = false\n'
+        '[asr]\nmodel = "tiny"\n[glossary]\ndirectory = "old.yaml"\nbias = false\n',
+        encoding="utf-8",
     )
     backup = update_config(path, language="es", directory=["a.yaml", "b.yaml"])
     assert backup is not None
-    assert backup.read_text().startswith("# my settings")
-    text = path.read_text()
+    assert backup.read_text(encoding="utf-8").startswith("# my settings")
+    text = path.read_text(encoding="utf-8")
     assert "# my settings" in text
     assert 'language = "es"' in text
     assert tomllib.loads(text) == {
@@ -165,6 +169,8 @@ def test_update_config_keeps_comments_and_other_keys_and_makes_a_backup(tmp_path
 
 def test_update_config_leaves_untouched_what_it_was_not_given(tmp_path: Path) -> None:
     path = tmp_path / "saidby.toml"
-    path.write_text('[saidby]\nlanguage = "pt"\n')
+    path.write_text('[saidby]\nlanguage = "pt"\n', encoding="utf-8")
     update_config(path, out="results")
-    assert tomllib.loads(path.read_text()) == {"saidby": {"language": "pt", "out": "results"}}
+    assert tomllib.loads(path.read_text(encoding="utf-8")) == {
+        "saidby": {"language": "pt", "out": "results"}
+    }

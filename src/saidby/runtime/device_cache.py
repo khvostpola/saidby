@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from saidby import __version__
+from saidby.runtime import host
 from saidby.runtime.device import DeviceInfo
 
 CACHE_SCHEMA = "saidby.device/1"
@@ -23,8 +24,7 @@ class CachedDevice:
 
 
 def cache_path() -> Path:
-    base = os.environ.get("XDG_CACHE_HOME") or str(Path.home() / ".cache")
-    return Path(base) / "saidby" / "device.json"
+    return host.cache_dir() / "device.json"
 
 
 def write_cache(device: DeviceInfo, now: datetime | None = None) -> None:
@@ -41,7 +41,7 @@ def write_cache(device: DeviceInfo, now: datetime | None = None) -> None:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         tmp = path.with_name(path.name + ".tmp")
-        tmp.write_text(json.dumps(record), encoding="utf-8")
+        tmp.write_text(json.dumps(record), encoding="utf-8", newline="\n")
         os.replace(tmp, path)
     except OSError:
         return
