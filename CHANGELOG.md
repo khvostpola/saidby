@@ -15,6 +15,8 @@ All notable changes are documented here, following
   words; corrections and speaker changes are logged, decisions are remembered, and new spellings
   can be added to the directory as variants.
 - `process --bias-mode windows` (experimental): biased pass only around likely terms.
+- `process --deterministic`: temperature 0 and no conditioning on previous text; three full runs gave identical words and timestamps.
+- `saidby eval` (extra `eval`): scoring against a hand-made reference (WER, terms, diarization) and blind arbitration of the spans where two runs disagree, with typed corrections and a pre-registered non-inferiority margin.
 
 ## [0.3.0] - 2026-10-11
 

@@ -11,6 +11,8 @@ saidby speakers show OUT_DIR
 saidby speakers map OUT_DIR --set LABEL=PERSON_ID [--directory FILE]
 saidby speakers merge OUT_DIR LABEL... --into LABEL
 saidby directory validate FILE | schema | init FILE
+saidby eval score REFERENCE RUN_DIR [--directory FILE]
+saidby eval arbitrate-build|arbitrate-serve|arbitrate-score ...
 ```
 
 ## `saidby process`
@@ -29,6 +31,7 @@ saidby directory validate FILE | schema | init FILE
 | `--allow-remote-llm` | Allow an endpoint that is not on this machine |
 | `--compare NAME` | Also run a second diarizer and record where the two disagree |
 | `--bias-mode full\|windows` | Biased pass over the whole audio (default) or only around likely terms |
+| `--deterministic` | Reproducible decoding (temperature 0, no conditioning on previous text) |
 | `--no-identify` | Skip identification even when voiceprints exist |
 | `--identify-threshold X` | Minimum cosine score to assign a name (default 0.5) |
 | `--keep-intermediates` | Keep `.work/` after success |

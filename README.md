@@ -58,6 +58,11 @@ See [docs/directory-format.md](docs/directory-format.md).
 A failed run keeps `.work/` so the next run resumes from the last finished stage;
 `--keep-intermediates` keeps it on success too. See [docs/cli.md](docs/cli.md).
 
+## Measuring
+
+`saidby eval` scores a run against a hand-corrected reference and arbitrates blind the spans where two
+systems disagree. See [docs/evaluation.md](docs/evaluation.md).
+
 ## Models
 
 Models are never bundled and are only downloaded by an explicit command:
