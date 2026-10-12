@@ -35,7 +35,12 @@ def load_yaml(path: Path) -> Any:
 
 def backup_path(path: Path) -> Path:
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    return path.with_name(f"{path.stem}.bak-{stamp}{path.suffix}")
+    candidate = path.with_name(f"{path.stem}.bak-{stamp}{path.suffix}")
+    number = 2
+    while candidate.exists():
+        candidate = path.with_name(f"{path.stem}.bak-{stamp}-{number}{path.suffix}")
+        number += 1
+    return candidate
 
 
 def save_yaml(path: Path, data: Any, *, backup: bool = True) -> Path | None:

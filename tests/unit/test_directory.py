@@ -272,3 +272,19 @@ def test_a_root_list_such_as_consent_stays_flush_left(tmp_path: Path) -> None:
     append_consent(path, raw, record.model_copy(update={"person": "ben"}))
     assert path.read_text().count("\n- person:") == 1
     assert path.read_text().startswith("- person: ana\n")
+
+
+def test_two_saves_in_the_same_second_keep_both_backups(tmp_path: Path) -> None:
+    path = tmp_path / "d.yaml"
+    path.write_text("version: 1\nlanguage: es\npeople: []\n")
+    _, raw = load_directory(path)
+    raw["people"].append({"id": "ana", "name": "Ana"})
+    first = save_directory(path, raw)
+    raw["people"].append({"id": "ben", "name": "Ben"})
+    second = save_directory(path, raw)
+    assert first is not None
+    assert second is not None
+    assert first != second
+    assert "ana" not in first.read_text()
+    assert "ana" in second.read_text()
+    assert "ben" not in second.read_text()
