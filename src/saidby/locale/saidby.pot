@@ -645,20 +645,20 @@ msgstr ""
 msgid "merged {items} into {into}"
 msgstr ""
 
-#: src/saidby/cli/ui.py:28
+#: src/saidby/cli/ui.py:29
 #, python-brace-format
 msgid "interactive mode needs a terminal; without one, use: {command}"
 msgstr ""
 
-#: src/saidby/cli/ui.py:130
+#: src/saidby/cli/ui.py:131
 msgid "[Y/n]"
 msgstr ""
 
-#: src/saidby/cli/ui.py:130
+#: src/saidby/cli/ui.py:131
 msgid "[y/N]"
 msgstr ""
 
-#: src/saidby/cli/ui.py:133
+#: src/saidby/cli/ui.py:134
 msgid "type y or n"
 msgstr ""
 
@@ -692,7 +692,7 @@ msgstr ""
 msgid "{source}: directory must be a path or a list of paths"
 msgstr ""
 
-#: src/saidby/config/settings.py:233
+#: src/saidby/config/settings.py:228
 #, python-brace-format
 msgid "{path}: not valid TOML: {exc}"
 msgstr ""
@@ -846,7 +846,7 @@ msgstr ""
 msgid "directory:"
 msgstr ""
 
-#: src/saidby/interactive/name.py:81 src/saidby/interactive/voices.py:105
+#: src/saidby/interactive/name.py:81 src/saidby/interactive/voices.py:103
 #, python-brace-format
 msgid "{time} of speech"
 msgstr ""
@@ -1019,120 +1019,128 @@ msgstr ""
 msgid "nothing was run"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:42 src/saidby/interactive/voices.py:132
+#: src/saidby/interactive/voices.py:40 src/saidby/interactive/voices.py:130
 #, python-brace-format
 msgid "declared by {who}"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:81
+#: src/saidby/interactive/voices.py:79
 msgid "Voiceprints"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:83
+#: src/saidby/interactive/voices.py:81
 msgid "A voiceprint is a numeric summary of a voice. saidby uses it to recognize"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:84
+#: src/saidby/interactive/voices.py:82
 msgid "the person in future recordings. It is personal data: store it only with"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:85
+#: src/saidby/interactive/voices.py:83
 msgid "the person's consent."
 msgstr ""
 
-#: src/saidby/interactive/voices.py:93
+#: src/saidby/interactive/voices.py:91
 msgid "How was consent given?"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:98
+#: src/saidby/interactive/voices.py:92
+msgid "[for example: signed form]"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:93
+msgid "this cannot be empty"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:96
 #, python-brace-format
 msgid "consent given by: {source}"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:100
+#: src/saidby/interactive/voices.py:98
 msgid "Declared by?"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:108
+#: src/saidby/interactive/voices.py:106
 msgid "already has a voiceprint"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:111
+#: src/saidby/interactive/voices.py:109
 msgid "consent on record:"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:112
+#: src/saidby/interactive/voices.py:110
 msgid "Replace the voiceprint?"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:112
+#: src/saidby/interactive/voices.py:110
 msgid "Store it?"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:115
+#: src/saidby/interactive/voices.py:113
 msgid "left as it was"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:117
+#: src/saidby/interactive/voices.py:115
 #, python-brace-format
 msgid "Did {name} agree to have their voiceprint stored?"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:120
+#: src/saidby/interactive/voices.py:118
 msgid "no consent, so no voiceprint"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:127
+#: src/saidby/interactive/voices.py:125
 msgid "Store these voiceprints?"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:130
+#: src/saidby/interactive/voices.py:128
 msgid "consent on record"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:135
+#: src/saidby/interactive/voices.py:133
 #, python-brace-format
 msgid "in {path}"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:144
+#: src/saidby/interactive/voices.py:142
 #, python-brace-format
 msgid "{labels} have no name yet; run {command} first"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:149
+#: src/saidby/interactive/voices.py:147
 #, python-brace-format
 msgid "{names} are not in {path}; pass --directory with the file that has them"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:153
+#: src/saidby/interactive/voices.py:151
 msgid "no named voice to store"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:157
+#: src/saidby/interactive/voices.py:155
 msgid "no voiceprint was stored"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:160
+#: src/saidby/interactive/voices.py:158
 msgid "Store?"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:161
+#: src/saidby/interactive/voices.py:159
 msgid "nothing was stored"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:169
+#: src/saidby/interactive/voices.py:167
 msgid "computing voiceprints..."
 msgstr ""
 
-#: src/saidby/interactive/voices.py:188 src/saidby/interactive/walk.py:223
+#: src/saidby/interactive/voices.py:186 src/saidby/interactive/walk.py:223
 #, python-brace-format
 msgid "{n} voiceprint stored"
 msgid_plural "{n} voiceprints stored"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/saidby/interactive/voices.py:191 src/saidby/interactive/walk.py:138
+#: src/saidby/interactive/voices.py:189 src/saidby/interactive/walk.py:138
 #: src/saidby/interactive/walk.py:179
 msgid "backup:"
 msgstr ""

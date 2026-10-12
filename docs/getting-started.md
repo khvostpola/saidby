@@ -153,7 +153,7 @@ and asks, for each person, whether they agreed to have their voiceprint stored:
 saidby enroll -i out/call --directory directory.yaml
 ```
 
-It asks how consent was given once (the default is "signed form") and who declared it (the
+It asks how consent was given once (you type it, for example "signed form") and who declared it (the
 default is the person). No consent, no voiceprint: nothing is stored for that person and no
 record is written. Nothing is changed until you confirm the summary, and the directory file is
 backed up first. A person whose consent is already recorded is not asked again. It needs a

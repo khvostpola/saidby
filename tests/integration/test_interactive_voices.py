@@ -91,7 +91,7 @@ def _consent(directory: Path) -> list[dict[str, str]]:
 
 def test_each_person_who_agreed_gets_a_voiceprint_and_a_consent_record(tmp_path: Path) -> None:
     folder, directory = _folder(tmp_path), _directory(tmp_path)
-    ui, out, prompts = _session(["y", "", "", "y", "the team lead", ""])
+    ui, out, prompts = _session(["y", "signed form", "", "y", "the team lead", ""])
     result = _store(ui, folder, directory)
     assert result is not None
     people = _people(directory)
@@ -113,7 +113,7 @@ def test_each_person_who_agreed_gets_a_voiceprint_and_a_consent_record(tmp_path:
 
 def test_a_person_who_did_not_agree_is_not_stored_and_leaves_no_record(tmp_path: Path) -> None:
     folder, directory = _folder(tmp_path), _directory(tmp_path)
-    ui, out, _ = _session(["n", "y", "", "", ""])
+    ui, out, _ = _session(["n", "y", "signed form", "", ""])
     _store(ui, folder, directory)
     people = _people(directory)
     assert "voiceprint" not in people["alice"]
@@ -137,7 +137,7 @@ def test_nobody_agreeing_changes_nothing(tmp_path: Path) -> None:
 def test_declining_the_final_question_changes_nothing(tmp_path: Path) -> None:
     folder, directory = _folder(tmp_path), _directory(tmp_path)
     before = directory.read_text()
-    ui, out, _ = _session(["y", "", "", "n", "n"])
+    ui, out, _ = _session(["y", "signed form", "", "n", "n"])
     assert _store(ui, folder, directory) is None
     assert directory.read_text() == before
     assert _consent(directory) == []
@@ -147,7 +147,7 @@ def test_declining_the_final_question_changes_nothing(tmp_path: Path) -> None:
 def test_an_interruption_before_the_end_changes_nothing(tmp_path: Path) -> None:
     folder, directory = _folder(tmp_path), _directory(tmp_path)
     before = directory.read_text()
-    feed = iter(["y", "", ""])
+    feed = iter(["y", "signed form", ""])
 
     def fake_input(prompt: str) -> str:
         try:
@@ -187,7 +187,7 @@ def test_consent_already_on_record_is_shown_and_not_asked_again(tmp_path: Path) 
 
 def test_replacing_an_existing_voiceprint_is_off_unless_asked(tmp_path: Path) -> None:
     folder, directory = _folder(tmp_path), _directory(tmp_path)
-    ui, _, _ = _session(["y", "", "", "n", ""])
+    ui, _, _ = _session(["y", "signed form", "", "n", ""])
     _store(ui, folder, directory)
     before = _people(directory)["alice"]["voiceprint"]
     ui, out, prompts = _session(["", "n"])
@@ -205,7 +205,7 @@ def test_a_missing_original_recording_stops_before_any_consent_is_recorded(
     data = json.loads(manifest.read_text())
     data["source"]["path"] = "gone.m4a"
     manifest.write_text(json.dumps(data))
-    ui, _, _ = _session(["y", "", "", "n", ""])
+    ui, _, _ = _session(["y", "signed form", "", "n", ""])
     with pytest.raises(InputError, match=r"original recording not found: gone\.m4a"):
         _store(ui, folder, directory)
     assert _consent(directory) == []
@@ -250,7 +250,7 @@ def test_the_command_runs_the_whole_flow_on_a_terminal(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     folder, directory = _folder(tmp_path), _directory(tmp_path)
-    ui, _, _ = _session(["y", "", "", "n", ""])
+    ui, _, _ = _session(["y", "signed form", "", "n", ""])
     module = sys.modules["saidby.cli.enroll"]
     monkeypatch.setattr(module, "ensure_terminal", lambda command: None)
     monkeypatch.setattr(module, "Ui", lambda: ui)
@@ -271,3 +271,23 @@ def test_the_command_runs_the_whole_flow_on_a_terminal(
     assert result.exit_code == 0, result.output
     assert "voiceprint" in _people(directory)["alice"]
     assert "voiceprint" not in _people(directory)["bob"]
+
+
+def test_the_consent_source_has_no_default_and_cannot_be_empty(tmp_path: Path) -> None:
+    folder, directory = _folder(tmp_path), _directory(tmp_path)
+    ui, out, prompts = _session(
+        [
+            "y",
+            "",
+            "a signed form",
+            "",
+            "n",
+            "",
+        ]
+    )
+    _store(ui, folder, directory)
+    assert "this cannot be empty" in out.getvalue()
+    source_prompts = [p for p in prompts if "How was consent given?" in p]
+    assert len(source_prompts) == 2
+    assert "[for example: signed form]" in source_prompts[0]
+    assert _consent(directory)[0]["source"] == "a signed form"

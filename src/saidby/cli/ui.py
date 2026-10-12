@@ -9,9 +9,10 @@ from typing import TextIO
 
 from saidby.cli.term import Terminal, detect
 from saidby.errors import UsageError
-from saidby.i18n import _
+from saidby.i18n import _, current_language
 
-YES = {"y", "yes", "s", "si", "sí"}
+YES = {"y", "yes"}
+SPANISH_YES = {"s", "si", "sí"}
 NO = {"n", "no"}
 ESCAPE = re.compile(r"(\x1b\[[0-9;]*m)")
 
@@ -36,7 +37,7 @@ def completions(prefix: str, options: Sequence[str]) -> list[str]:
 
 def parse_yes_no(text: str) -> bool | None:
     word = text.strip().casefold()
-    if word in YES:
+    if word in YES or (word in SPANISH_YES and current_language() == "es"):
         return True
     if word in NO:
         return False

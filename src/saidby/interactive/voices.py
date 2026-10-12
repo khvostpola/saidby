@@ -21,8 +21,6 @@ from saidby.speakers.enrollment import (
 from saidby.speakers.people import find_person
 from saidby.speakers.remap import Folder
 
-DEFAULT_SOURCE = "signed form"
-
 
 @dataclass(frozen=True)
 class VoiceChoice:
@@ -91,8 +89,8 @@ class Voices:
         if self.source is None:
             self.source = self.ui.ask(
                 _("How was consent given?"),
-                default=DEFAULT_SOURCE,
-                hint=f"[{DEFAULT_SOURCE}]",
+                hint=_("[for example: signed form]"),
+                check=lambda text: None if text else _("this cannot be empty"),
             )
         else:
             note = _("consent given by: {source}").format(source=self.source)

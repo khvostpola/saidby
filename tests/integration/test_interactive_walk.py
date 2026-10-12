@@ -104,7 +104,7 @@ def test_voiceprints_are_stored_with_consent_when_asked(work: Path) -> None:
     directory = _directory(work)
     settings = _settings(directory)
     results = _run(work, settings)
-    answers = ["", "ana", "ben", "", "y", "y", "", "", "y", "", ""]
+    answers = ["", "ana", "ben", "", "y", "y", "signed form", "", "y", "", ""]
     ui, out, _ = _session(answers)
     outcomes = walk_folders(ui, results, settings)
     assert outcomes[0].voiceprints == 2

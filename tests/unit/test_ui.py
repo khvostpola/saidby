@@ -10,6 +10,7 @@ from saidby.cli import ui
 from saidby.cli.term import Terminal
 from saidby.cli.ui import Ui, completions, ensure_terminal, parse_yes_no
 from saidby.errors import UsageError
+from saidby.i18n import set_language
 
 PLAIN = Terminal(tty=True, color=False, truecolor=False, columns=80)
 COLOR = Terminal(tty=True, color=True, truecolor=False, columns=80)
@@ -64,15 +65,25 @@ def test_the_default_goes_through_the_check_too() -> None:
     [
         ("y", True),
         ("YES", True),
-        (" s ", True),
-        ("sí", True),
+        (" y ", True),
         ("n", False),
         ("No", False),
+        ("s", None),
+        ("sí", None),
         ("x", None),
         ("", None),
     ],
 )
-def test_yes_and_no_in_english_and_spanish(text: str, value: bool | None) -> None:
+def test_yes_and_no_in_english(text: str, value: bool | None) -> None:
+    assert parse_yes_no(text) is value
+
+
+@pytest.mark.parametrize(
+    ("text", "value"),
+    [("s", True), (" Sí ", True), ("si", True), ("y", True), ("n", False), ("x", None)],
+)
+def test_spanish_adds_si_to_the_accepted_answers(text: str, value: bool | None) -> None:
+    set_language("es")
     assert parse_yes_no(text) is value
 
 

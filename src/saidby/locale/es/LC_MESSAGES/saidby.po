@@ -668,20 +668,20 @@ msgstr "{name!r} no está en el directorio. ¿Agregarlo a {file}?"
 msgid "merged {items} into {into}"
 msgstr "se fusionó {items} en {into}"
 
-#: src/saidby/cli/ui.py:28
+#: src/saidby/cli/ui.py:29
 #, python-brace-format
 msgid "interactive mode needs a terminal; without one, use: {command}"
 msgstr "el modo interactivo necesita una terminal; sin ella, usa: {command}"
 
-#: src/saidby/cli/ui.py:130
+#: src/saidby/cli/ui.py:131
 msgid "[Y/n]"
 msgstr "[S/n]"
 
-#: src/saidby/cli/ui.py:130
+#: src/saidby/cli/ui.py:131
 msgid "[y/N]"
 msgstr "[s/N]"
 
-#: src/saidby/cli/ui.py:133
+#: src/saidby/cli/ui.py:134
 msgid "type y or n"
 msgstr "escribe s o n"
 
@@ -715,7 +715,7 @@ msgstr "{source}: sección desconocida [{table}] (válidas: {valid})"
 msgid "{source}: directory must be a path or a list of paths"
 msgstr "{source}: directory debe ser una ruta o una lista de rutas"
 
-#: src/saidby/config/settings.py:233
+#: src/saidby/config/settings.py:228
 #, python-brace-format
 msgid "{path}: not valid TOML: {exc}"
 msgstr "{path}: no es TOML válido: {exc}"
@@ -871,7 +871,7 @@ msgstr "Escribe un id o un nombre. Tab completa. Enter deja la etiqueta."
 msgid "directory:"
 msgstr "directorio:"
 
-#: src/saidby/interactive/name.py:81 src/saidby/interactive/voices.py:105
+#: src/saidby/interactive/name.py:81 src/saidby/interactive/voices.py:103
 #, python-brace-format
 msgid "{time} of speech"
 msgstr "{time} de habla"
@@ -1044,120 +1044,128 @@ msgstr "escribe Enter, t, e o q"
 msgid "nothing was run"
 msgstr "no se corrió nada"
 
-#: src/saidby/interactive/voices.py:42 src/saidby/interactive/voices.py:132
+#: src/saidby/interactive/voices.py:40 src/saidby/interactive/voices.py:130
 #, python-brace-format
 msgid "declared by {who}"
 msgstr "declarado por {who}"
 
-#: src/saidby/interactive/voices.py:81
+#: src/saidby/interactive/voices.py:79
 msgid "Voiceprints"
 msgstr "Huellas de voz"
 
-#: src/saidby/interactive/voices.py:83
+#: src/saidby/interactive/voices.py:81
 msgid "A voiceprint is a numeric summary of a voice. saidby uses it to recognize"
 msgstr "Una huella de voz es un resumen numérico de una voz. saidby la usa para reconocer"
 
-#: src/saidby/interactive/voices.py:84
+#: src/saidby/interactive/voices.py:82
 msgid "the person in future recordings. It is personal data: store it only with"
 msgstr "a la persona en grabaciones futuras. Son datos personales: guárdala solo con"
 
-#: src/saidby/interactive/voices.py:85
+#: src/saidby/interactive/voices.py:83
 msgid "the person's consent."
 msgstr "el consentimiento de la persona."
 
-#: src/saidby/interactive/voices.py:93
+#: src/saidby/interactive/voices.py:91
 msgid "How was consent given?"
 msgstr "¿Cómo se dio el consentimiento?"
 
-#: src/saidby/interactive/voices.py:98
+#: src/saidby/interactive/voices.py:92
+msgid "[for example: signed form]"
+msgstr "[por ejemplo: formulario firmado]"
+
+#: src/saidby/interactive/voices.py:93
+msgid "this cannot be empty"
+msgstr "esto no puede quedar vacío"
+
+#: src/saidby/interactive/voices.py:96
 #, python-brace-format
 msgid "consent given by: {source}"
 msgstr "consentimiento dado por: {source}"
 
-#: src/saidby/interactive/voices.py:100
+#: src/saidby/interactive/voices.py:98
 msgid "Declared by?"
 msgstr "¿Declarado por?"
 
-#: src/saidby/interactive/voices.py:108
+#: src/saidby/interactive/voices.py:106
 msgid "already has a voiceprint"
 msgstr "ya tiene una huella de voz"
 
-#: src/saidby/interactive/voices.py:111
+#: src/saidby/interactive/voices.py:109
 msgid "consent on record:"
 msgstr "consentimiento registrado:"
 
-#: src/saidby/interactive/voices.py:112
+#: src/saidby/interactive/voices.py:110
 msgid "Replace the voiceprint?"
 msgstr "¿Reemplazar la huella de voz?"
 
-#: src/saidby/interactive/voices.py:112
+#: src/saidby/interactive/voices.py:110
 msgid "Store it?"
 msgstr "¿Guardarla?"
 
-#: src/saidby/interactive/voices.py:115
+#: src/saidby/interactive/voices.py:113
 msgid "left as it was"
 msgstr "se dejó como estaba"
 
-#: src/saidby/interactive/voices.py:117
+#: src/saidby/interactive/voices.py:115
 #, python-brace-format
 msgid "Did {name} agree to have their voiceprint stored?"
 msgstr "¿{name} aceptó que se guarde su huella de voz?"
 
-#: src/saidby/interactive/voices.py:120
+#: src/saidby/interactive/voices.py:118
 msgid "no consent, so no voiceprint"
 msgstr "sin consentimiento no hay huella de voz"
 
-#: src/saidby/interactive/voices.py:127
+#: src/saidby/interactive/voices.py:125
 msgid "Store these voiceprints?"
 msgstr "¿Guardar estas huellas de voz?"
 
-#: src/saidby/interactive/voices.py:130
+#: src/saidby/interactive/voices.py:128
 msgid "consent on record"
 msgstr "consentimiento registrado"
 
-#: src/saidby/interactive/voices.py:135
+#: src/saidby/interactive/voices.py:133
 #, python-brace-format
 msgid "in {path}"
 msgstr "en {path}"
 
-#: src/saidby/interactive/voices.py:144
+#: src/saidby/interactive/voices.py:142
 #, python-brace-format
 msgid "{labels} have no name yet; run {command} first"
 msgstr "{labels} aún no tienen nombre; corre primero {command}"
 
-#: src/saidby/interactive/voices.py:149
+#: src/saidby/interactive/voices.py:147
 #, python-brace-format
 msgid "{names} are not in {path}; pass --directory with the file that has them"
 msgstr "{names} no están en {path}; pasa --directory con el archivo que las tiene"
 
-#: src/saidby/interactive/voices.py:153
+#: src/saidby/interactive/voices.py:151
 msgid "no named voice to store"
 msgstr "ninguna voz con nombre que guardar"
 
-#: src/saidby/interactive/voices.py:157
+#: src/saidby/interactive/voices.py:155
 msgid "no voiceprint was stored"
 msgstr "no se guardó ninguna huella de voz"
 
-#: src/saidby/interactive/voices.py:160
+#: src/saidby/interactive/voices.py:158
 msgid "Store?"
 msgstr "¿Guardar?"
 
-#: src/saidby/interactive/voices.py:161
+#: src/saidby/interactive/voices.py:159
 msgid "nothing was stored"
 msgstr "no se guardó nada"
 
-#: src/saidby/interactive/voices.py:169
+#: src/saidby/interactive/voices.py:167
 msgid "computing voiceprints..."
 msgstr "calculando las huellas de voz..."
 
-#: src/saidby/interactive/voices.py:188 src/saidby/interactive/walk.py:223
+#: src/saidby/interactive/voices.py:186 src/saidby/interactive/walk.py:223
 #, python-brace-format
 msgid "{n} voiceprint stored"
 msgid_plural "{n} voiceprints stored"
 msgstr[0] "se guardó {n} huella de voz"
 msgstr[1] "se guardaron {n} huellas de voz"
 
-#: src/saidby/interactive/voices.py:191 src/saidby/interactive/walk.py:138
+#: src/saidby/interactive/voices.py:189 src/saidby/interactive/walk.py:138
 #: src/saidby/interactive/walk.py:179
 msgid "backup:"
 msgstr "copia:"
