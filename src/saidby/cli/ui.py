@@ -67,6 +67,14 @@ def tab_completion(options: Sequence[str]) -> Iterator[None]:
         readline.set_completer_delims(delimiters)
 
 
+def _readline_loaded() -> bool:
+    try:
+        import readline  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
 def _for_readline(text: str) -> str:
     return ESCAPE.sub(lambda m: f"\x01{m.group(1)}\x02", text)
 
@@ -91,7 +99,7 @@ class Ui:
         self.say(f"  {self.term.paint('! ' + message, 'red')}")
 
     def _read(self, prompt: str, options: Sequence[str]) -> str:
-        shown = _for_readline(prompt) if self._real_input else prompt
+        shown = _for_readline(prompt) if self._real_input and _readline_loaded() else prompt
         try:
             if self._real_input and options:
                 with tab_completion(options):

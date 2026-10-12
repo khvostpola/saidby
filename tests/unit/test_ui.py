@@ -158,6 +158,23 @@ def test_escape_codes_are_wrapped_for_readline_only_with_the_real_input(
     assert "\x01\x1b[2m\x02" in seen[0]
 
 
+def test_prompts_carry_no_readline_markers_when_readline_is_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seen: list[str] = []
+
+    def fake_input(prompt: str) -> str:
+        seen.append(prompt)
+        return "ok"
+
+    monkeypatch.setattr("builtins.input", fake_input)
+    monkeypatch.setitem(sys.modules, "readline", None)
+    real = Ui(COLOR, out=io.StringIO())
+    assert real.ask("Name?", hint="[x]") == "ok"
+    assert "\x01" not in seen[0]
+    assert "\x1b[2m" in seen[0]
+
+
 def test_tab_completion_installs_and_restores_the_readline_state() -> None:
     import readline
 
