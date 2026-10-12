@@ -216,3 +216,59 @@ def test_init_global_creates_the_shared_directory(
     assert load_directory(shared)[0].language == "en"
     assert runner.invoke(app, ["directory", "init", "--global"]).exit_code != 0
     assert isinstance(runner.invoke(app, ["directory", "init"]).exception, UsageError)
+
+
+INDENTED = """version: 1
+language: es
+people:
+  - id: ana
+    name: Ana
+terms:
+  - term: Acme
+    variants:
+      - akme
+"""
+FLUSH = """version: 1
+language: es
+people:
+- id: ana
+  name: Ana
+"""
+
+
+def test_saving_keeps_the_list_indentation_the_file_already_uses(tmp_path: Path) -> None:
+    for text, marker in ((INDENTED, "\n  - id: ana\n"), (FLUSH, "\n- id: ana\n")):
+        path = tmp_path / f"d{len(text)}.yaml"
+        path.write_text(text)
+        _, raw = load_directory(path)
+        raw["people"].append({"id": "ben", "name": "Ben"})
+        save_directory(path, raw)
+        saved = path.read_text()
+        assert marker in saved
+        assert saved.count("- id:") == 2
+
+
+def test_a_file_that_is_new_to_lists_defaults_to_the_documented_style(tmp_path: Path) -> None:
+    path = tmp_path / "d.yaml"
+    path.write_text("version: 1\nlanguage: es\n# nothing yet\n")
+    _, raw = load_directory(path)
+    raw["people"] = [{"id": "ana", "name": "Ana"}]
+    save_directory(path, raw)
+    assert "\npeople:\n  - id: ana\n    name: Ana\n" in path.read_text()
+
+
+def test_a_root_list_such_as_consent_stays_flush_left(tmp_path: Path) -> None:
+    from saidby.formats.consent_yaml import append_consent, load_consents
+    from saidby.schema.directory import ConsentRecord
+
+    path = tmp_path / "consent.yaml"
+    path.write_text("# consent records\n")
+    records, raw = load_consents(path)
+    assert records == []
+    record = ConsentRecord(person="ana", source="form", declared_by="Ana", date="2026-10-12")  # type: ignore[arg-type]
+    append_consent(path, raw, record)
+    assert path.read_text().startswith("- person: ana\n")
+    records, raw = load_consents(path)
+    append_consent(path, raw, record.model_copy(update={"person": "ben"}))
+    assert path.read_text().count("\n- person:") == 1
+    assert path.read_text().startswith("- person: ana\n")
