@@ -66,6 +66,7 @@ dev = [
   "types-PyYAML",
   "reuse>=5",
   "twine>=6",
+  "babel>=2.18.0",
 ]
 tools = ["datasets>=3", "pyarrow>=17", "remotezip>=0.12"]
 

@@ -8,6 +8,7 @@ from typing import Any
 import typer.main
 
 from saidby.cli import app
+from saidby.i18n import set_language
 
 OUTPUT = Path(__file__).resolve().parent.parent / "docs" / "cli-reference.md"
 SKIP = {"--install-completion", "--show-completion", "--help"}
@@ -93,6 +94,7 @@ def render() -> str:
 
 
 def main() -> None:
+    set_language("en")
     OUTPUT.write_text(render(), encoding="utf-8")
     print(f"wrote {OUTPUT}")
 

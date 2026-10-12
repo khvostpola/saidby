@@ -94,7 +94,7 @@ def test_missing_explicit_file(tmp_path: Path) -> None:
 
 def test_suite_never_reads_the_real_user_config(isolated_user_config: Path) -> None:
     assert os.environ["XDG_CONFIG_HOME"] == str(isolated_user_config / "config")
-    assert not [key for key in os.environ if key.startswith("SAIDBY_")]
+    assert [key for key in os.environ if key.startswith("SAIDBY_")] == ["SAIDBY_UI_LANG"]
 
 
 def _global_config(home: Path, body: str) -> Path:

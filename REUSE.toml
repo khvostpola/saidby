@@ -5,6 +5,7 @@ path = [
   "**/*.md", "**/*.toml", "**/*.json", "**/*.yml", "**/*.yaml", ".gitignore", ".gitattributes",
   ".editorconfig", ".python-version", "uv.lock", "py.typed", "src/saidby/py.typed",
   ".github/CODEOWNERS", "NOTICE", "LICENSE", "src/saidby/evaluation/arbitrate.html",
+  "src/saidby/locale/**/*.po", "src/saidby/locale/**/*.mo", "src/saidby/locale/saidby.pot",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 the saidby authors"
