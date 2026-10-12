@@ -19,13 +19,17 @@ release commit:
 1. `uv build`, then install the wheel into a fresh tool environment (PowerShell does not expand
    `*`, so name the file):
    `uv tool install "saidby[cuda] @ .\dist\saidby-X.Y.Z-py3-none-any.whl" --index https://download.pytorch.org/whl/cu130 --index-strategy unsafe-best-match`
-2. `saidby doctor --smoke --device cuda`: the `platform` row says Windows, `cuda` is `ok` and the
-   smoke test runs on `cuda`.
+2. `saidby models pull --all`, then `saidby models pull asr:tiny` (the smoke test transcribes with
+   the tiny recognizer, which `--all` does not pull), then `saidby doctor --smoke --device cuda`:
+   the `platform` row says Windows, `cuda` is `ok` and the smoke test runs on `cuda`.
 3. `saidby process fixtures\conversations\test\test-conv-01.flac` in Windows Terminal: the plan,
-   the coloured stage lines with CPU or GPU usage, the voices, example names; then the same run
-   with `--no-interactive` redirected to a file, which must be readable UTF-8.
-4. The same `process` with `--correct` and a `llama-server` from a llama.cpp Windows release on
-   `PATH` (or `SAIDBY_LLAMA_SERVER`): the only real exercise of the helper process on Windows.
+   the coloured stage lines with CPU or GPU usage, the voices, example names; then, from `cmd`,
+   `saidby --ui-lang es process fixtures\conversations\test\test-conv-01.flac --no-interactive > out.txt 2>&1`.
+   Without a terminal everything goes to stderr, so `2>&1` is what fills the file; the Spanish
+   messages carry accents, which must read back intact as UTF-8.
+4. `saidby models pull llm:qwen3.5-9b-q4`, then the same `process` with `--correct --term Acme`
+   (correction needs terms) and a `llama-server` from a llama.cpp Windows release on `PATH` (or
+   `SAIDBY_LLAMA_SERVER`): the only real exercise of the helper process on Windows.
 5. `saidby review` on that folder, with `p` playing a span through `ffplay`.
 6. Once in conhost (`cmd`) and once in PowerShell 5.1: colours and the progress line still draw.
 7. On a machine with Smart App Control on: Python from python.org, `py -m venv`,

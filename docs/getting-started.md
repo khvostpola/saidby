@@ -86,8 +86,15 @@ saidby models pull --all
 ```
 
 This is the only step that uses the network: about 3.5 GB in total (the recognizer, the diarizer
-and the voice model). They go to the Hugging Face cache, shared with other tools. `saidby doctor
---smoke` then runs a few seconds of real transcription to prove the whole stack works.
+and the voice model). They go to the Hugging Face cache, shared with other tools.
+
+`saidby doctor --smoke` runs a few seconds of real transcription to prove the whole stack works.
+It uses the tiny recognizer (75 MB), which `--all` does not pull:
+
+```bash
+saidby models pull asr:tiny
+saidby doctor --smoke
+```
 
 ## 4. Your first transcript
 
