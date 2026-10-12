@@ -1,0 +1,1556 @@
+#: src/saidby/cli/__init__.py:102
+#, python-brace-format
+msgid "error: {message}"
+msgstr ""
+
+#: src/saidby/cli/banner.py:148
+msgid "Welcome to"
+msgstr ""
+
+#: src/saidby/cli/banner.py:149
+msgid "Diarized transcription · offline"
+msgstr ""
+
+#: src/saidby/cli/banner.py:160
+msgid "Tip"
+msgstr ""
+
+#: src/saidby/cli/banner.py:161
+msgid "saidby process FILE"
+msgstr ""
+
+#: src/saidby/cli/banner.py:174 src/saidby/cli/banner.py:281
+msgid "who said what, and when, on your own machine"
+msgstr ""
+
+#: src/saidby/cli/banner.py:180
+msgid "just now"
+msgstr ""
+
+#: src/saidby/cli/banner.py:182
+#, python-brace-format
+msgid "{n} minute ago"
+msgid_plural "{n} minutes ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/cli/banner.py:184
+#, python-brace-format
+msgid "{n} h ago"
+msgstr ""
+
+#: src/saidby/cli/banner.py:185
+#, python-brace-format
+msgid "{n} days ago"
+msgstr ""
+
+#: src/saidby/cli/banner.py:195
+#, python-brace-format
+msgid "{n} default models ready"
+msgstr ""
+
+#: src/saidby/cli/banner.py:195 src/saidby/cli/banner.py:199
+msgid "Models"
+msgstr ""
+
+#: src/saidby/cli/banner.py:196
+#, python-brace-format
+msgid "{missing} of {total} default models missing"
+msgstr ""
+
+#: src/saidby/cli/banner.py:205
+msgid "Device"
+msgstr ""
+
+#: src/saidby/cli/banner.py:212
+msgid "not checked yet"
+msgstr ""
+
+#: src/saidby/cli/banner.py:213
+msgid "confirmed on the first run or with saidby doctor"
+msgstr ""
+
+#: src/saidby/cli/banner.py:217
+#, python-brace-format
+msgid "confirmed on the last run, {when}"
+msgstr ""
+
+#: src/saidby/cli/banner.py:221
+msgid "GPU active"
+msgstr ""
+
+#: src/saidby/cli/banner.py:223
+msgid "the NVIDIA GPU cannot be used"
+msgstr ""
+
+#: src/saidby/cli/banner.py:223 src/saidby/cli/banner.py:225
+msgid "CPU active"
+msgstr ""
+
+#: src/saidby/cli/banner.py:224
+msgid "details and the fix: saidby doctor"
+msgstr ""
+
+#: src/saidby/cli/banner.py:225 src/saidby/cli/lines.py:25
+msgid "no NVIDIA GPU found"
+msgstr ""
+
+#: src/saidby/cli/banner.py:226
+msgid "slower than with a GPU"
+msgstr ""
+
+#: src/saidby/cli/banner.py:236 src/saidby/cli/banner.py:254 src/saidby/cli/banner.py:256
+msgid "Config"
+msgstr ""
+
+#: src/saidby/cli/banner.py:242 src/saidby/cli/directory.py:43 src/saidby/interactive/plan.py:75
+#, python-brace-format
+msgid "{n} person"
+msgid_plural "{n} people"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/cli/banner.py:243 src/saidby/cli/directory.py:44 src/saidby/interactive/plan.py:76
+#, python-brace-format
+msgid "{n} term"
+msgid_plural "{n} terms"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/cli/banner.py:245 src/saidby/cli/banner.py:247 src/saidby/cli/banner.py:249
+msgid "Glossary"
+msgstr ""
+
+#: src/saidby/cli/banner.py:249
+msgid "none (see saidby init)"
+msgstr ""
+
+#: src/saidby/cli/banner.py:252
+msgid "auto"
+msgstr ""
+
+#: src/saidby/cli/banner.py:254 src/saidby/cli/banner.py:297 src/saidby/interactive/plan.py:50
+msgid "output"
+msgstr ""
+
+#: src/saidby/cli/banner.py:256
+msgid "none found, using defaults"
+msgstr ""
+
+#: src/saidby/cli/banner.py:278
+msgid "run saidby init to stop retyping options"
+msgstr ""
+
+#: src/saidby/cli/banner.py:282
+msgid "saidby --help lists the commands"
+msgstr ""
+
+#: src/saidby/cli/banner.py:296 src/saidby/cli/progress.py:269
+#, python-brace-format
+msgid "{n} file"
+msgid_plural "{n} files"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/cli/banner.py:298
+msgid "Ctrl+C is safe: running again resumes where it stopped"
+msgstr ""
+
+#: src/saidby/cli/directory.py:46
+#, python-brace-format
+msgid "ok: {people}, {terms}"
+msgstr ""
+
+#: src/saidby/cli/directory.py:72
+msgid "give a file name, or use --global"
+msgstr ""
+
+#: src/saidby/cli/directory.py:75
+#, python-brace-format
+msgid "{target} already exists"
+msgstr ""
+
+#: src/saidby/cli/directory.py:78
+#, python-brace-format
+msgid "created {target}"
+msgstr ""
+
+#: src/saidby/cli/directory.py:86 src/saidby/cli/enroll.py:32
+msgid "no directory file: pass --directory or set one in saidby.toml"
+msgstr ""
+
+#: src/saidby/cli/directory.py:110
+msgid "cannot make an id from that name; pass --id"
+msgstr ""
+
+#: src/saidby/cli/directory.py:123
+#, python-brace-format
+msgid "added {chosen} ({name}) to {file} (backup: {backup})"
+msgstr ""
+
+#: src/saidby/cli/directory.py:125
+#, python-brace-format
+msgid "added {chosen} ({name}) to {file}"
+msgstr ""
+
+#: src/saidby/cli/directory.py:159
+#, python-brace-format
+msgid "added {term} to {file} (backup: {backup})"
+msgstr ""
+
+#: src/saidby/cli/directory.py:161
+#, python-brace-format
+msgid "added {term} to {file}"
+msgstr ""
+
+#: src/saidby/cli/doctor.py:56
+#, python-brace-format
+msgid "saidby {version}"
+msgstr ""
+
+#: src/saidby/cli/doctor.py:61
+#, python-brace-format
+msgid "{n} problem to fix before processing"
+msgid_plural "{n} problems to fix before processing"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/cli/doctor.py:67
+msgid "ready"
+msgstr ""
+
+#: src/saidby/cli/enroll.py:83
+msgid "pass --speaker LABEL=PERSON, or -i to be asked for each voice"
+msgstr ""
+
+#: src/saidby/cli/enroll.py:86
+msgid "expected --speaker LABEL=PERSON (an id or a name)"
+msgstr ""
+
+#: src/saidby/cli/enroll.py:95
+#, python-brace-format
+msgid "{key!r} is not in the directory; add the person first (saidby directory add-person)"
+msgstr ""
+
+#: src/saidby/cli/enroll.py:123
+#, python-brace-format
+msgid "backup: {backup}"
+msgstr ""
+
+#: src/saidby/cli/enroll.py:138
+msgid "use either --speaker or -i, not both"
+msgstr ""
+
+#: src/saidby/cli/enroll.py:142
+msgid ""
+"-i asks about consent itself; do not combine it with --consent-source, --consent-declared-by or "
+"--consent-date"
+msgstr ""
+
+#: src/saidby/cli/evaluate.py:20
+msgid "this command needs the evaluation extra: pip install 'saidby[eval]'"
+msgstr ""
+
+#: src/saidby/cli/init.py:29
+#, python-brace-format
+msgid "  kept   {name:<16} already there, not touched"
+msgstr ""
+
+#: src/saidby/cli/init.py:32
+#, python-brace-format
+msgid "  wrote  {name:<16} {note}"
+msgstr ""
+
+#: src/saidby/cli/init.py:52
+msgid "Language of your recordings"
+msgstr ""
+
+#: src/saidby/cli/init.py:61
+#, python-brace-format
+msgid "Use the global glossary {shorten_home} here too?"
+msgstr ""
+
+#: src/saidby/cli/init.py:70
+#, python-brace-format
+msgid "Setting up {folder}"
+msgstr ""
+
+#: src/saidby/cli/init.py:71
+#, python-brace-format
+msgid "language {language}"
+msgstr ""
+
+#: src/saidby/cli/init.py:73
+msgid "output ./saidby/"
+msgstr ""
+
+#: src/saidby/cli/init.py:77
+#, python-brace-format
+msgid "glossary {files}"
+msgstr ""
+
+#: src/saidby/cli/init.py:80
+msgid "empty, with hints"
+msgstr ""
+
+#: src/saidby/cli/init.py:81
+msgid "empty"
+msgstr ""
+
+#: src/saidby/cli/init.py:82
+msgid "every folder"
+msgstr ""
+
+#: src/saidby/cli/init.py:82
+msgid "this folder"
+msgstr ""
+
+#: src/saidby/cli/init.py:84
+#, python-brace-format
+msgid "Done. In {where}, `saidby process call.m4a` needs no flags now."
+msgstr ""
+
+#: src/saidby/cli/lines.py:19
+#, python-brace-format
+msgid "CPU · {threads} threads"
+msgstr ""
+
+#: src/saidby/cli/lines.py:24
+msgid "the GPU cannot be used"
+msgstr ""
+
+#: src/saidby/cli/lines.py:29 src/saidby/interactive/walk.py:256 src/saidby/pipeline/runner.py:112
+msgid "device"
+msgstr ""
+
+#: src/saidby/cli/lines.py:42
+#, python-brace-format
+msgid "{problem} (details: saidby doctor)"
+msgstr ""
+
+#: src/saidby/cli/lines.py:49
+msgid "converting the audio"
+msgstr ""
+
+#: src/saidby/cli/lines.py:50
+msgid "transcribing"
+msgstr ""
+
+#: src/saidby/cli/lines.py:51
+msgid "second pass with your terms"
+msgstr ""
+
+#: src/saidby/cli/lines.py:52
+msgid "merging your terms"
+msgstr ""
+
+#: src/saidby/cli/lines.py:53
+msgid "finding the speakers"
+msgstr ""
+
+#: src/saidby/cli/lines.py:54
+msgid "running the second diarizer"
+msgstr ""
+
+#: src/saidby/cli/lines.py:55
+msgid "matching voices"
+msgstr ""
+
+#: src/saidby/cli/lines.py:56
+msgid "asking the local model"
+msgstr ""
+
+#: src/saidby/cli/lines.py:57
+msgid "giving each word a speaker"
+msgstr ""
+
+#: src/saidby/cli/lines.py:58
+msgid "writing the tracks"
+msgstr ""
+
+#: src/saidby/cli/lines.py:59
+msgid "writing the files"
+msgstr ""
+
+#: src/saidby/cli/lines.py:61
+msgid "working"
+msgstr ""
+
+#: src/saidby/cli/lines.py:66
+#, python-brace-format
+msgid "loading {model} into the GPU"
+msgstr ""
+
+#: src/saidby/cli/lines.py:67
+#, python-brace-format
+msgid "loading {model}"
+msgstr ""
+
+#: src/saidby/cli/lines.py:75
+#, python-brace-format
+msgid "CPU {threads} threads · {pct}%"
+msgstr ""
+
+#: src/saidby/cli/lines.py:83
+msgid "audio"
+msgstr ""
+
+#: src/saidby/cli/lines.py:84
+msgid "transcript"
+msgstr ""
+
+#: src/saidby/cli/lines.py:85 src/saidby/interactive/plan.py:51
+msgid "terms"
+msgstr ""
+
+#: src/saidby/cli/lines.py:86 src/saidby/interactive/plan.py:49
+msgid "speakers"
+msgstr ""
+
+#: src/saidby/cli/lines.py:87
+msgid "compare"
+msgstr ""
+
+#: src/saidby/cli/lines.py:88
+msgid "names"
+msgstr ""
+
+#: src/saidby/cli/lines.py:89
+msgid "correct"
+msgstr ""
+
+#: src/saidby/cli/lines.py:101
+msgid "done"
+msgstr ""
+
+#: src/saidby/cli/lines.py:102 src/saidby/cli/progress.py:231
+msgid "failed"
+msgstr ""
+
+#: src/saidby/cli/lines.py:103
+msgid "interrupted"
+msgstr ""
+
+#: src/saidby/cli/lines.py:115
+#, python-brace-format
+msgid "{factor}x faster than the audio"
+msgstr ""
+
+#: src/saidby/cli/lines.py:116
+#, python-brace-format
+msgid "{factor}x slower than the audio"
+msgstr ""
+
+#: src/saidby/cli/lines.py:120 src/saidby/pipeline/runner.py:499
+#, python-brace-format
+msgid "{n} speaker"
+msgid_plural "{n} speakers"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/cli/lines.py:122
+#, python-brace-format
+msgid "{n} track"
+msgid_plural "{n} tracks"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/cli/lines.py:125
+#, python-brace-format
+msgid "{n} term fixed"
+msgid_plural "{n} terms fixed"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/cli/models.py:79
+msgid "give at least one model key or --all"
+msgstr ""
+
+#: src/saidby/cli/models.py:84
+#, python-brace-format
+msgid "{key} is not licensed for commercial use; pass --allow-noncommercial to pull it"
+msgstr ""
+
+#: src/saidby/cli/next_steps.py:51
+#, python-brace-format
+msgid "{n} folder has speakers without names"
+msgid_plural "{n} folders have speakers without names"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/cli/next_steps.py:55 src/saidby/cli/speakers.py:43
+msgid "name"
+msgstr ""
+
+#: src/saidby/cli/next_steps.py:60 src/saidby/interactive/walk.py:229
+#, python-brace-format
+msgid "{n} doubtful span"
+msgid_plural "{n} doubtful spans"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/cli/next_steps.py:61
+msgid "review"
+msgstr ""
+
+#: src/saidby/cli/process.py:314
+msgid "-i needs the human progress output; do not combine it with --progress"
+msgstr ""
+
+#: src/saidby/cli/progress.py:198
+msgid "cached"
+msgstr ""
+
+#: src/saidby/cli/progress.py:263
+#, python-brace-format
+msgid "started {moment}"
+msgstr ""
+
+#: src/saidby/cli/progress.py:264
+#, python-brace-format
+msgid "finished {moment}"
+msgstr ""
+
+#: src/saidby/cli/progress.py:265 src/saidby/pipeline/runner.py:359 src/saidby/pipeline/runner.py:370
+#, python-brace-format
+msgid "{duration} of audio"
+msgstr ""
+
+#: src/saidby/cli/progress.py:271
+#, python-brace-format
+msgid "{n} failed"
+msgstr ""
+
+#: src/saidby/cli/review.py:58
+#, python-brace-format
+msgid "Your text repeats \"{repeated}\" from next to the span. Replace only the span?"
+msgstr ""
+
+#: src/saidby/cli/review.py:79
+#, python-brace-format
+msgid "Text for \"{span}\"?"
+msgstr ""
+
+#: src/saidby/cli/review.py:85
+msgid "no audio to play: there is no work folder, track or original recording"
+msgstr ""
+
+#: src/saidby/cli/review.py:90
+#, python-brace-format
+msgid "ffplay not found; open {path} at {start:.1f} s"
+msgstr ""
+
+#: src/saidby/cli/review.py:122
+#, python-brace-format
+msgid "unknown kinds {unknown}; valid: {items}"
+msgstr ""
+
+#: src/saidby/cli/review.py:133
+msgid "nothing to review"
+msgstr ""
+
+#: src/saidby/cli/review.py:137
+msgid ""
+"Enter keeps the text; type the corrected text to replace it; p plays the span; @SPEAKER "
+"(optionally followed by text) sets who spoke; /s skips; /q quits"
+msgstr ""
+
+#: src/saidby/cli/review.py:167
+#, python-brace-format
+msgid "saved {n} text correction"
+msgid_plural "saved {n} text corrections"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/cli/review.py:190
+#, python-brace-format
+msgid "  {target}: add variant {variant!r}"
+msgstr ""
+
+#: src/saidby/cli/review.py:192
+msgid "Add these variants to the directory?"
+msgstr ""
+
+#: src/saidby/cli/review.py:195
+#, python-brace-format
+msgid "added {n} variant"
+msgid_plural "added {n} variants"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/cli/review.py:196
+#, python-brace-format
+msgid " (backup: {backup})"
+msgstr ""
+
+#: src/saidby/cli/speakers.py:37
+#, python-brace-format
+msgid "voice {score:.2f}"
+msgstr ""
+
+#: src/saidby/cli/speakers.py:38 src/saidby/interactive/listen.py:35
+msgid "voice"
+msgstr ""
+
+#: src/saidby/cli/speakers.py:39
+msgid "you"
+msgstr ""
+
+#: src/saidby/cli/speakers.py:43
+msgid "speaker"
+msgstr ""
+
+#: src/saidby/cli/speakers.py:43
+msgid "named by"
+msgstr ""
+
+#: src/saidby/cli/speakers.py:43 src/saidby/interactive/listen.py:35
+msgid "speech"
+msgstr ""
+
+#: src/saidby/cli/speakers.py:43 src/saidby/interactive/listen.py:35
+msgid "track"
+msgstr ""
+
+#: src/saidby/cli/speakers.py:113
+msgid "pass --set LABEL=PERSON, or -i to listen and name each voice"
+msgstr ""
+
+#: src/saidby/cli/speakers.py:118
+#, python-brace-format
+msgid "expected LABEL=VALUE, got {item!r}"
+msgstr ""
+
+#: src/saidby/cli/speakers.py:124
+#, python-brace-format
+msgid "added {id} ({name}) to {value}{note}"
+msgstr ""
+
+#: src/saidby/cli/speakers.py:138
+msgid "use either --set or -i, not both"
+msgstr ""
+
+#: src/saidby/cli/speakers.py:140
+#, python-brace-format
+msgid "Speakers in {folder}"
+msgstr ""
+
+#: src/saidby/cli/speakers.py:147
+#, python-brace-format
+msgid "{name!r} is not in the directory. Add it to {file}?"
+msgstr ""
+
+#: src/saidby/cli/speakers.py:162
+#, python-brace-format
+msgid "merged {items} into {into}"
+msgstr ""
+
+#: src/saidby/cli/ui.py:28
+#, python-brace-format
+msgid "interactive mode needs a terminal; without one, use: {command}"
+msgstr ""
+
+#: src/saidby/cli/ui.py:130
+msgid "[Y/n]"
+msgstr ""
+
+#: src/saidby/cli/ui.py:130
+msgid "[y/N]"
+msgstr ""
+
+#: src/saidby/cli/ui.py:133
+msgid "type y or n"
+msgstr ""
+
+#: src/saidby/config/settings.py:97
+#, python-brace-format
+msgid "invalid configuration: {where}: {msg}"
+msgstr ""
+
+#: src/saidby/config/settings.py:125
+#, python-brace-format
+msgid "config file not found: {explicit}"
+msgstr ""
+
+#: src/saidby/config/settings.py:174
+#, python-brace-format
+msgid "{source}: unknown key(s) in [saidby]: {items}"
+msgstr ""
+
+#: src/saidby/config/settings.py:185
+#, python-brace-format
+msgid "{source}: unknown key(s) in [{table}]: {items} (valid: {valid})"
+msgstr ""
+
+#: src/saidby/config/settings.py:193
+#, python-brace-format
+msgid "{source}: unknown section [{table}] (valid: {valid})"
+msgstr ""
+
+#: src/saidby/config/settings.py:207
+#, python-brace-format
+msgid "{source}: directory must be a path or a list of paths"
+msgstr ""
+
+#: src/saidby/config/settings.py:233
+#, python-brace-format
+msgid "{path}: not valid TOML: {exc}"
+msgstr ""
+
+#: src/saidby/config/writer.py:44
+#, python-brace-format
+msgid "{language!r} is not a language code such as es, en or pt"
+msgstr ""
+
+#: src/saidby/engines/llm/llama_server.py:31
+#, python-brace-format
+msgid "llama-server not found: install llama.cpp and put llama-server on PATH or set {ENV_BINARY}"
+msgstr ""
+
+#: src/saidby/engines/llm/llama_server.py:49
+#, python-brace-format
+msgid "llama-server exited early with code {returncode}"
+msgstr ""
+
+#: src/saidby/engines/llm/llama_server.py:60
+msgid "llama-server did not become healthy in time"
+msgstr ""
+
+#: src/saidby/engines/llm/openai_compat.py:69
+#, python-brace-format
+msgid "LLM endpoint {base_url} is not reachable: {exc}"
+msgstr ""
+
+#: src/saidby/engines/llm/openai_compat.py:76
+msgid "LLM returned incomplete JSON"
+msgstr ""
+
+#: src/saidby/evaluation/arbitrate.py:240
+#, python-brace-format
+msgid "nothing to serve in {out}; run `saidby eval arbitrate-build` first"
+msgstr ""
+
+#: src/saidby/evaluation/reference.py:50
+#, python-brace-format
+msgid "bad time in reference: {text!r}"
+msgstr ""
+
+#: src/saidby/evaluation/reference.py:103
+#, python-brace-format
+msgid "bad reference line (expected 'MM:SS-MM:SS | speaker | text'): {value!r}"
+msgstr ""
+
+#: src/saidby/evaluation/reference.py:112
+msgid "the reference has no lines"
+msgstr ""
+
+#: src/saidby/evaluation/score.py:19
+#, python-brace-format
+msgid "reference not found: {reference_path}"
+msgstr ""
+
+#: src/saidby/formats/consent_yaml.py:28
+#, python-brace-format
+msgid "invalid consent file: {msg}"
+msgstr ""
+
+#: src/saidby/formats/directory_edit.py:23
+#, python-brace-format
+msgid "person {person_id!r} already exists"
+msgstr ""
+
+#: src/saidby/formats/directory_edit.py:26
+#, python-brace-format
+msgid "{name!r} is already in the directory as {id!r}"
+msgstr ""
+
+#: src/saidby/formats/directory_edit.py:52
+#, python-brace-format
+msgid "term {term!r} already exists"
+msgstr ""
+
+#: src/saidby/formats/directory_yaml.py:32
+#, python-brace-format
+msgid "invalid directory at {where}: {msg}"
+msgstr ""
+
+#: src/saidby/formats/directory_yaml.py:38
+#, python-brace-format
+msgid "directory file not found: {path}"
+msgstr ""
+
+#: src/saidby/interactive/flows.py:21
+msgid "stopped; the files are as they were"
+msgstr ""
+
+#: src/saidby/interactive/flows.py:25
+msgid "naming skipped; the labels stay as they are"
+msgstr ""
+
+#: src/saidby/interactive/listen.py:35
+msgid "turns"
+msgstr ""
+
+#: src/saidby/interactive/listen.py:35
+msgid "clean sample"
+msgstr ""
+
+#: src/saidby/interactive/listen.py:62
+msgid "ffplay not found, open this file instead:"
+msgstr ""
+
+#: src/saidby/interactive/listen.py:68
+msgid "I listened, continue"
+msgstr ""
+
+#: src/saidby/interactive/listen.py:69
+msgid "play a sample"
+msgstr ""
+
+#: src/saidby/interactive/listen.py:70
+msgid "skip naming"
+msgstr ""
+
+#: src/saidby/interactive/listen.py:71 src/saidby/interactive/plan.py:129
+msgid "quit"
+msgstr ""
+
+#: src/saidby/interactive/listen.py:82
+msgid "Each track holds only that person's speech. Listen before naming."
+msgstr ""
+
+#: src/saidby/interactive/listen.py:88
+msgid "Folder"
+msgstr ""
+
+#: src/saidby/interactive/listen.py:93
+msgid "type Enter, p, s or q"
+msgstr ""
+
+#: src/saidby/interactive/name.py:63
+#, python-brace-format
+msgid ""
+"{who} is already {label}. Pick another name, or use \"saidby speakers merge\" if the diarizer "
+"split one person."
+msgstr ""
+
+#: src/saidby/interactive/name.py:72
+msgid "Who is each voice?"
+msgstr ""
+
+#: src/saidby/interactive/name.py:73
+msgid "Type an id or a name. Tab completes. Enter keeps the label."
+msgstr ""
+
+#: src/saidby/interactive/name.py:76
+msgid "directory:"
+msgstr ""
+
+#: src/saidby/interactive/name.py:81 src/saidby/interactive/voices.py:105
+#, python-brace-format
+msgid "{time} of speech"
+msgstr ""
+
+#: src/saidby/interactive/name.py:85
+msgid "Name or id?"
+msgstr ""
+
+#: src/saidby/interactive/name.py:86
+#, python-brace-format
+msgid "[keep {current}]"
+msgstr ""
+
+#: src/saidby/interactive/name.py:91
+#, python-brace-format
+msgid "stays {current}"
+msgstr ""
+
+#: src/saidby/interactive/name.py:98
+msgid "(new, will be added to the directory)"
+msgstr ""
+
+#: src/saidby/interactive/name.py:98
+msgid "(new name)"
+msgstr ""
+
+#: src/saidby/interactive/name.py:112
+msgid "Apply these names?"
+msgstr ""
+
+#: src/saidby/interactive/name.py:124
+msgid "Nothing to rename."
+msgstr ""
+
+#: src/saidby/interactive/name.py:127
+msgid "Apply?"
+msgstr ""
+
+#: src/saidby/interactive/name.py:128
+msgid "nothing was changed"
+msgstr ""
+
+#: src/saidby/interactive/name.py:144
+msgid "added to"
+msgstr ""
+
+#: src/saidby/interactive/name.py:148
+#, python-brace-format
+msgid "{n} track renamed"
+msgid_plural "{n} tracks renamed"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/interactive/name.py:150
+msgid "rewrote the transcript files and the RTTM; no audio was re-processed"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:47
+msgid "language"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:48 src/saidby/interactive/walk.py:265
+msgid "glossary"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:56
+msgid "chosen just now"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:59
+msgid "default"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:61
+msgid "command line"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:69 src/saidby/interactive/plan.py:108
+msgid "none"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:82
+msgid "this recording"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:98
+msgid "detect it from the audio"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:104
+msgid "detect the number"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:111
+#, python-brace-format
+msgid "Ready to process {n} file"
+msgid_plural "Ready to process {n} files"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/interactive/plan.py:117
+#, python-brace-format
+msgid "and {n} more"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:126
+msgid "start"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:127
+msgid "terms for this recording"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:128
+msgid "change something"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:147
+msgid "Language of the recording? (es, en, pt...)"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:148 src/saidby/interactive/plan.py:223
+#: src/saidby/interactive/plan.py:232
+msgid "[Enter: detect it]"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:164
+msgid "Terms for this recording, separated by commas"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:177
+#, python-brace-format
+msgid "{path} is not a file"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:187
+msgid "type a number of 1 or more, or Enter to detect it"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:191
+msgid "Directory file (replaces the current ones; Enter for none)"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:209
+#, python-brace-format
+msgid "choose one of: {names}"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:213
+msgid "Change which one?"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:222
+msgid "Language code (es, en, pt...)"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:231
+msgid "How many people speak?"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:243
+msgid "Output folder"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:253
+msgid "type Enter, t, e or q"
+msgstr ""
+
+#: src/saidby/interactive/plan.py:259
+msgid "nothing was run"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:42 src/saidby/interactive/voices.py:132
+#, python-brace-format
+msgid "declared by {who}"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:81
+msgid "Voiceprints"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:83
+msgid "A voiceprint is a numeric summary of a voice. saidby uses it to recognize"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:84
+msgid "the person in future recordings. It is personal data: store it only with"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:85
+msgid "the person's consent."
+msgstr ""
+
+#: src/saidby/interactive/voices.py:93
+msgid "How was consent given?"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:98
+#, python-brace-format
+msgid "consent given by: {source}"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:100
+msgid "Declared by?"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:108
+msgid "already has a voiceprint"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:111
+msgid "consent on record:"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:112
+msgid "Replace the voiceprint?"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:112
+msgid "Store it?"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:115
+msgid "left as it was"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:117
+#, python-brace-format
+msgid "Did {name} agree to have their voiceprint stored?"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:120
+msgid "no consent, so no voiceprint"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:127
+msgid "Store these voiceprints?"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:130
+msgid "consent on record"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:135
+#, python-brace-format
+msgid "in {path}"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:144
+#, python-brace-format
+msgid "{labels} have no name yet; run {command} first"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:149
+#, python-brace-format
+msgid "{names} are not in {path}; pass --directory with the file that has them"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:153
+msgid "no named voice to store"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:157
+msgid "no voiceprint was stored"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:160
+msgid "Store?"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:161
+msgid "nothing was stored"
+msgstr ""
+
+#: src/saidby/interactive/voices.py:169
+msgid "computing voiceprints..."
+msgstr ""
+
+#: src/saidby/interactive/voices.py:188 src/saidby/interactive/walk.py:223
+#, python-brace-format
+msgid "{n} voiceprint stored"
+msgid_plural "{n} voiceprints stored"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/interactive/voices.py:191 src/saidby/interactive/walk.py:138
+#: src/saidby/interactive/walk.py:179
+msgid "backup:"
+msgstr ""
+
+#: src/saidby/interactive/walk.py:79
+msgid "Store voiceprints so saidby recognizes these voices next time?"
+msgstr ""
+
+#: src/saidby/interactive/walk.py:96
+#, python-brace-format
+msgid "Voices in {folder}"
+msgstr ""
+
+#: src/saidby/interactive/walk.py:98
+#, python-brace-format
+msgid "({index} of {total})"
+msgstr ""
+
+#: src/saidby/interactive/walk.py:105
+#, python-brace-format
+msgid "Every voice in {folder} already has a name."
+msgstr ""
+
+#: src/saidby/interactive/walk.py:130
+#, python-brace-format
+msgid "Save the {n} term from this run to {path}?"
+msgid_plural "Save the {n} terms from this run to {path}?"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/interactive/walk.py:141
+#, python-brace-format
+msgid "Keep these terms in a new glossary, {path}?"
+msgstr ""
+
+#: src/saidby/interactive/walk.py:162
+#, python-brace-format
+msgid "Save {what} to {path} so you do not have to say it again?"
+msgstr ""
+
+#: src/saidby/interactive/walk.py:209
+#, python-brace-format
+msgid "{n} voice named"
+msgid_plural "{n} voices named"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/interactive/walk.py:216
+#, python-brace-format
+msgid "{n} person added to the directory"
+msgid_plural "{n} people added to the directory"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/interactive/walk.py:233
+msgid "nothing changed"
+msgstr ""
+
+#: src/saidby/interactive/walk.py:253
+msgid "Summary"
+msgstr ""
+
+#: src/saidby/interactive/walk.py:263
+#, python-brace-format
+msgid "{n} term saved to {path}"
+msgid_plural "{n} terms saved to {path}"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/interactive/walk.py:269
+#, python-brace-format
+msgid "saved to {path}"
+msgstr ""
+
+#: src/saidby/interactive/walk.py:270
+msgid "settings"
+msgstr ""
+
+#: src/saidby/interactive/walk.py:278
+msgid "again"
+msgstr ""
+
+#: src/saidby/models/registry.py:118
+#, python-brace-format
+msgid "unknown model key {key!r}; valid keys: {valid}"
+msgstr ""
+
+#: src/saidby/models/store.py:35
+#, python-brace-format
+msgid "model {key} is not installed; run: saidby models pull {key}"
+msgstr ""
+
+#: src/saidby/models/store.py:68
+#, python-brace-format
+msgid "{repo_id} is gated: accept its conditions at {accept_url} and provide your token with HF_TOKEN"
+msgstr ""
+
+#: src/saidby/models/store.py:73
+#, python-brace-format
+msgid "cannot download {repo_id}: {exc}"
+msgstr ""
+
+#: src/saidby/pipeline/compare_stage.py:93
+#, python-brace-format
+msgid "agreement {percent:.1f}%"
+msgstr ""
+
+#: src/saidby/pipeline/compare_stage.py:95
+#, python-brace-format
+msgid "{n} span differs"
+msgid_plural "{n} spans differ"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/pipeline/glossary_stages.py:47
+msgid "--correct needs --directory or --term with the terms to correct"
+msgstr ""
+
+#: src/saidby/pipeline/glossary_stages.py:51
+msgid "the LLM endpoint is not on this machine; pass --allow-remote-llm to confirm"
+msgstr ""
+
+#: src/saidby/pipeline/glossary_stages.py:138
+#, python-brace-format
+msgid "hotwords in {n} window"
+msgid_plural "hotwords in {n} windows"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/pipeline/glossary_stages.py:142
+msgid "with hotwords"
+msgstr ""
+
+#: src/saidby/pipeline/glossary_stages.py:235
+msgid "bounded corrections"
+msgstr ""
+
+#: src/saidby/pipeline/runner.py:110
+msgid "starting"
+msgstr ""
+
+#: src/saidby/pipeline/runner.py:110
+msgid "loading PyTorch and CTranslate2"
+msgstr ""
+
+#: src/saidby/pipeline/runner.py:112
+msgid "checking the GPU"
+msgstr ""
+
+#: src/saidby/pipeline/runner.py:337 src/saidby/stages/ingest.py:36
+#, python-brace-format
+msgid "input file not found: {media}"
+msgstr ""
+
+#: src/saidby/pipeline/runner.py:348
+msgid "output folder holds results for a different input; use --force to overwrite"
+msgstr ""
+
+#: src/saidby/pipeline/runner.py:568
+#, python-brace-format
+msgid "{named} of {total} speaker named"
+msgid_plural "{named} of {total} speakers named"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/saidby/ports/registry.py:32
+#, python-brace-format
+msgid "unknown transcriber {name!r}; valid: {items}"
+msgstr ""
+
+#: src/saidby/ports/registry.py:47
+msgid "install the extra: pip install 'saidby[pyannote]'"
+msgstr ""
+
+#: src/saidby/ports/registry.py:54
+#, python-brace-format
+msgid "unknown diarizer {name!r}; valid: {items}"
+msgstr ""
+
+#: src/saidby/ports/registry.py:71
+#, python-brace-format
+msgid "unknown embedder {name!r}; valid: {items}"
+msgstr ""
+
+#: src/saidby/review/apply.py:23
+#, python-brace-format
+msgid "unknown speaker {name!r}; known: {known}"
+msgstr ""
+
+#: src/saidby/runtime/device.py:102
+msgid "no NVIDIA GPU found (nvidia-smi is missing or reports nothing)"
+msgstr ""
+
+#: src/saidby/runtime/device.py:107
+msgid "PyTorch cannot use the GPU (check the NVIDIA driver, 580 or newer)"
+msgstr ""
+
+#: src/saidby/runtime/device.py:109
+msgid "CTranslate2 cannot see the GPU"
+msgstr ""
+
+#: src/saidby/runtime/device.py:117
+#, python-brace-format
+msgid "unknown device: {requested}"
+msgstr ""
+
+#: src/saidby/runtime/device.py:126
+#, python-brace-format
+msgid "--device cuda requested but the GPU is not usable: {problems}"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:49
+msgid "saidby needs Python 3.12 or newer"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:59
+msgid "not found on PATH"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:60
+msgid "install ffmpeg (for example: sudo dnf install ffmpeg)"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:71
+msgid "not found: listening to samples in interactive mode will show the file path instead"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:74
+msgid "ffplay comes with ffmpeg on most systems (for example: sudo dnf install ffmpeg)"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:76
+msgid "found"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:84
+msgid "no NVIDIA GPU found; processing will run on the CPU, much slower"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:87
+#, python-brace-format
+msgid ", driver {version}"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:94
+#, python-brace-format
+msgid "update the NVIDIA driver to {minimum} or newer"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:101 src/saidby/runtime/diagnose.py:178
+msgid "not installed"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:107
+msgid "GPU is usable by PyTorch and CTranslate2"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:109
+msgid "GPU present but not usable"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:124
+#, python-brace-format
+msgid "auto selects the GPU ({name})"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:125
+msgid "auto selects the CPU"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:133
+msgid "all default models are installed"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:135
+#, python-brace-format
+msgid "missing: {models}"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:138
+msgid "run: saidby models pull --all"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:142
+#, python-brace-format
+msgid "installed: {models}"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:159 src/saidby/runtime/diagnose.py:162
+#, python-brace-format
+msgid "{free:.0f} GB free for the model cache"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:160
+#, python-brace-format
+msgid "the default models need about {needed} GB"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:167
+msgid "pyannote.audio (alternative diarizer): pip install 'saidby[pyannote]'"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:168
+msgid "evaluation: pip install 'saidby[eval]'"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:178
+msgid "installed"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:191
+msgid "not found (only needed for --correct)"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:192
+msgid "install llama.cpp and put llama-server on PATH or set SAIDBY_LLAMA_SERVER"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:204
+msgid "processing always runs offline; only `saidby models pull` uses the network"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:205
+msgid " (HF_HUB_OFFLINE is set in this shell)"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:210
+msgid "set"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:210
+msgid "not set (needed only for gated models such as pyannote)"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:224
+msgid "skipped: asr:tiny is not installed"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:225
+msgid "run: saidby models pull asr:tiny"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:243
+msgid "run `saidby doctor` again after fixing the problems above"
+msgstr ""
+
+#: src/saidby/runtime/diagnose.py:249
+#, python-brace-format
+msgid ""
+"transcribed {seconds} s of audio with asr:tiny on the {kind} (load {load:.1f} s, total "
+"{total:.1f} s)"
+msgstr ""
+
+#: src/saidby/runtime/netguard.py:50
+#, python-brace-format
+msgid "outbound network attempt blocked: {event}"
+msgstr ""
+
+#: src/saidby/runtime/procs.py:25
+#, python-brace-format
+msgid "{argv} not found on PATH"
+msgstr ""
+
+#: src/saidby/runtime/procs.py:28
+#, python-brace-format
+msgid "{argv} failed: {value}"
+msgstr ""
+
+#: src/saidby/speakers/enrollment.py:55
+#, python-brace-format
+msgid ""
+"no voiceprint consent recorded for {id}; pass --consent-source and --consent-declared-by or add "
+"it to {consent_path}"
+msgstr ""
+
+#: src/saidby/speakers/enrollment.py:72
+#, python-brace-format
+msgid ""
+"original recording not found: {source}; run this from the folder where you ran saidby process, or"
+" run the process again with --keep-intermediates"
+msgstr ""
+
+#: src/saidby/speakers/enrollment.py:115
+#, python-brace-format
+msgid "no usable speech for speaker {label_arg!r} (known: {known})"
+msgstr ""
+
+#: src/saidby/speakers/enrollment.py:124
+#, python-brace-format
+msgid "{person}: {seconds} s of speech"
+msgstr ""
+
+#: src/saidby/speakers/people.py:27
+#, python-brace-format
+msgid "cannot make an id from {name!r}; use saidby directory add-person with --id"
+msgstr ""
+
+#: src/saidby/speakers/remap.py:26
+#, python-brace-format
+msgid "not a saidby output folder: {out_dir}"
+msgstr ""
+
+#: src/saidby/speakers/remap.py:41
+#, python-brace-format
+msgid "unknown speaker {label!r}; known: {known}"
+msgstr ""
+
+#: src/saidby/speakers/remap.py:93
+#, python-brace-format
+msgid "{person_id!r} is already used by another speaker; use merge instead"
+msgstr ""
+
+#: src/saidby/speakers/remap.py:125
+msgid "cannot merge a speaker into itself"
+msgstr ""
+
+#: src/saidby/stages/ingest.py:60
+#, python-brace-format
+msgid "no audio stream found in {name}"
+msgstr ""
+

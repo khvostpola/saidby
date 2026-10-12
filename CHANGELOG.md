@@ -7,6 +7,11 @@ All notable changes are documented here, following
 ## [Unreleased]
 
 ### Added
+- Spanish messages: questions, progress lines, summaries, `doctor` and errors come out in
+  Spanish with `--ui-lang es`, `SAIDBY_UI_LANG=es` or a Spanish system locale, and in English
+  for any other language. Command names, options, help, JSON, logs and files stay in English,
+  and errors keep their English id and exit code. `tools/i18n.py` maintains the catalogs and
+  the test suite fails on untranslated messages or stale compiled catalogs.
 - `saidby review` shows the doubtful span among its neighbouring words (dimmed, with the span
   highlighted) and asks `Text for "akme"?`. `p` plays the span with `ffplay` (from the kept work
   audio, the speaker's track or the original recording, in that order). If the text you type
@@ -75,6 +80,8 @@ All notable changes are documented here, following
   to the configured directory when `--directory` is not given.
 
 ### Changed
+- `saidby review` and its summary now pluralize correctly ("saved 1 text correction", "added 1
+  variant").
 - `saidby speakers show` prints a table (speaker, name, speech, how it was named, track); the JSON
   it used to print is now `--json`, and gains the `track` of each speaker.
 - The `name:` line at the end of a run suggests `saidby speakers map -i FOLDER`.

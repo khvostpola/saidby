@@ -151,6 +151,19 @@ Unknown keys are errors that name the key, so a typo cannot silently do nothing.
 can also be an environment variable: `SAIDBY_LANGUAGE=es`, `SAIDBY_DEVICE=cpu`,
 `SAIDBY_ASR_MODEL=tiny`, and so on (the upper-cased name of the key in `[saidby]`).
 
+## Language of the messages
+
+saidby writes its questions, progress lines, summaries and error messages in your language when
+there is a translation, and in English otherwise. It looks at `--ui-lang` first (`saidby
+--ui-lang es process ...`), then `SAIDBY_UI_LANG`, then the system locale (`LC_ALL`,
+`LC_MESSAGES`, `LANG`). Spanish (`es`) ships today.
+
+Some things are never translated, so scripts and documentation keep working: command names,
+options and their help, the `--json` output of `doctor` and `speakers show`, the events of
+`--progress json`, `logs/run.log`, the telemetry, `manifest.json` and every file saidby writes
+for you. An error keeps its English id and exit code next to the translated message:
+`error: no se encontró el archivo de directorio: x.yaml  [input · exit 3]`.
+
 ## Exit codes
 
 | Code | Id | Meaning | What to do |

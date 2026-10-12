@@ -28,6 +28,22 @@ On a machine without a GPU, install the CPU build of PyTorch without the CUDA ex
 - Telemetry and logs must never contain transcript text, names, glossary terms or
   voiceprints; the telemetry schema is a closed list.
 
+## Translating the messages
+
+User-facing text goes through `_()` (and `ngettext()` for plurals) from `saidby.i18n`; help
+texts, JSON, logs and files stay in English. After adding or changing a message, update the
+catalogs and translate what is new:
+
+```bash
+uv run python tools/i18n.py update es   # refresh src/saidby/locale/es/LC_MESSAGES/saidby.po
+# translate the empty entries in that file, then
+uv run python tools/i18n.py compile     # rebuild the .mo files (they are committed)
+```
+
+A new language is `uv run python tools/i18n.py update xx` followed by the same steps. The test
+suite fails when a message has no translation or a `.mo` is stale, and checks that placeholders
+such as `{n}` survive.
+
 ## Developer Certificate of Origin
 
 By signing off you certify the statements of the
