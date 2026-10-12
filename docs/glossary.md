@@ -64,6 +64,11 @@ saidby models pull llm:qwen3.5-9b-q4
 saidby process call.m4a --out out/ --directory directory.yaml --correct
 ```
 
+The manifest and the telemetry record the device `llama-server` really offers, not the one saidby
+asked for. Before it starts, saidby runs `llama-server --list-devices`: `cuda` when a CUDA device
+is listed, `cpu` when none is, and no device for other GPU backends such as Vulkan. A CUDA build
+that lists none usually lacks its CUDA runtime libraries, and the correction then runs on the CPU.
+
 An endpoint that is not on this machine is refused unless you also pass `--allow-remote-llm`.
 If the LLM cannot start, the run fails with exit code 7 before processing anything.
 

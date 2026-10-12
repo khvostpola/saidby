@@ -43,6 +43,9 @@ All notable changes are documented here, following
 - `saidby review` without a terminal, or with an input that ends early, says that the input ended
   and what to do (usage error, exit code 2) instead of "Aborted." with exit code 1. The answers
   given before are kept.
+- The manifest and the telemetry no longer say `cuda` for the correction when `llama-server` runs
+  on the CPU: saidby asks the binary which devices it has (`--list-devices`) and records `cuda`,
+  `cpu`, or nothing for GPU backends it does not name.
 - `transcript.vtt`: a long block of words with no pause between them is cut after punctuation or
   near its middle. It used to leave one cue of 8 s followed by one cue per word.
 

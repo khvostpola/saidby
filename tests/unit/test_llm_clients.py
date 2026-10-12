@@ -9,11 +9,16 @@ import threading
 from collections.abc import Iterator
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 import pytest
 
-from saidby.engines.llm.llama_server import LlamaServerManager, find_binary
+from saidby.engines.llm.llama_server import (
+    LlamaServerManager,
+    engine_device,
+    find_binary,
+    gpu_backends,
+)
 from saidby.engines.llm.openai_compat import OpenAICompatClient, is_local_url, opener_for
 from saidby.errors import LlmUnavailableError
 from saidby.models import get_spec
@@ -44,8 +49,13 @@ def _fake_binary(folder: Path, script: str) -> Path:
 
 
 FAKE_SERVER = """#!/usr/bin/env python3
-import json, sys
+import json, os, sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
+
+if "--list-devices" in sys.argv:
+    print("Available devices:")
+    print("\\n".join("  " + d for d in os.environ.get("FAKE_DEVICES", "(none)").split("|")))
+    sys.exit(0)
 
 port = int(sys.argv[sys.argv.index("--port") + 1])
 
@@ -160,6 +170,69 @@ def test_manager_starts_serves_and_stops(tmp_path: Path, monkeypatch: pytest.Mon
         manager.stop()
     assert proc.poll() is not None
     manager.stop()
+
+
+CUDA_LINE = "CUDA0: NVIDIA GeForce RTX 4060 Laptop GPU (7805 MiB, 7690 MiB free)"
+VULKAN_LINES = (
+    "Vulkan0: Intel(R) Graphics (RPL-S) (11695 MiB, 5292 MiB free)"
+    "|Vulkan1: NVIDIA GeForce RTX 4060 Laptop GPU (8188 MiB, 7791 MiB free)"
+)
+
+
+def test_gpu_backends_reads_what_the_binary_lists(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    binary = str(_fake_binary(tmp_path, FAKE_SERVER))
+    monkeypatch.setenv("FAKE_DEVICES", CUDA_LINE)
+    assert gpu_backends(binary) == ["CUDA"]
+    monkeypatch.setenv("FAKE_DEVICES", VULKAN_LINES)
+    assert gpu_backends(binary) == ["Vulkan", "Vulkan"]
+    monkeypatch.setenv("FAKE_DEVICES", "(none)")
+    assert gpu_backends(binary) == []
+
+
+def test_gpu_backends_is_none_when_the_binary_cannot_say(tmp_path: Path) -> None:
+    assert gpu_backends(str(_fake_binary(tmp_path, "#!/bin/sh\nexit 3\n"))) is None
+    assert gpu_backends(str(tmp_path / "missing")) is None
+
+
+@pytest.mark.parametrize(
+    ("requested", "backends", "expected"),
+    [
+        ("cpu", ["CUDA"], "cpu"),
+        ("cpu", None, "cpu"),
+        ("cuda", ["CUDA"], "cuda"),
+        ("cuda", ["Vulkan", "CUDA"], "cuda"),
+        ("cuda", [], "cpu"),
+        ("cuda", ["Vulkan"], None),
+        ("cuda", None, None),
+    ],
+)
+def test_engine_device_only_claims_what_the_binary_listed(
+    requested: Literal["cuda", "cpu"], backends: list[str] | None, expected: str | None
+) -> None:
+    assert engine_device(requested, backends) == expected
+
+
+@pytest.mark.parametrize(
+    ("listing", "expected"), [(CUDA_LINE, "cuda"), ("(none)", "cpu"), (VULKAN_LINES, None)]
+)
+def test_manager_records_the_device_the_binary_offers(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, listing: str, expected: str | None
+) -> None:
+    binary = _fake_binary(tmp_path, FAKE_SERVER)
+    gguf = tmp_path / "model.gguf"
+    gguf.write_bytes(b"x")
+    monkeypatch.setattr(model_store, "local_path", lambda spec: gguf)
+    monkeypatch.setattr(model_store, "local_revision", lambda spec: spec.revision)
+    monkeypatch.setenv("FAKE_DEVICES", listing)
+    manager = LlamaServerManager(DeviceInfo("cuda"), binary=str(binary), startup_timeout_s=20)
+    assert manager.info.device is None
+    manager.start()
+    try:
+        assert manager.info.device == expected
+    finally:
+        manager.stop()
 
 
 def test_manager_fails_cleanly_when_process_dies(

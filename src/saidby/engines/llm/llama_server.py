@@ -3,24 +3,27 @@
 
 import atexit
 import os
+import re
 import shutil
 import socket
 import subprocess
 import time
 import urllib.error
 from pathlib import Path
-from typing import IO, Any
+from typing import IO, Any, Literal
 
 from saidby.engines.llm.openai_compat import LOOPBACK_OPENER, OpenAICompatClient
-from saidby.errors import LlmUnavailableError
+from saidby.errors import InputError, LlmUnavailableError
 from saidby.i18n import _
 from saidby.models import get_spec
 from saidby.models import store as model_store
 from saidby.runtime.device import DeviceInfo
-from saidby.runtime.procs import spawn_managed
+from saidby.runtime.procs import run_checked, spawn_managed
 from saidby.schema.engine import EngineInfo
 
 ENV_BINARY = "SAIDBY_LLAMA_SERVER"
+LISTING_TIMEOUT_S = 60.0
+NO_DEVICES = "(none)"
 
 
 def find_binary(explicit: str | None = None) -> str:
@@ -33,6 +36,31 @@ def find_binary(explicit: str | None = None) -> str:
             ).format(ENV_BINARY=ENV_BINARY)
         )
     return str(candidate)
+
+
+def gpu_backends(binary: str) -> list[str] | None:
+    """Backends of the GPUs `binary` can offload to; None when it will not say."""
+    try:
+        out = run_checked([binary, "--list-devices"], timeout=LISTING_TIMEOUT_S).stdout
+    except (InputError, subprocess.TimeoutExpired, OSError):
+        return None
+    _, found, listing = out.partition("Available devices:")
+    if not found:
+        return None
+    lines = [line.strip() for line in listing.splitlines() if line.strip() != NO_DEVICES]
+    return [re.split(r"[^A-Za-z]", line, maxsplit=1)[0] for line in lines if line]
+
+
+def engine_device(
+    requested: Literal["cuda", "cpu"], backends: list[str] | None
+) -> Literal["cuda", "cpu"] | None:
+    if requested == "cpu":
+        return "cpu"
+    if backends is None:
+        return None
+    if "CUDA" in backends:
+        return "cuda"
+    return None if backends else "cpu"
 
 
 def free_loopback_port() -> int:
@@ -88,7 +116,7 @@ class LlamaServerManager:
             model=model_key,
             repo_id=spec.repo_id,
             revision=model_store.local_revision(spec),
-            device=device.kind,
+            device="cpu" if device.kind == "cpu" else None,
         )
 
     def check(self) -> None:
@@ -98,6 +126,9 @@ class LlamaServerManager:
     def start(self) -> None:
         binary = find_binary(self.binary)
         gguf = model_store.local_path(self.spec)
+        backends = gpu_backends(binary) if self.device.kind == "cuda" else None
+        used = engine_device(self.device.kind, backends)
+        self.info = self.info.model_copy(update={"device": used})
         port = free_loopback_port()
         argv = [
             binary,
