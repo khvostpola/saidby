@@ -109,8 +109,9 @@ rest from the global file.
 
 Relative paths in a file, such as `directory`, are resolved against the file that declares them,
 and `~` means your home folder. `saidby init` writes a starter project file for you.
-`directory` can be a list; the lists of the global and project files are joined, far to near. A
-`--directory` on the command line (repeat it for several files) or `SAIDBY_DIRECTORY` (separated
+`directory` can be a list. Like every other key, the one in the project file replaces the one in
+the global file, so a project that wants the shared glossary names it too (`saidby init` asks).
+A `--directory` on the command line (repeat it for several files) or `SAIDBY_DIRECTORY` (separated
 with `:` on Linux) replaces the files named in configuration.
 
 ```toml

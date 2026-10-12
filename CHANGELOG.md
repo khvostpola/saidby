@@ -75,7 +75,8 @@ All notable changes are documented here, following
 - `--term` (repeatable, also `[glossary] terms` and `SAIDBY_TERMS`): terms for one run only,
   used by the bias pass, the transplant and `--correct` like directory terms, and never saved.
 - Several directory files at once: `--directory` can be repeated and `directory` in
-  `saidby.toml` can be a list (shared file under a project one). The nearest file wins, and the
+  `saidby.toml` can be a list (a shared file under a project one; the project list replaces the
+  global one, as every other key does). The nearest file wins, and the
   manifest lists every file. `saidby enroll`, `saidby review` and `saidby speakers map` fall back
   to the configured directory when `--directory` is not given.
 

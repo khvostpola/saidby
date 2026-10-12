@@ -105,6 +105,7 @@ def test_declining_the_global_glossary_leaves_it_out(
     shared = isolated_user_config / "config" / "saidby" / "directory.yaml"
     shared.parent.mkdir(parents=True)
     shared.write_text("version: 1\nlanguage: es\n")
+    (shared.parent / "config.toml").write_text('[glossary]\ndirectory = ["directory.yaml"]\n')
     work = tmp_path / "work"
     work.mkdir()
     monkeypatch.chdir(work)

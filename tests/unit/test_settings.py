@@ -187,7 +187,7 @@ def test_directory_must_be_text(tmp_path: Path) -> None:
         Settings.load(_write(tmp_path, "[glossary]\ndirectory = [1]\n"))
 
 
-def test_directories_from_global_and_project_are_combined_far_to_near(
+def test_the_project_directory_list_replaces_the_global_one(
     tmp_path: Path, isolated_user_config: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     _global_config(
@@ -197,11 +197,18 @@ def test_directories_from_global_and_project_are_combined_far_to_near(
     project.mkdir()
     _write(project, '[glossary]\ndirectory = ["/shared/me.yaml", "client.yaml"]\n')
     monkeypatch.chdir(project)
-    assert Settings.load().directory == [
-        Path("/shared/team.yaml"),
-        Path("/shared/me.yaml"),
-        project.resolve() / "client.yaml",
-    ]
+    assert Settings.load().directory == [Path("/shared/me.yaml"), project.resolve() / "client.yaml"]
+
+
+def test_the_global_directory_list_applies_when_the_project_names_none(
+    tmp_path: Path, isolated_user_config: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _global_config(isolated_user_config, '[glossary]\ndirectory = ["/shared/team.yaml"]\n')
+    project = tmp_path / "work"
+    project.mkdir()
+    _write(project, '[saidby]\nlanguage = "es"\n')
+    monkeypatch.chdir(project)
+    assert Settings.load().directory == [Path("/shared/team.yaml")]
 
 
 def test_directories_from_the_environment_split_on_the_path_separator(

@@ -218,12 +218,7 @@ def _anchor(item: str, source: Path) -> str:
 
 
 def _layer(merged: dict[str, Any], flat: dict[str, Any]) -> None:
-    for key, value in flat.items():
-        if key == "directory":
-            earlier = merged.get(key, [])
-            merged[key] = [*earlier, *(item for item in value if item not in earlier)]
-        else:
-            merged[key] = value
+    merged.update(flat)
 
 
 def _read_file(path: Path) -> dict[str, Any]:

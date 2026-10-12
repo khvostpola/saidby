@@ -76,7 +76,9 @@ file (your team, your own regulars) can sit under one for each project:
 directory = ["~/shared/team-directory.yaml", "directory.yaml"]   # far to near
 ```
 
-Files are read from the farthest to the nearest, and the nearest wins:
+A `directory` list in the project file replaces the one in the global file, so list the shared
+file again if the project should use it. Files are read from the farthest to the nearest, and the
+nearest wins:
 
 - **Terms** are combined; if the same term is in two files (ignoring case) the nearest entry is used.
 - **People** are combined by `id`; the nearest entry wins field by field, except the voiceprint,
