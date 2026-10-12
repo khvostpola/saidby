@@ -11,6 +11,11 @@ All notable changes are documented here, following
   terms, each with where the value comes from) and waits for one key: Enter to start, `t` to add
   terms for this recording, `e` to change a value, `q` to quit. It asks only what nothing else
   set (the language). It needs a terminal and the human progress output.
+  When the run ends it walks through each finished folder: it plays and names the voices, offers
+  to store voiceprints (default no, with consent per person), offers once to save the terms you
+  added into the glossary and the language, glossary and output you chose into `saidby.toml`
+  (comments are kept and a backup is made), and closes with a summary and the equivalent
+  command. Each folder's `manifest.json` records an `interactive` edit.
 - `saidby enroll -i FOLDER` goes through the voices that already have a name in the directory and
   asks, for each person, whether they agreed to have their voiceprint stored. It asks how consent
   was given once and who declared it (the person by default). Without consent nothing is stored

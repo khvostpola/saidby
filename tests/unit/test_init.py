@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import sys
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -9,7 +10,7 @@ from typer.testing import CliRunner
 
 from saidby.cli import app
 from saidby.config.settings import Settings
-from saidby.config.writer import check_language, default_language
+from saidby.config.writer import check_language, default_language, update_config
 from saidby.errors import UsageError
 from saidby.formats.directory_yaml import load_directory
 
@@ -131,3 +132,38 @@ def test_default_language_comes_from_the_environment(
         monkeypatch.delenv(name, raising=False)
     monkeypatch.setenv("LANG", value)
     assert default_language() == expected
+
+
+def test_update_config_creates_a_file_with_only_what_it_was_given(tmp_path: Path) -> None:
+    path = tmp_path / "saidby.toml"
+    assert update_config(path, language="es", out="results", directory=["directory.yaml"]) is None
+    assert tomllib.loads(path.read_text()) == {
+        "saidby": {"language": "es", "out": "results"},
+        "glossary": {"directory": ["directory.yaml"]},
+    }
+
+
+def test_update_config_keeps_comments_and_other_keys_and_makes_a_backup(tmp_path: Path) -> None:
+    path = tmp_path / "saidby.toml"
+    path.write_text(
+        '# my settings\n[saidby]\nlanguage = "en"  # english\ndevice = "cpu"\n'
+        '[asr]\nmodel = "tiny"\n[glossary]\ndirectory = "old.yaml"\nbias = false\n'
+    )
+    backup = update_config(path, language="es", directory=["a.yaml", "b.yaml"])
+    assert backup is not None
+    assert backup.read_text().startswith("# my settings")
+    text = path.read_text()
+    assert "# my settings" in text
+    assert 'language = "es"' in text
+    assert tomllib.loads(text) == {
+        "saidby": {"language": "es", "device": "cpu"},
+        "asr": {"model": "tiny"},
+        "glossary": {"directory": ["a.yaml", "b.yaml"], "bias": False},
+    }
+
+
+def test_update_config_leaves_untouched_what_it_was_not_given(tmp_path: Path) -> None:
+    path = tmp_path / "saidby.toml"
+    path.write_text('[saidby]\nlanguage = "pt"\n')
+    update_config(path, out="results")
+    assert tomllib.loads(path.read_text()) == {"saidby": {"language": "pt", "out": "results"}}

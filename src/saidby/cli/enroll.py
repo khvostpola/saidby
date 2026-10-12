@@ -13,6 +13,7 @@ from saidby.errors import UsageError
 from saidby.formats.directory_yaml import load_directory
 from saidby.interactive.voices import store_voices
 from saidby.speakers.enrollment import (
+    DEFAULT_CHANNEL,
     ConsentInput,
     enroll_voices,
     ensure_audio,
@@ -50,7 +51,7 @@ def enroll(
     consent_source: Annotated[str | None, typer.Option(help="How consent was given")] = None,
     consent_declared_by: Annotated[str | None, typer.Option(help="Who declared it")] = None,
     consent_date: Annotated[str | None, typer.Option(help="YYYY-MM-DD, default today")] = None,
-    channel: Annotated[str, typer.Option(help="Recording channel label")] = "mobile-call",
+    channel: Annotated[str, typer.Option(help="Recording channel label")] = DEFAULT_CHANNEL,
     embedder_name: Annotated[
         str, typer.Option("--embedder", help="Voiceprint model.")
     ] = "wespeaker-resnet34",

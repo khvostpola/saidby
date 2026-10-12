@@ -38,7 +38,7 @@ Arguments:
 | `--fail-fast` | flag |  | Stop at the first input that fails. |
 | `--progress` | str |  | human (default, on stderr), json (one event per line on stdout) or none. |
 | `--strict-offline` | flag |  | Fail with exit code 8 if anything tries to leave this machine. |
-| `--interactive`, `-i` | flag |  | Show the plan and start with one key, asking only what is not set. |
+| `--interactive`, `-i` | flag |  | Show a plan and start with one key; afterwards listen to and name the voices. |
 
 Examples:
 

@@ -111,6 +111,15 @@ default) and waits for one key: Enter starts, `t` adds terms for this recording 
 a value, `q` quits without running. It only asks about what nothing else decided, which today is
 the language. It needs a terminal, so it cannot be combined with `--progress json` or `none`.
 
+When the run ends, `-i` walks through each finished folder: it plays a sample of every voice that
+still has no name (see [step 5](#5-put-names-on-the-speakers)), asks who each one is, and, if you
+want, stores voiceprints so the next run recognizes them (default: no, and only with the person's
+consent). With several files, everything is processed first and then the folders are walked one
+by one. At the end it offers, once, to keep the terms you added for this recording in your
+glossary, and to save the language, glossary and output folder you chose into `saidby.toml`. It
+closes with a summary: the device, what changed in each folder, the doubtful spans left for
+`saidby review`, and the command that repeats the run without `-i`.
+
 ## 5. Put names on the speakers
 
 Create a directory and add the people:

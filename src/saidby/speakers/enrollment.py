@@ -22,6 +22,8 @@ from saidby.schema.directory import ConsentRecord, Person
 from saidby.stages.identify import make_voiceprint, speaker_centroids
 from saidby.stages.ingest import ingest
 
+DEFAULT_CHANNEL = "mobile-call"
+
 
 @dataclass(frozen=True)
 class ConsentInput:

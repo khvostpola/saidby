@@ -4,12 +4,15 @@
 import locale
 import os
 import re
+import shutil
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 import tomlkit
 
 from saidby.errors import UsageError
+from saidby.formats.yaml_io import backup_path
 
 LANGUAGE_PATTERN = re.compile(r"[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})?")
 
@@ -62,3 +65,37 @@ def render_config(*, language: str, directories: Sequence[str], out: str | None 
     glossary.add("directory", list(directories))
     document.add("glossary", glossary)
     return tomlkit.dumps(document)
+
+
+def _table(document: Any, name: str) -> Any:
+    if name not in document:
+        document.add(name, tomlkit.table())
+    return document[name]
+
+
+def update_config(
+    path: Path,
+    *,
+    language: str | None = None,
+    out: str | None = None,
+    directory: Sequence[str] | None = None,
+) -> Path | None:
+    backup: Path | None = None
+    if path.exists():
+        document = tomlkit.parse(path.read_text(encoding="utf-8"))
+        backup = backup_path(path)
+        shutil.copy2(path, backup)
+    else:
+        document = tomlkit.document()
+        document.add(tomlkit.comment("saidby settings. Command-line flags override them."))
+        document.add(tomlkit.nl())
+    if language is not None or out is not None:
+        base = _table(document, "saidby")
+        if language is not None:
+            base["language"] = language
+        if out is not None:
+            base["out"] = out
+    if directory is not None:
+        _table(document, "glossary")["directory"] = list(directory)
+    path.write_text(tomlkit.dumps(document), encoding="utf-8")
+    return backup

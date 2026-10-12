@@ -15,7 +15,8 @@ from saidby.cli.term import detect
 from saidby.cli.ui import Ui, ensure_terminal
 from saidby.config.settings import Settings
 from saidby.errors import StageError, UsageError
-from saidby.interactive.plan import plan_run
+from saidby.interactive.plan import RunPlan, plan_run
+from saidby.interactive.walk import finish_run, walk_folders
 from saidby.pipeline.runner import Pipeline
 
 IO = "Input and output"
@@ -240,7 +241,7 @@ def process(
         typer.Option(
             "--interactive",
             "-i",
-            help="Show the plan and start with one key, asking only what is not set.",
+            help="Show a plan and start with one key; afterwards listen to and name the voices.",
             rich_help_panel=BEHAVIOR,
         ),
     ] = False,
@@ -280,13 +281,18 @@ def process(
         _check_interactive(inputs, settings)
     if settings.progress == "human":
         show_compact(len(inputs), settings.out)
-    if interactive:
-        plan = plan_run(_ui(), inputs, settings)
+    ui = _ui() if interactive else None
+    plan: RunPlan | None = None
+    if ui is not None:
+        plan = plan_run(ui, inputs, settings)
         if plan is None:
             return
         settings = plan.settings
     results = Pipeline(settings, progress=Progress(settings.progress)).run(inputs, settings.out)
-    if settings.progress == "human":
+    if ui is not None and plan is not None:
+        outcomes = walk_folders(ui, results, settings)
+        finish_run(ui, inputs, results, plan, outcomes, config)
+    elif settings.progress == "human":
         states = [read_state(r.out_dir) for r in results if r.status == "ok"]
         for line in next_steps([s for s in states if s], detect(sys.stderr)):
             print(line, file=sys.stderr)
