@@ -15,7 +15,7 @@ from saidby.models import REGISTRY
 from saidby.models import store as model_store
 from saidby.runtime import device as dev
 from saidby.runtime.device_cache import write_cache
-from saidby.runtime.procs import tool_version
+from saidby.runtime.procs import tool_version, which
 
 Status = Literal["ok", "warn", "fail"]
 MIN_DRIVER = 580
@@ -59,6 +59,17 @@ def check_ffmpeg() -> Check:
             "install ffmpeg (for example: sudo dnf install ffmpeg)",
         )
     return Check("ffmpeg", "ok", version.split(" Copyright")[0])
+
+
+def check_ffplay() -> Check:
+    if which("ffplay") is None:
+        return Check(
+            "ffplay",
+            "warn",
+            "not found: listening to samples in interactive mode will show the file path instead",
+            "ffplay comes with ffmpeg on most systems (for example: sudo dnf install ffmpeg)",
+        )
+    return Check("ffplay", "ok", "found")
 
 
 def check_gpu(gpu: dev.GpuFacts | None) -> Check:
@@ -230,6 +241,7 @@ def run_checks(smoke: bool = False, requested: str = "auto") -> list[Check]:
     checks = [
         check_python(),
         check_ffmpeg(),
+        check_ffplay(),
         check_gpu(gpu),
         *check_runtime(gpu),
         check_device(requested),

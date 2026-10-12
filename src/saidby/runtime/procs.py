@@ -3,6 +3,7 @@
 
 import shutil
 import subprocess
+from pathlib import Path
 
 from saidby.errors import InputError
 
@@ -37,3 +38,35 @@ def tool_version(name: str, flag: str = "-version") -> str | None:
     except InputError:
         return None
     return out.splitlines()[0].strip() if out else None
+
+
+def ffplay_argv(path: Path, start: float, duration: float) -> list[str]:
+    return [
+        "ffplay",
+        "-nodisp",
+        "-autoexit",
+        "-loglevel",
+        "quiet",
+        "-ss",
+        f"{start:.2f}",
+        "-t",
+        f"{duration:.2f}",
+        str(path),
+    ]
+
+
+def play(path: Path, start: float, duration: float) -> bool:
+    if which("ffplay") is None:
+        return False
+    process = subprocess.Popen(
+        ffplay_argv(path, start, duration),
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        process.wait()
+    except KeyboardInterrupt:
+        process.terminate()
+        process.wait(timeout=2)
+    return True
