@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import json
-import os
 import platform
 import sys
 from typing import Annotated
@@ -12,41 +11,48 @@ import typer
 from saidby import __version__
 from saidby.models import REGISTRY
 from saidby.models import store as model_store
-from saidby.runtime.device import detect_cuda
-from saidby.runtime.prepare import preload_cublas
-from saidby.runtime.procs import tool_version
+from saidby.runtime.diagnose import Check, run_checks
+
+SYMBOLS = {"ok": "ok  ", "warn": "warn", "fail": "FAIL"}
+
+
+def _print(checks: list[Check]) -> None:
+    width = max(len(c.name) for c in checks)
+    for check in checks:
+        typer.echo(f"{SYMBOLS[check.status]}  {check.name.ljust(width)}  {check.detail}")
+        if (check.hint and check.status != "ok") or (check.hint and check.name == "device"):
+            typer.echo(f"      {' ' * width}  -> {check.hint}")
 
 
 def doctor(
     as_json: Annotated[bool, typer.Option("--json", help="Machine-readable output")] = False,
+    smoke: Annotated[
+        bool, typer.Option("--smoke", help="Also run a short transcription with asr:tiny")
+    ] = False,
+    device: Annotated[str, typer.Option(help="Device to check: auto, cuda or cpu")] = "auto",
 ) -> None:
-    """Check ffmpeg, GPU, CUDA libraries, installed models and offline settings."""
-    cuda = detect_cuda()
-    cublas = preload_cublas() if cuda else []
-    report = {
-        "saidby": __version__,
-        "python": platform.python_version(),
-        "platform": sys.platform,
-        "ffmpeg": tool_version("ffmpeg"),
-        "gpu": {"name": cuda.name, "vram_total_mb": cuda.vram_total_mb} if cuda else None,
-        "cublas12_preloaded": cublas,
-        "models": {s.key: model_store.is_installed(s) for s in REGISTRY},
-        "hf_hub_offline": os.environ.get("HF_HUB_OFFLINE") == "1",
-        "hf_token_set": bool(os.environ.get("HF_TOKEN")),
-        "llama_server": tool_version("llama-server", "--version"),
-    }
-    problems: list[str] = []
-    if report["ffmpeg"] is None:
-        problems.append("ffmpeg not found on PATH")
-    if cuda and not cublas:
-        problems.append(
-            "GPU found but CUDA 12 cuBLAS wheels are missing (pip install nvidia-cublas-cu12)"
-        )
+    """Check that this machine can run saidby and say how to fix what is missing."""
+    checks = run_checks(smoke=smoke, requested=device)
+    failures = [c for c in checks if c.status == "fail"]
     if as_json:
-        typer.echo(json.dumps({**report, "problems": problems}, indent=2))
+        typer.echo(
+            json.dumps(
+                {
+                    "saidby": __version__,
+                    "python": platform.python_version(),
+                    "platform": sys.platform,
+                    "ffmpeg": next((c.detail for c in checks if c.name == "ffmpeg"), None),
+                    "models": {s.key: model_store.is_installed(s) for s in REGISTRY},
+                    "checks": [c.__dict__ for c in checks],
+                    "problems": [f"{c.name}: {c.detail}" for c in failures],
+                },
+                indent=2,
+            )
+        )
     else:
-        for key, value in report.items():
-            typer.echo(f"{key}: {value}")
-        for problem in problems:
-            typer.echo(f"problem: {problem}")
-    raise typer.Exit(1 if problems else 0)
+        typer.echo(f"saidby {__version__}")
+        _print(checks)
+        typer.echo(
+            "\nready" if not failures else f"\n{len(failures)} problem(s) to fix before processing"
+        )
+    raise typer.Exit(1 if failures else 0)

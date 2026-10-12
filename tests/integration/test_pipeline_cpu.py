@@ -133,3 +133,20 @@ def test_strict_offline_run_opens_no_connections(tmp_path: Path) -> None:
         results = pipeline.run([FIXTURE], tmp_path)
     assert results[0].status == "ok"
     assert guard.events == []
+
+
+def test_device_fallback_note_reaches_the_manifest(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from saidby.pipeline import runner as runner_module
+    from saidby.runtime.device import DeviceInfo
+
+    monkeypatch.setattr(
+        runner_module,
+        "resolve_device",
+        lambda requested: DeviceInfo("cpu", note="running on CPU: test"),
+    )
+    _pipeline().run([FIXTURE], tmp_path)
+    manifest = read_manifest(tmp_path / "tones_2spk_10s/manifest.json")
+    assert manifest.warnings == ["running on CPU: test"]
+    assert manifest.device.used == "cpu"
