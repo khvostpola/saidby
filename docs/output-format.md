@@ -27,7 +27,8 @@ and, on failure, `failed_stage` and `error_type`.
 
 One event per line with a closed set of fields: stage, engine, model, revision, device,
 timings, real-time factor, memory peak and counts. It never contains transcript text,
-names, glossary terms, voiceprints or file names.
+names, glossary terms, voiceprints or file names. The GPU memory peak is `null` on Windows,
+where the driver does not report memory per process.
 
 ## `corrections.jsonl`
 

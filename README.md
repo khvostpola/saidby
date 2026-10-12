@@ -57,19 +57,29 @@ out/call/
 
 ## Install
 
-NVIDIA GPU (driver 580 or newer):
+Linux or Windows, with [uv](https://docs.astral.sh/uv/getting-started/installation/) and `ffmpeg`
+(`sudo dnf install ffmpeg`, `sudo apt install ffmpeg` or `winget install ffmpeg`).
+
+Linux with an NVIDIA GPU (driver 580 or newer):
 
 ```bash
-uv tool install 'saidby[cuda]'
+uv tool install "saidby[cuda]"
 ```
 
-No GPU, or to skip about 1 GB of CUDA libraries:
+Windows with an NVIDIA GPU (driver 580 or newer). PyPI's PyTorch is a CPU build on Windows, so the
+CUDA build comes from PyTorch's own index:
+
+```powershell
+uv tool install "saidby[cuda]" --index https://download.pytorch.org/whl/cu130 --index-strategy unsafe-best-match
+```
+
+No GPU, or to skip about 1 GB of CUDA libraries, on either system:
 
 ```bash
 uv tool install saidby --index https://download.pytorch.org/whl/cpu --index-strategy unsafe-best-match
 ```
 
-You also need `ffmpeg`. Then:
+Then:
 
 ```bash
 saidby doctor                 # checks the machine and says how to fix what is missing
@@ -127,8 +137,8 @@ about 6 to 7 on a 20-thread CPU.
 
 ## Status
 
-Pre-alpha. It is developed and tested on Linux; the command line and the output formats may still
-change between 0.x versions. It is a library and a CLI, not a service: there is no server and no
+Pre-alpha. It is developed and tested on Linux and Windows, on the CPU and on NVIDIA GPUs; the
+command line and the output formats may still change between 0.x versions. It is a library and a CLI, not a service: there is no server and no
 account. Models keep their own licenses (`saidby models licenses`).
 
 ## Documentation

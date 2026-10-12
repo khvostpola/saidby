@@ -1,6 +1,6 @@
 # Evaluation
 
-`pip install 'saidby[eval]'` adds `saidby eval`, the same bench used to decide whether saidby is
+`pip install "saidby[eval]"` adds `saidby eval`, the same bench used to decide whether saidby is
 better than another tool. It never needs your recordings to leave your machine.
 
 ## The reference

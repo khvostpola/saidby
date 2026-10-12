@@ -1,18 +1,25 @@
 # Getting started
 
-About 15 minutes the first time, most of it downloading models. You need Linux, `ffmpeg`, and
-`uv` (see [uv's install page](https://docs.astral.sh/uv/getting-started/installation/)). An NVIDIA
-GPU makes it three to four times faster but is not required.
+About 15 minutes the first time, most of it downloading models. You need Linux or Windows,
+`ffmpeg`, and `uv` (see [uv's install page](https://docs.astral.sh/uv/getting-started/installation/)).
+An NVIDIA GPU makes it three to four times faster but is not required.
 
 ## 1. Install
 
-With an NVIDIA GPU (driver 580 or newer):
+Linux with an NVIDIA GPU (driver 580 or newer):
 
 ```bash
-uv tool install 'saidby[cuda]'
+uv tool install "saidby[cuda]"
 ```
 
-Without one, or to skip about 1 GB of CUDA libraries:
+Windows with an NVIDIA GPU (driver 580 or newer). PyPI's PyTorch is a CPU build on Windows, so the
+CUDA build comes from PyTorch's own index:
+
+```powershell
+uv tool install "saidby[cuda]" --index https://download.pytorch.org/whl/cu130 --index-strategy unsafe-best-match
+```
+
+Without a GPU, or to skip about 1 GB of CUDA libraries, on either system:
 
 ```bash
 uv tool install saidby --index https://download.pytorch.org/whl/cpu --index-strategy unsafe-best-match
@@ -21,6 +28,35 @@ uv tool install saidby --index https://download.pytorch.org/whl/cpu --index-stra
 Check that `saidby --help` lists the commands. If your shell says `saidby: command not found`,
 run `uv tool update-shell` and open a new terminal.
 
+### On Windows
+
+- Install uv from PowerShell with
+  `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"` or with
+  `winget install --id=astral-sh.uv -e`, and ffmpeg with `winget install ffmpeg` (it brings
+  `ffplay`, which plays the voice samples). Open a new terminal after each install so that `PATH`
+  picks them up.
+- Use Windows Terminal, PowerShell or cmd. Git Bash is not a terminal for saidby (it pipes the
+  output), so the guided questions, the colours and the progress line do not appear there;
+  `winpty saidby ...` fixes it.
+- The commands saidby suggests, such as `saidby review 'out\my call'`, are quoted for PowerShell.
+- In `saidby.toml`, write Windows paths with forward slashes (`C:/calls/directory.yaml`) or inside
+  single quotes: in TOML a backslash inside double quotes is an escape.
+- The global settings live in `%APPDATA%\saidby\config.toml` (`saidby init --global` creates it).
+- If Smart App Control blocks `saidby.exe` ("An Application Control policy has blocked this
+  file"): neither the launcher uv generates nor the Python uv downloads is signed. Install Python
+  from [python.org](https://www.python.org/downloads/windows/), which is signed, make a virtual
+  environment and run saidby as a module:
+
+  ```powershell
+  py -m venv saidby-env
+  saidby-env\Scripts\pip install "saidby[cuda]" --extra-index-url https://download.pytorch.org/whl/cu130
+  saidby-env\Scripts\python -m saidby doctor
+  ```
+
+  Without a GPU, `pip install saidby` is enough. Smart App Control can also block unsigned
+  libraries inside the packages; if `python -m saidby doctor --smoke` fails that way, saidby cannot
+  run on that machine while Smart App Control is on.
+
 ## 2. Check the machine
 
 ```bash
@@ -28,16 +64,17 @@ saidby doctor
 ```
 
 ```
-saidby 0.4.1
-ok    python   3.12.14
-ok    ffmpeg   ffmpeg version 7.1.5
-ok    gpu      NVIDIA GeForce RTX 4060 Laptop GPU, 8188 MB, driver 580.178.04
-ok    cuda     GPU is usable by PyTorch and CTranslate2
-ok    device   auto selects the GPU (NVIDIA GeForce RTX 4060 Laptop GPU)
-FAIL  models   missing: asr:large-v3, diarizer:nemotron3, embedder:wespeaker-resnet34
-               -> run: saidby models pull --all
+saidby 0.7.0
+ok    platform  Fedora Linux 43 (Workstation Edition) x86_64
+ok    python    3.12.14
+ok    ffmpeg    ffmpeg version 7.1.5
+ok    gpu       NVIDIA GeForce RTX 4060 Laptop GPU, 8188 MB, driver 580.178.04
+ok    cuda      GPU is usable by PyTorch and CTranslate2
+ok    device    auto selects the GPU (NVIDIA GeForce RTX 4060 Laptop GPU)
+FAIL  models    missing: asr:large-v3, diarizer:nemotron3, embedder:wespeaker-resnet34
+                -> run: saidby models pull --all
 ...
-1 problem(s) to fix before processing
+1 problem to fix before processing
 ```
 
 Every line that is not `ok` says how to fix it. Run it again after each fix.

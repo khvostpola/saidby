@@ -113,7 +113,10 @@ command line, `SAIDBY_*` environment variables, the project file, the global fil
 defaults. The two files are merged key by key, so a project can change one setting and keep the
 rest from the global file.
 
-- **Global file**: `~/.config/saidby/config.toml` (or under `$XDG_CONFIG_HOME`).
+- **Global file**: `~/.config/saidby/config.toml` on Linux (or under `$XDG_CONFIG_HOME`),
+  `%APPDATA%\saidby\config.toml` on Windows; `SAIDBY_CONFIG_DIR` points at another folder. The
+  device cache lives next to it in `~/.cache/saidby` or `%LOCALAPPDATA%\saidby\Cache`
+  (`SAIDBY_CACHE_DIR`).
 - **Project file**: the nearest `saidby.toml`, looking in the current folder and then in each
   parent folder up to your home folder, like git does for `.git`. Outside your home folder only
   the current folder is checked, so a stray file in a shared parent is never read.
@@ -124,7 +127,7 @@ and `~` means your home folder. `saidby init` writes a starter project file for 
 `directory` can be a list. Like every other key, the one in the project file replaces the one in
 the global file, so a project that wants the shared glossary names it too (`saidby init` asks).
 A `--directory` on the command line (repeat it for several files) or `SAIDBY_DIRECTORY` (separated
-with `:` on Linux) replaces the files named in configuration.
+with `:` on Linux and `;` on Windows) replaces the files named in configuration.
 
 ```toml
 [saidby]
