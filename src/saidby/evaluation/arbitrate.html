@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blind arbitration</title>
+<style>
+:root { --bg: #eef0ef; --panel: #ffffff; --control: #e4e8e7; --ink: #141819; --ink-2: rgba(20,24,25,.64); --ink-3: rgba(20,24,25,.42); --rule: rgba(20,24,25,.1); --accent: #0e6170; --accent-bg: rgba(14,97,112,.1); --mark: rgba(214,160,30,.32); --ok: #17703f; --ok-bg: rgba(23,112,63,.12); --bad: #b3261e; }
+@media (prefers-color-scheme: dark) { :root { --bg: #101314; --panel: #181c1e; --control: #242a2c; --ink: #e8eceb; --ink-2: rgba(232,236,235,.64); --ink-3: rgba(232,236,235,.42); --rule: rgba(232,236,235,.1); --accent: #5cc3d1; --accent-bg: rgba(92,195,209,.12); --mark: rgba(240,192,74,.26); --ok: #5fd08e; --ok-bg: rgba(95,208,142,.12); --bad: #f2857a; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 780px; margin: 0 auto; padding: 28px 16px 72px; display: grid; gap: 18px; }
+h1 { margin: 0; font-size: 26px; }
+p { margin: 0; }
+.muted { color: var(--ink-2); }
+.small { font-size: 14px; }
+.panel { background: var(--panel); border-radius: 10px; box-shadow: 0 0 0 1px var(--rule); padding: 18px; display: grid; gap: 14px; }
+.progress { display: grid; gap: 10px; }
+@media (min-width: 640px) { .progress { grid-template-columns: 1fr 1fr; } }
+.bar { display: grid; gap: 6px; font-size: 14px; }
+.bar .track { height: 6px; border-radius: 999px; background: var(--control); overflow: hidden; }
+.bar .fill { height: 100%; background: var(--accent); width: 0; }
+.bar.met .fill { background: var(--ok); }
+.meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; color: var(--ink-2); }
+button { font: inherit; color: inherit; background: var(--control); border: 0; border-radius: 6px; padding: 9px 14px; cursor: pointer; }
+button:focus-visible, .option:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+kbd { font: 12px ui-monospace, monospace; color: var(--ink-3); margin-left: 6px; }
+.option { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; padding: 14px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--rule); cursor: pointer; }
+.option:hover { background: var(--accent-bg); }
+.option.chosen { box-shadow: inset 0 0 0 2px var(--ok); background: var(--ok-bg); }
+.option .label { font-weight: 600; font-size: 20px; color: var(--accent); }
+.option p { font-size: 18px; line-height: 1.6; overflow-wrap: anywhere; }
+.ctx { color: var(--ink-3); }
+.diff { background: var(--mark); border-radius: 4px; padding: 1px 4px; }
+.diff.empty { font-style: italic; color: var(--ink-2); }
+.choices { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+@media (min-width: 640px) { .choices { grid-template-columns: repeat(4, 1fr); } }
+.choices button.chosen { background: var(--ok-bg); box-shadow: inset 0 0 0 2px var(--ok); }
+.nav, .typed { display: flex; justify-content: space-between; gap: 8px; }
+.typed input { flex: 1; font: inherit; padding: 9px 12px; border-radius: 6px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); }
+.status { font-size: 14px; color: var(--bad); min-height: 1.2em; }
+.done { background: var(--ok-bg); border-radius: 8px; padding: 12px 14px; font-size: 15px; }
+</style>
+</head>
+<body>
+<main>
+  <header style="display: grid; gap: 8px;">
+    <h1>Blind arbitration</h1>
+    <p class="muted">Listen to the clip and pick the version that says exactly what you hear. Highlighted words are where the two versions differ; grey is context. Case and punctuation do not count. A and B are shuffled on every span.</p>
+    <p class="muted small">“Both fine” is for when both versions are spelled right. “Neither” is for when both fail. If neither is right, type what you hear and press Enter: the typed text replaces the vote.</p>
+  </header>
+  <div class="panel progress" id="progress"></div>
+  <p class="done" id="done" hidden>You reached the minimum sample in every call. Keep going to tighten the estimate, or close the tab and run the score.</p>
+  <section class="panel" aria-live="polite">
+    <div class="meta"><span id="where"></span><button id="replay" type="button">Play again<kbd>space</kbd></button></div>
+    <audio id="audio" preload="auto"></audio>
+    <div class="option" data-choice="a" tabindex="0"><span class="label">A</span><p id="text-a"></p></div>
+    <div class="option" data-choice="b" tabindex="0"><span class="label">B</span><p id="text-b"></p></div>
+    <div class="choices">
+      <button type="button" data-choice="a">A is right<kbd>1</kbd></button>
+      <button type="button" data-choice="b">B is right<kbd>2</kbd></button>
+      <button type="button" data-choice="both">Both fine<kbd>3</kbd></button>
+      <button type="button" data-choice="neither">Neither<kbd>4</kbd></button>
+    </div>
+    <form class="typed" id="typed"><input id="typed-text" type="text" autocomplete="off" placeholder="Type what you hear for the highlighted part, then Enter" aria-label="What is said"><button type="submit">Save text</button></form>
+    <div class="nav"><button type="button" id="prev">← Previous</button><button type="button" id="next">Skip →</button></div>
+    <p class="status" id="status"></p>
+  </section>
+</main>
+<script>
+const GOAL = 40;
+const audio = document.getElementById("audio");
+const typed = document.getElementById("typed-text");
+let items = [], answers = {}, index = 0;
+
+function fill(el, view) {
+  el.replaceChildren();
+  const add = (text, cls) => { const s = document.createElement("span"); s.textContent = text; s.className = cls; el.append(s, " "); };
+  if (view.before.length) add("… " + view.before.join(" "), "ctx");
+  if (view.diff.length) add(view.diff.join(" "), "diff"); else add("(nothing)", "diff empty");
+  if (view.after.length) add(view.after.join(" ") + " …", "ctx");
+}
+
+function renderProgress() {
+  const calls = [...new Map(items.map(it => [it.call, it.label])).entries()];
+  const box = document.getElementById("progress");
+  box.replaceChildren();
+  let allMet = true;
+  for (const [call, label] of calls) {
+    const done = items.filter(it => it.call === call && it.id in answers).length;
+    const total = items.filter(it => it.call === call).length;
+    const met = done >= Math.min(GOAL, total);
+    allMet &&= met;
+    const bar = document.createElement("div");
+    bar.className = "bar" + (met ? " met" : "");
+    const text = document.createElement("span");
+    text.textContent = `${label}: ${done} of ${Math.min(GOAL, total)} minimum (${total} spans in total)`;
+    const track = document.createElement("div"); track.className = "track";
+    const f = document.createElement("div"); f.className = "fill"; f.style.width = Math.min(100, done / Math.min(GOAL, total) * 100) + "%";
+    track.append(f); bar.append(text, track); box.append(bar);
+  }
+  document.getElementById("done").hidden = !allMet;
+}
+
+function render() {
+  const it = items[index];
+  fill(document.getElementById("text-a"), it.a);
+  fill(document.getElementById("text-b"), it.b);
+  document.getElementById("where").textContent = `${it.label} · span ${index + 1} of ${items.length} · ${it.seconds} s`;
+  for (const el of document.querySelectorAll("[data-choice]")) el.classList.toggle("chosen", answers[it.id] === el.dataset.choice);
+  typed.value = "";
+  renderProgress();
+  audio.src = "/clips/" + it.clip;
+  audio.play().catch(() => {});
+}
+
+async function post(path, body) {
+  const status = document.getElementById("status");
+  try {
+    const res = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (!res.ok) throw new Error(res.status);
+    status.textContent = "";
+    return true;
+  } catch (err) {
+    status.textContent = "Could not save. Is the server still running?";
+    return false;
+  }
+}
+
+function advance() {
+  const next = items.findIndex((x, k) => k > index && !(x.id in answers));
+  index = next >= 0 ? next : Math.min(index + 1, items.length - 1);
+  render();
+}
+
+async function choose(choice) {
+  const it = items[index];
+  if (await post("/answer", { id: it.id, choice })) { answers[it.id] = choice; advance(); }
+}
+
+document.getElementById("typed").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const text = typed.value.trim();
+  if (!text) return;
+  const it = items[index];
+  if (await post("/truth", { id: it.id, text })) { answers[it.id] = "text"; advance(); }
+});
+function move(step) { index = Math.max(0, Math.min(items.length - 1, index + step)); render(); }
+function replay() { audio.currentTime = 0; audio.play().catch(() => {}); }
+document.addEventListener("click", ev => { const t = ev.target.closest("[data-choice]"); if (t) choose(t.dataset.choice); });
+document.getElementById("replay").addEventListener("click", ev => { ev.stopPropagation(); replay(); });
+document.getElementById("prev").addEventListener("click", () => move(-1));
+document.getElementById("next").addEventListener("click", () => move(1));
+document.addEventListener("keydown", ev => {
+  if (ev.ctrlKey || ev.metaKey || ev.altKey || ev.target === typed) return;
+  const keys = { "1": "a", "2": "b", "3": "both", "4": "neither" };
+  if (ev.key in keys) choose(keys[ev.key]);
+  else if (ev.key === " " || ev.key === "r") { ev.preventDefault(); replay(); }
+  else if (ev.key === "ArrowLeft") move(-1);
+  else if (ev.key === "ArrowRight") move(1);
+});
+(async () => {
+  items = await (await fetch("/items.json")).json();
+  items.sort((x, y) => x.rank - y.rank || x.call.localeCompare(y.call));
+  answers = await (await fetch("/answers")).json();
+  index = Math.max(0, items.findIndex(it => !(it.id in answers)));
+  render();
+})();
+</script>
+</body>
+</html>

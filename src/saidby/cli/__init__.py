@@ -8,6 +8,7 @@ import typer
 
 from saidby import __version__
 from saidby.cli import directory as directory_cli
+from saidby.cli import evaluate as evaluate_cli
 from saidby.cli import models as models_cli
 from saidby.cli import speakers as speakers_cli
 from saidby.cli.doctor import doctor
@@ -25,6 +26,7 @@ app = typer.Typer(
 app.add_typer(models_cli.app, name="models")
 app.add_typer(speakers_cli.app, name="speakers")
 app.add_typer(directory_cli.app, name="directory")
+app.add_typer(evaluate_cli.app, name="eval")
 app.command("doctor")(doctor)
 app.command("process")(process)
 app.command("enroll")(enroll)
