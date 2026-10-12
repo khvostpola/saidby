@@ -38,6 +38,7 @@ from saidby.runtime.device import DeviceInfo, resolve_device
 from saidby.runtime.device_cache import write_cache
 from saidby.runtime.netguard import guard_network
 from saidby.runtime.prepare import preload_runtime
+from saidby.runtime.usage import probe_for
 from saidby.schema.diarization import Diarization
 from saidby.schema.directory import Directory, Term
 from saidby.schema.ids import unique_slugs
@@ -112,6 +113,7 @@ class Pipeline:
             self.device = resolve_device(self.settings.device)
         write_cache(self.device)
         self.progress.device(self.device, self.settings.device)
+        self.progress.track_usage(self.device, probe_for(self.device))
         if self.device.note:
             self.warnings.append(self.device.note)
         prepare(offline=True, want_cuda=self.device.kind == "cuda")
@@ -387,7 +389,11 @@ class Pipeline:
         if name in self._loaded:
             return 0.0
         self._loaded.add(name)
-        return engine.load()
+        self.progress.loading(engine.info.model)
+        try:
+            return engine.load()
+        finally:
+            self.progress.running()
 
     def _transcriber_engine(self) -> Transcriber:
         if self._transcriber is None:

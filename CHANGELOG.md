@@ -7,6 +7,9 @@ All notable changes are documented here, following
 ## [Unreleased]
 
 ### Added
+- The live line of a stage now says when it is loading its model, then what it is doing, and
+  shows how much of the GPU memory (or the CPU) is in use. `--progress json` gains a
+  `stage.loading` event.
 - Every run starts with a `device` line (GPU or CPU, and why), and on a terminal the start-up
   shows `starting` and `device` live lines instead of looking frozen while PyTorch loads and the
   GPU is checked. `--progress json` gains `run.start` and `device` events.

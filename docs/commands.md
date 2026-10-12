@@ -58,8 +58,11 @@ If a GPU is present but cannot be used (for example PyTorch is the CPU build), t
 and points to `saidby doctor`. On a terminal, the moments that take a while show what they are
 doing and for how long, and are replaced by the result when they finish: `starting` (loading
 PyTorch and CTranslate2), `device` (checking the GPU, which can take a couple of seconds the
-first time on a laptop) and each stage (`transcribing...  0:12`). When stderr is not a terminal
-you only get the result lines. Every run ends with a `[total]` line: how long it took, when it
+first time on a laptop) and each stage. A stage first says it is loading its model
+(`loading large-v3 into the GPU...`), then what it is doing (`transcribing...  0:12`), and ends
+with how much of the device is in use (`GPU 5.1/8.0 GB · 93%`, or `CPU 8 threads · 94%`).
+That is the load of the whole device, not only saidby's share, and it is left out when the line
+would not fit. When stderr is not a terminal you only get the result lines. Every run ends with a `[total]` line: how long it took, when it
 started and finished, and how much audio it covered.
 
 ## Progress for scripts
@@ -72,6 +75,7 @@ started and finished, and how much audio it covered.
 | `run.start` | the run begins | `saidby` (version) |
 | `device` | the device is chosen | `requested`, `used`, `name`, `vram_total_mb`, `reason` |
 | `stage.start` | a stage begins | `file`, `stage` |
+| `stage.loading` | a stage starts loading its model (once per model, not per file) | `file`, `stage`, `model` |
 | `stage.end`, `stage.skip` | a stage finishes, or was already done | `file`, `stage`, `wall_s`, `rtf` |
 | `stage.error` | a stage fails | `file`, `stage`, `error_type` |
 | `file.end` | a file finishes | `file`, `status`, `out` |

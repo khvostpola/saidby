@@ -9,7 +9,9 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from saidby.cli.progress import CLEAR, Progress
+from saidby.cli.term import Terminal
 from saidby.runtime.device import DeviceInfo
+from saidby.runtime.usage import CpuUsage, GpuUsage
 
 
 class Tty(io.StringIO):
@@ -201,3 +203,99 @@ def test_none_mode_stays_silent(capsys: pytest.CaptureFixture[str]) -> None:
         pass
     captured = capsys.readouterr()
     assert (captured.out, captured.err) == ("", "")
+
+
+def _live(monkeypatch: pytest.MonkeyPatch, **terminal: object) -> tuple[Tty, Progress]:
+    monkeypatch.setenv("TERM", "xterm")
+    stream = Tty()
+    term = Terminal(**{"tty": True, "color": False, "truecolor": False, "columns": 100, **terminal})  # type: ignore[arg-type]
+    return stream, Progress("human", stream=stream, delay_s=0.01, interval_s=0.02, terminal=term)
+
+
+def test_the_live_text_goes_from_loading_to_running(monkeypatch: pytest.MonkeyPatch) -> None:
+    stream, progress = _live(monkeypatch)
+    progress.track_usage(DeviceInfo("cuda", "GPU", 8192), None)
+    progress.stage_start(index=1, total=1, slug="call", stage="asr")
+    progress.loading("large-v3")
+    time.sleep(0.12)
+    progress.running()
+    time.sleep(0.12)
+    progress.stop()
+    text = stream.getvalue()
+    assert "loading large-v3 into the GPU...  0:00" in text
+    assert "transcribing...  0:00" in text
+    assert text.index("loading large-v3") < text.index("transcribing")
+
+
+def test_loading_on_the_cpu_does_not_mention_the_gpu(monkeypatch: pytest.MonkeyPatch) -> None:
+    stream, progress = _live(monkeypatch)
+    progress.track_usage(DeviceInfo("cpu", reason="no_gpu"), None)
+    progress.stage_start(index=1, total=1, slug="call", stage="diarize")
+    progress.loading("nemotron3")
+    time.sleep(0.1)
+    progress.stop()
+    assert "loading nemotron3...  " in stream.getvalue()
+    assert "GPU" not in stream.getvalue()
+
+
+def test_the_live_line_shows_what_the_device_is_doing(monkeypatch: pytest.MonkeyPatch) -> None:
+    stream, progress = _live(monkeypatch)
+    progress.track_usage(DeviceInfo("cuda", "GPU", 8192), lambda: GpuUsage(5222, 8192, 93))
+    progress.stage_start(index=1, total=1, slug="call", stage="asr")
+    time.sleep(0.12)
+    progress.stop()
+    assert "transcribing...  0:00  ·  GPU 5.1/8.0 GB · 93%" in stream.getvalue()
+
+
+def test_the_usage_is_dimmed_when_there_is_color(monkeypatch: pytest.MonkeyPatch) -> None:
+    stream, progress = _live(monkeypatch, color=True)
+    progress.track_usage(DeviceInfo("cpu", reason="no_gpu"), lambda: CpuUsage(8, 94))
+    progress.stage_start(index=1, total=1, slug="call", stage="asr")
+    time.sleep(0.12)
+    progress.stop()
+    assert "\x1b[2m  ·  CPU 8 threads · 94%\x1b[0m" in stream.getvalue()
+
+
+def test_the_usage_is_dropped_before_the_line_would_wrap(monkeypatch: pytest.MonkeyPatch) -> None:
+    stream, progress = _live(monkeypatch, columns=45)
+    progress.track_usage(DeviceInfo("cuda", "GPU", 8192), lambda: GpuUsage(1024, 8192, 10))
+    progress.stage_start(index=1, total=1, slug="call", stage="asr")
+    time.sleep(0.12)
+    progress.stop()
+    assert "transcribing..." in stream.getvalue()
+    assert "GPU 1.0" not in stream.getvalue()
+
+
+def test_a_failing_probe_never_breaks_the_line(monkeypatch: pytest.MonkeyPatch) -> None:
+    def broken() -> GpuUsage:
+        raise RuntimeError("nvidia-smi vanished")
+
+    stream, progress = _live(monkeypatch)
+    progress.track_usage(DeviceInfo("cuda", "GPU", 8192), broken)
+    progress.stage_start(index=1, total=1, slug="call", stage="asr")
+    time.sleep(0.1)
+    progress.stop()
+    assert "transcribing..." in stream.getvalue()
+    assert "RuntimeError" not in stream.getvalue()
+
+
+def test_phases_never_show_usage(monkeypatch: pytest.MonkeyPatch) -> None:
+    stream, progress = _live(monkeypatch)
+    progress.track_usage(DeviceInfo("cuda", "GPU", 8192), lambda: GpuUsage(1024, 8192, 10))
+    with progress.phase("device", "checking the GPU"):
+        time.sleep(0.1)
+    assert "GPU 1.0" not in stream.getvalue()
+
+
+def test_json_mode_announces_a_model_load(capsys: pytest.CaptureFixture[str]) -> None:
+    progress = Progress("json")
+    progress.stage_start(index=1, total=1, slug="call", stage="asr")
+    progress.loading("large-v3")
+    progress.running()
+    events = [json.loads(x) for x in capsys.readouterr().out.splitlines()]
+    assert events[-1] == {
+        "event": "stage.loading",
+        "file": "call",
+        "stage": "asr",
+        "model": "large-v3",
+    }

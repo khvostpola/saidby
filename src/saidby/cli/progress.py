@@ -11,23 +11,17 @@ from datetime import datetime
 from typing import Any, TextIO
 
 from saidby import __version__
-from saidby.cli.lines import LABEL_WIDTH, format_device
+from saidby.cli.lines import (
+    LABEL_WIDTH,
+    activity_text,
+    format_device,
+    format_usage,
+    loading_text,
+)
 from saidby.cli.term import Terminal, detect
 from saidby.runtime.device import DeviceInfo
+from saidby.runtime.usage import Probe
 
-ACTIVITY = {
-    "ingest": "converting the audio",
-    "asr": "transcribing",
-    "asr_bias": "second pass with your terms",
-    "transplant": "merging your terms",
-    "diarize": "finding the speakers",
-    "compare": "running the second diarizer",
-    "identify": "matching voices",
-    "correct": "asking the local model",
-    "align": "giving each word a speaker",
-    "tracks": "writing the tracks",
-    "outputs": "writing the files",
-}
 CLEAR = "\r\x1b[K"
 
 
@@ -62,34 +56,71 @@ class Progress:
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
         self._drew = False
+        self._prefix = ""
+        self._activity = ""
+        self._stage = ""
+        self._slug = ""
+        self._device: DeviceInfo | None = None
+        self._probe: Probe | None = None
+        self._with_usage = False
 
     def stage_start(self, *, index: int, total: int, slug: str, stage: str) -> None:
         self.stop()
+        self._stage, self._slug = stage, slug
         if self.mode == "json":
             print(json.dumps({"event": "stage.start", "file": slug, "stage": stage}), flush=True)
         else:
-            self._start_live(f"[{index}/{total}] {stage:<10} ", ACTIVITY.get(stage, "working"))
+            prefix = f"[{index}/{total}] {stage:<10} "
+            self._start_live(prefix, activity_text(stage), with_usage=True)
 
-    def _start_live(self, prefix: str, activity: str) -> None:
+    def _start_live(self, prefix: str, activity: str, *, with_usage: bool = False) -> None:
+        self._prefix, self._activity, self._with_usage = prefix, activity, with_usage
         if not self.live:
             return
         self._stop = threading.Event()
         self._drew = False
-        self._thread = threading.Thread(
-            target=self._tick, args=(prefix, activity, time.monotonic()), daemon=True
-        )
+        self._thread = threading.Thread(target=self._tick, args=(time.monotonic(),), daemon=True)
         self._thread.start()
 
-    def _tick(self, prefix: str, activity: str, started: float) -> None:
+    def _usage_text(self) -> str | None:
+        if not (self._with_usage and self._probe):
+            return None
+        try:
+            usage = self._probe()
+        except Exception:
+            return None
+        return format_usage(usage) if usage else None
+
+    def _compose(self, line: str, usage: str | None) -> str:
+        suffix = f"  ·  {usage}" if usage else ""
+        if not usage or len(line) + len(suffix) > self.terminal.columns - 1:
+            return self.terminal.fit(line)
+        return line + self.terminal.paint(suffix, "dim")
+
+    def _tick(self, started: float) -> None:
         if self._stop.wait(self.delay_s):
             return
         while True:
             elapsed = fmt_clock(time.monotonic() - started)
-            self.stream.write(CLEAR + self.terminal.fit(f"{prefix}{activity}...  {elapsed}"))
+            line = f"{self._prefix}{self._activity}...  {elapsed}"
+            self.stream.write(CLEAR + self._compose(line, self._usage_text()))
             self.stream.flush()
             self._drew = True
             if self._stop.wait(self.interval_s):
                 return
+
+    def track_usage(self, device: DeviceInfo, probe: Probe | None) -> None:
+        self._device, self._probe = device, probe
+
+    def loading(self, model: str) -> None:
+        if self.mode == "json":
+            event = {"event": "stage.loading", "file": self._slug, "stage": self._stage}
+            print(json.dumps({**event, "model": model}), flush=True)
+        elif self.mode == "human":
+            self._activity = loading_text(model, self._device)
+
+    def running(self) -> None:
+        self._activity = activity_text(self._stage)
 
     @contextmanager
     def phase(self, label: str, activity: str) -> Iterator[None]:

@@ -6,6 +6,7 @@ import os
 from saidby.cli.term import Terminal
 from saidby.i18n import _
 from saidby.runtime.device import DeviceInfo
+from saidby.runtime.usage import CpuUsage, GpuUsage, Usage
 
 LABEL_WIDTH = 11
 
@@ -41,3 +42,34 @@ def format_device(device: DeviceInfo, requested: str, term: Terminal) -> list[st
         hint = _("{problem} (details: saidby doctor)").format(problem=problem)
         lines.append(f"{' ' * (LABEL_WIDTH + 1)}{term.paint(hint, 'dim')}")
     return lines
+
+
+def activity_text(stage: str) -> str:
+    texts = {
+        "ingest": _("converting the audio"),
+        "asr": _("transcribing"),
+        "asr_bias": _("second pass with your terms"),
+        "transplant": _("merging your terms"),
+        "diarize": _("finding the speakers"),
+        "compare": _("running the second diarizer"),
+        "identify": _("matching voices"),
+        "correct": _("asking the local model"),
+        "align": _("giving each word a speaker"),
+        "tracks": _("writing the tracks"),
+        "outputs": _("writing the files"),
+    }
+    return texts.get(stage, _("working"))
+
+
+def loading_text(model: str, device: DeviceInfo | None) -> str:
+    if device is not None and device.kind == "cuda":
+        return _("loading {model} into the GPU").format(model=model)
+    return _("loading {model}").format(model=model)
+
+
+def format_usage(usage: Usage) -> str:
+    if isinstance(usage, GpuUsage):
+        used, total = usage.used_mb / 1024, usage.total_mb / 1024
+        return f"GPU {used:.1f}/{total:.1f} GB · {usage.util_pct}%"
+    assert isinstance(usage, CpuUsage)
+    return _("CPU {threads} threads · {pct}%").format(threads=usage.threads, pct=usage.util_pct)

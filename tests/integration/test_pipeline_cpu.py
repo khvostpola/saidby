@@ -203,3 +203,20 @@ def test_human_progress_prints_the_device_line_first(
     assert lines[0].startswith("device")
     assert lines[0].endswith("(--device cpu)")
     assert lines[1].startswith("[1/1] ingest")
+
+
+def test_json_progress_announces_each_model_load_once(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    pipeline = Pipeline(
+        Settings(device="cpu", language="es"),
+        transcriber=FakeTranscriber(),
+        diarizer=FakeDiarizer(rttm=RTTM),
+        progress=Progress("json"),
+    )
+    pipeline.run([FIXTURE, FIXTURE.with_name("tones_2spk_10s.flac")], tmp_path)
+    events = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
+    loads = [(e["stage"], e["model"]) for e in events if e["event"] == "stage.loading"]
+    assert loads == [("asr", "fake"), ("diarize", "fake")]
+    asr = [e["event"] for e in events if e.get("stage") == "asr"]
+    assert asr[:3] == ["stage.start", "stage.loading", "stage.end"]
