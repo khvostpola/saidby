@@ -6,6 +6,8 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-12
+
 ### Added
 - Spanish messages: questions, progress lines, summaries, `doctor` and errors come out in
   Spanish with `--ui-lang es`, `SAIDBY_UI_LANG=es` or a Spanish system locale, and in English
