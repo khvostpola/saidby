@@ -6,6 +6,7 @@ path = [
   ".editorconfig", ".python-version", "uv.lock", "py.typed", "src/saidby/py.typed",
   ".github/CODEOWNERS", "NOTICE", "LICENSE", "src/saidby/evaluation/arbitrate.html",
   "src/saidby/locale/**/*.po", "src/saidby/locale/**/*.mo", "src/saidby/locale/saidby.pot",
+  "docs/img/*.png",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 the saidby authors"

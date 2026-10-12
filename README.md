@@ -90,6 +90,10 @@ ends it plays each voice, asks who it is, offers to remember what you chose, and
 left to review. Scripts get none of that: nothing is asked without a terminal, with
 `--progress json`, with `--no-interactive`, or with `interactive = false` in `saidby.toml`.
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/khvostpola/saidby/main/docs/img/interactive.png" width="820" alt="A terminal running saidby process: the plan, the stage lines, the table of voices and the questions that name them">
+</p>
+
 The [getting started guide](https://github.com/khvostpola/saidby/blob/main/docs/getting-started.md)
 walks through each step, including naming the speakers.
 

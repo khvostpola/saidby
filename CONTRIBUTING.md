@@ -44,6 +44,12 @@ A new language is `uv run python tools/i18n.py update xx` followed by the same s
 suite fails when a message has no translation or a `.mo` is stale, and checks that placeholders
 such as `{n}` survive.
 
+## The README screenshot
+
+`docs/img/interactive.png` is a real guided run on a public fixture, rendered by
+`uv run python tools/screenshot.py` (it needs the default models, ffmpeg and Chrome; add
+`--flatpak` for the Flatpak build of Chrome). Regenerate it when the guided flow changes.
+
 ## Developer Certificate of Origin
 
 By signing off you certify the statements of the
