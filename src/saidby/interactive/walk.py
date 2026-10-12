@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
-import shlex
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -26,6 +25,7 @@ from saidby.interactive.save import (
 )
 from saidby.interactive.voices import store_voices
 from saidby.pipeline.job import RecordingResult
+from saidby.runtime import host
 from saidby.schema.manifest import DeviceRecord
 from saidby.speakers.enrollment import DEFAULT_CHANNEL
 
@@ -187,17 +187,17 @@ def _offer_settings(ui: Ui, plan: RunPlan, config_file: Path, finish: Finish) ->
 
 def equivalent_command(inputs: list[Path], plan: RunPlan, finish: Finish) -> str:
     settings = plan.settings
-    parts = ["saidby", "process", *(shlex.quote(str(p)) for p in inputs)]
+    parts = ["saidby", "process", *(host.quote(str(p)) for p in inputs)]
     if "language" in plan.chosen and "language" not in finish.settings_saved and settings.language:
         parts += ["--language", settings.language]
     if "directory" in plan.chosen and "directory" not in finish.settings_saved:
-        parts += [f"--directory {shlex.quote(str(f))}" for f in settings.directory]
+        parts += [f"--directory {host.quote(str(f))}" for f in settings.directory]
     if "out" in plan.chosen and "out" not in finish.settings_saved:
-        parts += ["--out", shlex.quote(str(settings.out))]
+        parts += ["--out", host.quote(str(settings.out))]
     if "num_speakers" in plan.chosen and settings.num_speakers:
         parts += ["--num-speakers", str(settings.num_speakers)]
     unsaved = [t for t in plan.added_terms if t not in finish.terms_saved]
-    parts += [f"--term {shlex.quote(t)}" for t in unsaved]
+    parts += [f"--term {host.quote(t)}" for t in unsaved]
     return " ".join(parts)
 
 

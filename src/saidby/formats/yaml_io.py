@@ -4,11 +4,14 @@
 import os
 import re
 import shutil
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 from ruamel.yaml import YAML
+
+REPLACE_ATTEMPTS = 3
 
 
 def _yaml(offset: int = 0) -> YAML:
@@ -50,7 +53,18 @@ def save_yaml(path: Path, data: Any, *, backup: bool = True) -> Path | None:
         shutil.copy2(path, saved)
     offset = sequence_offset(path, data)
     tmp = path.with_name(path.name + ".tmp")
-    with tmp.open("w", encoding="utf-8") as fh:
+    with tmp.open("w", encoding="utf-8", newline="\n") as fh:
         _yaml(offset).dump(data, fh)
-    os.replace(tmp, path)
+    _replace(tmp, path)
     return saved
+
+
+def _replace(tmp: Path, path: Path) -> None:
+    for attempt in range(REPLACE_ATTEMPTS):
+        try:
+            os.replace(tmp, path)
+            return
+        except PermissionError:
+            if attempt == REPLACE_ATTEMPTS - 1:
+                raise
+            time.sleep(0.1)

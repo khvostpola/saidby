@@ -51,6 +51,9 @@ def parse_yes_no(text: str) -> bool | None:
 
 @contextmanager
 def tab_completion(options: Sequence[str]) -> Iterator[None]:
+    if sys.platform == "win32":
+        yield
+        return
     try:
         import readline
     except ImportError:
@@ -74,6 +77,8 @@ def tab_completion(options: Sequence[str]) -> Iterator[None]:
 
 
 def _readline_loaded() -> bool:
+    if sys.platform == "win32":
+        return False
     try:
         import readline  # noqa: F401
     except ImportError:

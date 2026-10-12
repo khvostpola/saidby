@@ -4,6 +4,7 @@
 import gettext
 import os
 import re
+import sys
 from pathlib import Path
 
 DOMAIN = "saidby"
@@ -33,6 +34,12 @@ def wanted_language(explicit: str | None = None) -> str:
     ):
         if value and _candidates(value):
             return value
+    if sys.platform == "win32":
+        from saidby.runtime import host
+
+        system = host.system_language()
+        if system:
+            return system
     return "en"
 
 

@@ -7,6 +7,7 @@ from saidby.schema.diarization import Turn
 from saidby.schema.ids import slugify, unique_slugs
 from saidby.schema.speakers import SpeakerEntry
 from saidby.schema.transcript import Segment, Transcript, Word
+from saidby.speakers.naming import track_path
 
 
 def _transcript() -> Transcript:
@@ -62,3 +63,12 @@ def test_slugs() -> None:
     assert slugify("My Call (1).m4a") == "My_Call_1_.m4a".strip("._")
     assert slugify("???") == "recording"
     assert unique_slugs(["a", "a", "b", "a"]) == ["a", "a-2", "b", "a-3"]
+
+
+def test_slugs_dodge_reserved_windows_names_and_case_clashes() -> None:
+    assert slugify("con") == "con_"
+    assert slugify("NUL.m4a") == "NUL_.m4a"
+    assert slugify("console") == "console"
+    assert unique_slugs(["Call", "call", "CALL"]) == ["Call", "call-2", "CALL-3"]
+    assert track_path(SpeakerEntry(label="SPEAKER_00", id="aux")) == "speakers/aux_.flac"
+    assert track_path(SpeakerEntry(label="SPEAKER_00", id="ana")) == "speakers/ana.flac"

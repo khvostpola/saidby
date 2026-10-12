@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from saidby.cli.paths import show_path
+from saidby.cli.paths import show_path, typed_path, unquote
 from saidby.cli.ui import Ui
 from saidby.config.settings import ENV_PREFIX, ORIGIN_ENV, ORIGIN_FLAG, Settings
 from saidby.config.writer import check_language
@@ -172,7 +172,7 @@ class Planner:
     def _glossary_check(self, text: str) -> str | None:
         if not text:
             return None
-        path = Path(text).expanduser()
+        path = typed_path(text)
         if not path.is_file():
             return _("{path} is not a file").format(path=path)
         try:
@@ -191,7 +191,7 @@ class Planner:
             _("Directory file (replaces the current ones; Enter for none)"),
             check=self._glossary_check,
         )
-        files = [Path(answer).expanduser()] if answer else []
+        files = [typed_path(answer)] if answer else []
         self.settings = self.settings.model_copy(update={"directory": files})
         self.chosen["directory"] = str(files[0]) if files else ""
 
@@ -237,8 +237,8 @@ class Planner:
             else:
                 self.chosen.pop("num_speakers", None)
         elif wanted == "output":
-            folder = self.ui.ask(_("Output folder"), default=str(self.settings.out))
-            self.settings = self.settings.model_copy(update={"out": Path(folder).expanduser()})
+            folder = unquote(self.ui.ask(_("Output folder"), default=str(self.settings.out)))
+            self.settings = self.settings.model_copy(update={"out": typed_path(folder)})
             self.chosen["out"] = folder
         elif wanted == "terms":
             self._add_terms()

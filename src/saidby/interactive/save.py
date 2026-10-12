@@ -4,7 +4,7 @@
 from pathlib import Path
 
 from saidby.config.settings import find_project_config
-from saidby.config.writer import DIRECTORY_STARTER, default_language, shorten_home
+from saidby.config.writer import DIRECTORY_STARTER, default_language, portable_path
 from saidby.formats.directory_edit import add_term
 from saidby.formats.directory_yaml import load_directory, save_directory
 from saidby.formats.yaml_io import save_yaml
@@ -18,9 +18,9 @@ def config_target(explicit: Path | None) -> Path:
 
 def path_for_config(path: Path, config_file: Path) -> str:
     try:
-        return str(path.resolve().relative_to(config_file.resolve().parent))
+        return path.resolve().relative_to(config_file.resolve().parent).as_posix()
     except ValueError:
-        return shorten_home(path.resolve())
+        return portable_path(path.resolve())
 
 
 def new_terms(raw_terms: list[object], terms: list[str]) -> list[str]:
@@ -45,7 +45,9 @@ def add_terms_to_directory(path: Path, terms: list[str]) -> tuple[list[str], Pat
 
 def create_directory_with_terms(path: Path, language: str | None, terms: list[str]) -> list[str]:
     path.write_text(
-        DIRECTORY_STARTER.format(language=language or default_language()), encoding="utf-8"
+        DIRECTORY_STARTER.format(language=language or default_language()),
+        encoding="utf-8",
+        newline="\n",
     )
     _model, raw = load_directory(path)
     for term in terms:

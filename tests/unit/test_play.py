@@ -38,7 +38,7 @@ def test_the_ffplay_command_seeks_and_limits_the_sample() -> None:
         "41.00",
         "-t",
         "11.00",
-        "speakers/ana.flac",
+        str(Path("speakers/ana.flac")),
     ]
 
 

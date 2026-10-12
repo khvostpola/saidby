@@ -64,7 +64,11 @@ def init(
     language: Annotated[str, typer.Option(help="Recording language")] = "es",
     global_: Annotated[
         bool,
-        typer.Option("--global", help="Create it in ~/.config/saidby/, shared by every folder."),
+        typer.Option(
+            "--global",
+            help="Create it in the user config folder, shared by every folder "
+            "(~/.config/saidby on Linux, %APPDATA%\\saidby on Windows).",
+        ),
     ] = False,
 ) -> None:
     """Create a starter directory file."""
@@ -74,7 +78,7 @@ def init(
     if target.exists():
         raise UsageError(_("{target} already exists").format(target=target))
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(TEMPLATE.format(language=language), encoding="utf-8")
+    target.write_text(TEMPLATE.format(language=language), encoding="utf-8", newline="\n")
     typer.echo(_("created {target}").format(target=target))
 
 

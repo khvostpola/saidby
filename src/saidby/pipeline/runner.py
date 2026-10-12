@@ -481,7 +481,7 @@ class Pipeline:
         with VramPeak(self.device.kind == "cuda") as vram:
             load_s = self._load_once("diarize", engine)
             diar = engine.diarize(audio, uri=rec.slug, num_speakers=self.settings.num_speakers)
-        artifact.write_text(diar.model_dump_json(by_alias=True), encoding="utf-8")
+        artifact.write_text(diar.model_dump_json(by_alias=True), encoding="utf-8", newline="\n")
         cache.write_marker(rec.work_dir, "diarize", key)
         mode = getattr(engine, "mode", None)
         return {
@@ -548,7 +548,7 @@ class Pipeline:
                 threshold=self.settings.identify_threshold,
                 min_speech_s=self.settings.identify_min_speech,
             )
-            artifact.write_text(result.model_dump_json(), encoding="utf-8")
+            artifact.write_text(result.model_dump_json(), encoding="utf-8", newline="\n")
             cache.write_marker(rec.work_dir, "identify", key)
         named = sum(1 for m in result.mapping.values() if m.person_id)
         for warning in result.warnings:
@@ -645,7 +645,7 @@ class Pipeline:
         audio = read_audio(rec.wav)
         for label, rel in files.items():
             render_track(rec.out_dir / rel, audio, [t for t in diar.turns if t.label == label])
-        listing.write_text(json.dumps(files), encoding="utf-8")
+        listing.write_text(json.dumps(files), encoding="utf-8", newline="\n")
         cache.write_marker(rec.work_dir, "tracks", key)
         return {"speakers": len(files), "parts": [f"{len(files)} tracks", "aligned FLAC"]}
 
@@ -668,8 +668,12 @@ class Pipeline:
         speakers = [s.model_copy(update={"track": tracks.get(s.label)}) for s in aligned.speakers]
         final = aligned.model_copy(update={"speakers": speakers})
         write_transcript(rec.out_dir / "transcript.words.json", final)
-        (rec.out_dir / "transcript.txt").write_text(render_txt(final), encoding="utf-8")
-        (rec.out_dir / "transcript.vtt").write_text(render_vtt(final), encoding="utf-8")
+        (rec.out_dir / "transcript.txt").write_text(
+            render_txt(final), encoding="utf-8", newline="\n"
+        )
+        (rec.out_dir / "transcript.vtt").write_text(
+            render_vtt(final), encoding="utf-8", newline="\n"
+        )
         ids = {s.label: s.file_id for s in speakers}
         write_rttm(
             rec.out_dir / "diarization.rttm",
@@ -698,7 +702,10 @@ class Pipeline:
         if self._directory is None:
             return None
         files = (
-            [{"path": str(f.path), "sha256": file_sha256(f.path)} for f in self._directories.files]
+            [
+                {"path": f.path.as_posix(), "sha256": file_sha256(f.path)}
+                for f in self._directories.files
+            ]
             if self._directories
             else []
         )
@@ -728,7 +735,7 @@ class Pipeline:
             created_at=rec.created_at or datetime.now(UTC),
             finished_at=datetime.now(UTC),
             source=SourceInfo(
-                path=str(rec.media),
+                path=rec.media.as_posix(),
                 sha256=rec.source_sha256,
                 size_bytes=rec.size_bytes,
                 duration_s=round(rec.duration_s, 3),

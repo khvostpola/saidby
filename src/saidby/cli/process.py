@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
-import shlex
 import sys
 from pathlib import Path
 from typing import Annotated
@@ -19,6 +18,7 @@ from saidby.i18n import _
 from saidby.interactive.plan import RunPlan, plan_run
 from saidby.interactive.walk import finish_run, walk_folders
 from saidby.pipeline.runner import Pipeline
+from saidby.runtime import host
 
 IO = "Input and output"
 ASR = "Speech recognition"
@@ -314,7 +314,7 @@ def _ui() -> Ui:
 
 
 def _check_interactive(inputs: list[Path], settings: Settings) -> None:
-    equivalent = "saidby process " + shlex.join(str(path) for path in inputs)
+    equivalent = "saidby process " + host.join(str(path) for path in inputs)
     ensure_terminal(equivalent)
     if settings.progress != "human":
         raise UsageError(_("-i needs the human progress output; do not combine it with --progress"))

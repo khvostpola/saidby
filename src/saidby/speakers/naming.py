@@ -5,11 +5,12 @@ import re
 import unicodedata
 from collections.abc import Iterable
 
+from saidby.schema.ids import safe_filename
 from saidby.schema.speakers import SpeakerEntry
 
 
 def track_path(entry: SpeakerEntry) -> str:
-    return f"speakers/{entry.file_id}.flac"
+    return f"speakers/{safe_filename(entry.file_id)}.flac"
 
 
 def ascii_slug(name: str) -> str:

@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
-import shlex
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -10,6 +9,7 @@ from saidby.formats.consent_yaml import find_consent, load_consents
 from saidby.formats.directory_yaml import load_directory
 from saidby.i18n import _, ngettext
 from saidby.interactive.listen import clock
+from saidby.runtime import host
 from saidby.schema.directory import ConsentRecord, Person
 from saidby.schema.speakers import SpeakerEntry
 from saidby.speakers.enrollment import (
@@ -138,7 +138,7 @@ class Voices:
         found, unnamed, elsewhere = self._sort()
         self._intro()
         if unnamed:
-            command = f"saidby speakers map -i {shlex.quote(str(self.folder.out_dir))}"
+            command = f"saidby speakers map -i {host.quote(str(self.folder.out_dir))}"
             note = _("{labels} have no name yet; run {command} first").format(
                 labels=", ".join(unnamed), command=command
             )

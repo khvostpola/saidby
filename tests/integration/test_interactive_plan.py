@@ -3,6 +3,7 @@
 
 import io
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any, ClassVar
 
@@ -36,7 +37,8 @@ def _session(answers: list[str]) -> tuple[Ui, io.StringIO, list[str]]:
 def _directory(path: Path) -> Path:
     path.write_text(
         "version: 1\nlanguage: es\npeople:\n  - id: ana\n    name: Ana\n"
-        "terms:\n  - term: Acme\n  - term: Rappi\n"
+        "terms:\n  - term: Acme\n  - term: Rappi\n",
+        encoding="utf-8",
     )
     return path
 
@@ -45,7 +47,7 @@ def _directory(path: Path) -> Path:
 def project(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     _directory(tmp_path / "directory.yaml")
     (tmp_path / "saidby.toml").write_text(
-        '[saidby]\nlanguage = "es"\n[glossary]\ndirectory = "directory.yaml"\n'
+        '[saidby]\nlanguage = "es"\n[glossary]\ndirectory = "directory.yaml"\n', encoding="utf-8"
     )
     monkeypatch.chdir(tmp_path)
     return tmp_path
@@ -173,7 +175,7 @@ def test_q_runs_nothing_and_an_unknown_key_is_asked_again(project: Path) -> None
 
 
 def test_a_broken_glossary_is_shown_not_fatal(project: Path) -> None:
-    (project / "directory.yaml").write_text("version: 7\n")
+    (project / "directory.yaml").write_text("version: 7\n", encoding="utf-8")
     ui, out, _ = _session(["q"])
     plan_run(ui, INPUTS, Settings.load())
     assert "directory.yaml ·" in out.getvalue()
@@ -235,12 +237,12 @@ def test_quitting_the_plan_never_builds_the_pipeline(
 
 
 def test_a_glossary_typed_with_a_tilde_is_stored_as_a_real_path(
-    project: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    project: Path, tmp_path: Path, set_home: Callable[[Path], None]
 ) -> None:
     home = tmp_path / "home"
     home.mkdir()
     shared = _directory(home / "shared.yaml")
-    monkeypatch.setenv("HOME", str(home))
+    set_home(home)
     ui, _, _ = _session(["e", "glossary", "~/shared.yaml", ""])
     plan = plan_run(ui, INPUTS, Settings.load())
     assert plan is not None
@@ -315,7 +317,9 @@ def test_a_project_file_can_turn_the_questions_off_and_i_turns_them_back_on(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.chdir(tmp_path)
-    (tmp_path / "saidby.toml").write_text('[saidby]\nlanguage = "es"\ninteractive = false\n')
+    (tmp_path / "saidby.toml").write_text(
+        '[saidby]\nlanguage = "es"\ninteractive = false\n', encoding="utf-8"
+    )
     FakePipeline.runs = []
     ui, _, prompts = _session([""])
     _on_a_terminal(monkeypatch, ui)

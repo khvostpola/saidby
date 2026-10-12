@@ -14,6 +14,7 @@ import tomlkit
 from saidby.errors import UsageError
 from saidby.formats.yaml_io import backup_path
 from saidby.i18n import _
+from saidby.runtime import host
 
 LANGUAGE_PATTERN = re.compile(r"[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})?")
 
@@ -34,7 +35,10 @@ def default_language() -> str:
         match = re.match(r"([a-z]{2,3})(?:[_.@-]|$)", value)
         if match:
             return match.group(1)
-    code = locale.getlocale()[0] or ""
+    system = host.system_language()
+    if system:
+        return system
+    code = "" if host.is_windows() else (locale.getlocale()[0] or "")
     return code[:2].lower() if re.match(r"[A-Za-z]{2}", code) else "en"
 
 
@@ -46,10 +50,18 @@ def check_language(language: str) -> str:
     return language.lower()
 
 
-def shorten_home(path: Path) -> str:
-    home = Path.home()
+def portable_path(path: Path) -> str:
+    """A path to persist: forward slashes and `~/` on every system."""
     try:
-        return "~/" + str(path.relative_to(home))
+        return "~/" + path.relative_to(Path.home()).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
+def display_path(path: Path) -> str:
+    """A path to show: the native separator and `~` for the home folder."""
+    try:
+        return "~" + os.sep + str(path.relative_to(Path.home()))
     except ValueError:
         return str(path)
 
@@ -100,5 +112,5 @@ def update_config(
             base["out"] = out
     if directory is not None:
         _table(document, "glossary")["directory"] = list(directory)
-    path.write_text(tomlkit.dumps(document), encoding="utf-8")
+    path.write_text(tomlkit.dumps(document), encoding="utf-8", newline="\n")
     return backup

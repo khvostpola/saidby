@@ -98,7 +98,7 @@ Create saidby.toml, directory.yaml and consent.yaml, so the next run needs no fl
 |---|---|---|---|
 | `--language` | str |  | Language of your recordings, such as es or en (default: asks). |
 | `--yes` | flag |  | Do not ask: take the language option or the default. |
-| `--global` | flag |  | Set up ~/.config/saidby for every folder, not this one. |
+| `--global` | flag |  | Set up the user config folder for every folder, not this one (~/.config/saidby on Linux, %APPDATA%\saidby on Windows). |
 
 ## `saidby doctor`
 
@@ -215,7 +215,7 @@ Arguments:
 | Option | Type | Default | What it does |
 |---|---|---|---|
 | `--language` | str | `es` | Recording language |
-| `--global` | flag |  | Create it in ~/.config/saidby/, shared by every folder. |
+| `--global` | flag |  | Create it in the user config folder, shared by every folder (~/.config/saidby on Linux, %APPDATA%\saidby on Windows). |
 
 ### `saidby directory add-person`
 

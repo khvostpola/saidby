@@ -156,6 +156,7 @@ def test_the_options_for_completion_are_asked_each_time() -> None:
 def test_escape_codes_are_wrapped_for_readline_only_with_the_real_input(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    pytest.importorskip("readline")
     assert ui._for_readline("\x1b[2mx\x1b[0m") == "\x01\x1b[2m\x02x\x01\x1b[0m\x02"
     seen: list[str] = []
 
@@ -187,7 +188,7 @@ def test_prompts_carry_no_readline_markers_when_readline_is_missing(
 
 
 def test_tab_completion_installs_and_restores_the_readline_state() -> None:
-    import readline
+    readline = pytest.importorskip("readline")
 
     before = (readline.get_completer(), readline.get_completer_delims())
     with ui.tab_completion(["ana", "ben"]):

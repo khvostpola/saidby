@@ -55,7 +55,9 @@ def _directory(tmp_path: Path, enrolled: bool = True) -> Path:
         for p in people:
             p["voiceprint"] = _voiceprint(str(p["id"]))
     path = tmp_path / "directory.yaml"
-    path.write_text(yaml.safe_dump({"version": 1, "language": "es", "people": people}))
+    path.write_text(
+        yaml.safe_dump({"version": 1, "language": "es", "people": people}), encoding="utf-8"
+    )
     if enrolled:
         records = [
             {
@@ -66,7 +68,7 @@ def _directory(tmp_path: Path, enrolled: bool = True) -> Path:
             }
             for p in people
         ]
-        (tmp_path / "consent.yaml").write_text(yaml.safe_dump(records))
+        (tmp_path / "consent.yaml").write_text(yaml.safe_dump(records), encoding="utf-8")
     return path
 
 
@@ -95,8 +97,8 @@ def test_identification_names_speakers_and_tracks(tmp_path: Path) -> None:
     assert names == {"SPEAKER_00": "Alice", "SPEAKER_01": "Bob"}
     assert all(s.identified for s in transcript.speakers)
     assert (folder / "speakers/alice.flac").exists()
-    assert "Alice:" in (folder / "transcript.txt").read_text()
-    assert "<v Bob>" in (folder / "transcript.vtt").read_text()
+    assert "Alice:" in (folder / "transcript.txt").read_text(encoding="utf-8")
+    assert "<v Bob>" in (folder / "transcript.vtt").read_text(encoding="utf-8")
     assert {t.label for t in read_rttm(folder / "diarization.rttm")} == {"alice", "bob"}
     manifest = read_manifest(folder / "manifest.json")
     assert manifest.directory is not None
@@ -116,9 +118,9 @@ def test_no_identify_flag_and_unenrolled_directory(tmp_path: Path) -> None:
 
 def test_mismatched_voiceprint_warns(tmp_path: Path) -> None:
     path = _directory(tmp_path)
-    data = yaml.safe_load(path.read_text())
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
     data["people"][0]["voiceprint"]["revision"] = "f" * 40
-    path.write_text(yaml.safe_dump(data))
+    path.write_text(yaml.safe_dump(data), encoding="utf-8")
     folder = _run(tmp_path, path)
     manifest = read_manifest(folder / "manifest.json")
     assert any("enroll again" in w for w in manifest.warnings)
@@ -134,7 +136,7 @@ def test_map_and_merge(tmp_path: Path) -> None:
     assert transcript.speakers[0].name == "Carla Diaz"
     assert (folder / "speakers/carla-diaz.flac").exists()
     assert not (folder / "speakers/SPEAKER_00.flac").exists()
-    assert "Carla Diaz:" in (folder / "transcript.txt").read_text()
+    assert "Carla Diaz:" in (folder / "transcript.txt").read_text(encoding="utf-8")
     assert read_manifest(folder / "manifest.json").edits[0]["op"] == "map"
 
     source, _ = sf.read(FIXTURE)
@@ -167,24 +169,26 @@ def test_enroll_requires_consent_then_stores_voiceprint(tmp_path: Path) -> None:
         "--device",
         "cpu",
     ]
-    denied = subprocess.run(["saidby", *args], capture_output=True, text=True, check=False)
+    denied = subprocess.run(
+        ["saidby", *args], capture_output=True, text=True, check=False, encoding="utf-8"
+    )
     assert denied.returncode == 5
     assert "[consent_missing · exit 5]" in denied.stderr
     assert "ConsentMissingError" not in denied.stderr
-    assert "voiceprint" not in directory.read_text()
+    assert "voiceprint" not in directory.read_text(encoding="utf-8")
 
     allowed = runner.invoke(
         app, [*args, "--consent-source", "signed form", "--consent-declared-by", "Alice"]
     )
     assert allowed.exit_code == 0, allowed.output
-    saved = yaml.safe_load(directory.read_text())
+    saved = yaml.safe_load(directory.read_text(encoding="utf-8"))
     voiceprint = saved["people"][0]["voiceprint"]
     assert voiceprint["model"] == "fake"
     assert voiceprint["consent"]["declared_by"] == "Alice"
     assert list(tmp_path.glob("directory.bak-*.yaml"))
-    consent = yaml.safe_load((tmp_path / "consent.yaml").read_text())
+    consent = yaml.safe_load((tmp_path / "consent.yaml").read_text(encoding="utf-8"))
     assert consent[0]["person"] == "alice"
-    assert (tmp_path / "consent.yaml").read_text().count("signed form") == 1
+    assert (tmp_path / "consent.yaml").read_text(encoding="utf-8").count("signed form") == 1
 
 
 def test_rerun_with_new_names_removes_stale_tracks(tmp_path: Path) -> None:
@@ -211,7 +215,8 @@ def test_two_directory_files_merge_and_the_manifest_records_both(tmp_path: Path)
                 "people": [{"id": "bob", "name": "Bobby", "context": "client"}],
                 "terms": [{"term": "Acme"}],
             }
-        )
+        ),
+        encoding="utf-8",
     )
     pipeline = Pipeline(
         Settings(device="cpu", language="es", directory=[far, near]),
@@ -227,8 +232,8 @@ def test_two_directory_files_merge_and_the_manifest_records_both(tmp_path: Path)
     assert names == {"SPEAKER_00": "Alice", "SPEAKER_01": "Bobby"}
     record = read_manifest(folder / "manifest.json").directory
     assert record is not None
-    assert [f["path"] for f in record["files"]] == [str(far), str(near)]
-    assert record["path"] == str(near)
+    assert [f["path"] for f in record["files"]] == [far.as_posix(), near.as_posix()]
+    assert record["path"] == near.as_posix()
     assert (record["people"], record["terms"]) == (2, 1)
 
 
@@ -274,9 +279,9 @@ def test_enroll_accepts_a_name_and_each_person_keeps_their_own_declarant(tmp_pat
         ],
     )
     assert result.exit_code == 0, result.output
-    saved = yaml.safe_load(directory.read_text())
+    saved = yaml.safe_load(directory.read_text(encoding="utf-8"))
     assert [p["id"] for p in saved["people"] if "voiceprint" in p] == ["alice", "bob"]
-    consent = yaml.safe_load((tmp_path / "consent.yaml").read_text())
+    consent = yaml.safe_load((tmp_path / "consent.yaml").read_text(encoding="utf-8"))
     assert [(c["person"], c["declared_by"]) for c in consent] == [
         ("alice", "the team lead"),
         ("bob", "the team lead"),

@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
+import os
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -45,8 +46,12 @@ class Folder:
         for s in self.transcript.speakers:
             s.track = track_path(s)
         write_transcript(self.out_dir / "transcript.words.json", self.transcript)
-        (self.out_dir / "transcript.txt").write_text(render_txt(self.transcript), encoding="utf-8")
-        (self.out_dir / "transcript.vtt").write_text(render_vtt(self.transcript), encoding="utf-8")
+        (self.out_dir / "transcript.txt").write_text(
+            render_txt(self.transcript), encoding="utf-8", newline="\n"
+        )
+        (self.out_dir / "transcript.vtt").write_text(
+            render_vtt(self.transcript), encoding="utf-8", newline="\n"
+        )
         ids = {s.label: s.file_id for s in self.transcript.speakers}
         write_rttm(
             self.out_dir / "diarization.rttm",
@@ -97,9 +102,17 @@ def map_speaker(out_dir: Path, label: str, person_id: str, name: str) -> None:
     old_track = out_dir / track_path(entry)
     entry.id, entry.name, entry.identified, entry.score = person_id, name, False, None
     new_track = out_dir / track_path(entry)
-    if old_track.exists() and old_track != new_track:
-        old_track.rename(new_track)
+    if old_track.exists() and os.fspath(old_track) != os.fspath(new_track):
+        _rename_track(old_track, new_track)
     folder.save({"op": "map", "label": entry.label, "id": person_id, "name": name})
+
+
+def _rename_track(old: Path, new: Path) -> None:
+    if old.name.casefold() == new.name.casefold():
+        staging = old.with_name(old.name + ".renaming")
+        old.rename(staging)
+        old = staging
+    old.rename(new)
 
 
 def _rebuild_words(transcript: Transcript, source: str, target: str) -> Transcript:

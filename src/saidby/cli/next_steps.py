@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
-import shlex
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -10,6 +9,7 @@ from saidby.formats.manifest import read_manifest
 from saidby.formats.words_json import read_transcript
 from saidby.i18n import _, ngettext
 from saidby.review.queue import build_queue
+from saidby.runtime import host
 
 LABEL_WIDTH = 9
 
@@ -44,7 +44,7 @@ def next_steps(states: list[FolderState], term: Terminal) -> list[str]:
     lines: list[str] = []
     if needing_names:
         first = needing_names[0]
-        quoted = shlex.quote(str(first.out_dir))
+        quoted = host.quote(str(first.out_dir))
         command = term.paint(f"saidby speakers map -i {quoted}", "cyan")
         count = len(needing_names)
         many = ngettext(
@@ -55,7 +55,7 @@ def next_steps(states: list[FolderState], term: Terminal) -> list[str]:
         lines.append(_line(_("name"), command, many if len(states) > 1 else "", term))
     if needing_review:
         first = needing_review[0]
-        command = term.paint(f"saidby review {shlex.quote(str(first.out_dir))}", "cyan")
+        command = term.paint(f"saidby review {host.quote(str(first.out_dir))}", "cyan")
         spans = sum(s.doubtful for s in needing_review)
         note = ngettext("{n} doubtful span", "{n} doubtful spans", spans).format(n=spans)
         lines.append(_line(_("review"), command, note, term))

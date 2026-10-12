@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import json
-import os
 import socket
 import stat
+import sys
 import threading
 from collections.abc import Iterator
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -19,9 +19,29 @@ from saidby.errors import LlmUnavailableError
 from saidby.models import get_spec
 from saidby.models import store as model_store
 from saidby.ports.corrector import LlmTruncatedError
+from saidby.runtime import host
 from saidby.runtime.device import DeviceInfo
 
 pytestmark = pytest.mark.enable_socket
+
+
+def _fake_binary(folder: Path, script: str) -> Path:
+    """A stand-in llama-server: a script on POSIX, a .cmd wrapper on Windows."""
+    if not host.is_windows():
+        binary = folder / "llama-server"
+        binary.write_text(script, encoding="utf-8")
+        binary.chmod(binary.stat().st_mode | stat.S_IEXEC)
+        return binary
+    binary = folder / "llama-server.cmd"
+    if script.startswith("#!/bin/sh"):
+        code = script.rsplit(maxsplit=1)[-1]
+        binary.write_text(f"@exit /b {code}\r\n", encoding="utf-8", newline="")
+        return binary
+    (folder / "fake_server.py").write_text(script, encoding="utf-8")
+    wrapper = f'@"{sys.executable}" "%~dp0fake_server.py" %*\r\n'
+    binary.write_text(wrapper, encoding="utf-8", newline="")
+    return binary
+
 
 FAKE_SERVER = """#!/usr/bin/env python3
 import json, sys
@@ -121,9 +141,7 @@ def test_find_binary_missing(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_manager_starts_serves_and_stops(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    binary = tmp_path / "llama-server"
-    binary.write_text(FAKE_SERVER)
-    binary.chmod(binary.stat().st_mode | stat.S_IEXEC)
+    binary = _fake_binary(tmp_path, FAKE_SERVER)
     gguf = tmp_path / "model.gguf"
     gguf.write_bytes(b"x")
     monkeypatch.setattr(model_store, "local_path", lambda spec: gguf)
@@ -147,9 +165,7 @@ def test_manager_starts_serves_and_stops(tmp_path: Path, monkeypatch: pytest.Mon
 def test_manager_fails_cleanly_when_process_dies(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    binary = tmp_path / "llama-server"
-    binary.write_text("#!/bin/sh\nexit 3\n")
-    binary.chmod(binary.stat().st_mode | stat.S_IEXEC)
+    binary = _fake_binary(tmp_path, "#!/bin/sh\nexit 3\n")
     gguf = tmp_path / "model.gguf"
     gguf.write_bytes(b"x")
     monkeypatch.setattr(model_store, "local_path", lambda spec: gguf)
@@ -161,4 +177,3 @@ def test_manager_fails_cleanly_when_process_dies(
 
 def test_registry_has_llm_model() -> None:
     assert get_spec("llm:qwen3.5-9b-q4").filename == "Qwen3.5-9B-Q4_K_M.gguf"
-    assert os.name == "posix"
