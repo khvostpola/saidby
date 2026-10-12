@@ -144,10 +144,10 @@ def review(
         term = detect(sys.stdout)
         for number, item in enumerate(queue, 1):
             question = _show(folder, item, number, len(queue), term)
-            answer = typer.prompt(question, default="", show_default=False).strip()
+            answer = _ask(question)
             while answer in {"p", "/p"}:
                 _play(folder, item)
-                answer = typer.prompt(question, default="", show_default=False).strip()
+                answer = _ask(question)
             if answer == "/q":
                 break
             if answer == "/s":
@@ -171,6 +171,21 @@ def review(
     target = directory or (configured[-1] if configured else None)
     if target is not None and new_corrections:
         _offer_directory(target, new_corrections, yes)
+
+
+def _ask(question: str) -> str:
+    try:
+        answer: str = typer.prompt(question, default="", show_default=False)
+    except typer.Abort:
+        if sys.stdin.isatty():
+            raise
+        raise UsageError(
+            _(
+                "the input ended before the review did: run saidby review in a terminal, "
+                "or pipe one answer per line (/q quits)"
+            )
+        ) from None
+    return answer.strip()
 
 
 def _save(folder: Folder, new_corrections: list[Correction]) -> None:

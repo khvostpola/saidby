@@ -18,7 +18,9 @@ msgstr ""
 #: src/saidby/cli/__init__.py:101
 #, python-brace-format
 msgid "saidby supports Linux and Windows; {system} is untested (set {env}=1 to hide this)"
-msgstr "saidby funciona en Linux y Windows; {system} no está probado (define {env}=1 para ocultar este aviso)"
+msgstr ""
+"saidby funciona en Linux y Windows; {system} no está probado (define {env}=1 para ocultar este "
+"aviso)"
 
 #: src/saidby/cli/__init__.py:117
 #, python-brace-format
@@ -125,14 +127,14 @@ msgstr "más lento que con GPU"
 msgid "Config"
 msgstr "Config"
 
-#: src/saidby/cli/banner.py:242 src/saidby/cli/directory.py:43 src/saidby/interactive/plan.py:75
+#: src/saidby/cli/banner.py:242 src/saidby/cli/directory.py:43 src/saidby/interactive/plan.py:76
 #, python-brace-format
 msgid "{n} person"
 msgid_plural "{n} people"
 msgstr[0] "{n} persona"
 msgstr[1] "{n} personas"
 
-#: src/saidby/cli/banner.py:243 src/saidby/cli/directory.py:44 src/saidby/interactive/plan.py:76
+#: src/saidby/cli/banner.py:243 src/saidby/cli/directory.py:44 src/saidby/interactive/plan.py:77
 #, python-brace-format
 msgid "{n} term"
 msgid_plural "{n} terms"
@@ -151,7 +153,7 @@ msgstr "ninguno (mira saidby init)"
 msgid "auto"
 msgstr "auto"
 
-#: src/saidby/cli/banner.py:254 src/saidby/cli/banner.py:297 src/saidby/interactive/plan.py:50
+#: src/saidby/cli/banner.py:254 src/saidby/cli/banner.py:297 src/saidby/interactive/plan.py:51
 msgid "output"
 msgstr "salida"
 
@@ -167,7 +169,7 @@ msgstr "corre saidby init para no repetir las opciones"
 msgid "saidby --help lists the commands"
 msgstr "saidby --help lista los comandos"
 
-#: src/saidby/cli/banner.py:296 src/saidby/cli/progress.py:269
+#: src/saidby/cli/banner.py:296 src/saidby/cli/progress.py:275
 #, python-brace-format
 msgid "{n} file"
 msgid_plural "{n} files"
@@ -432,11 +434,11 @@ msgstr "audio"
 msgid "transcript"
 msgstr "transcripción"
 
-#: src/saidby/cli/lines.py:85 src/saidby/interactive/plan.py:51
+#: src/saidby/cli/lines.py:85 src/saidby/interactive/plan.py:52
 msgid "terms"
 msgstr "términos"
 
-#: src/saidby/cli/lines.py:86 src/saidby/interactive/plan.py:49
+#: src/saidby/cli/lines.py:86 src/saidby/interactive/plan.py:50
 msgid "speakers"
 msgstr "hablantes"
 
@@ -456,7 +458,7 @@ msgstr "corrección"
 msgid "done"
 msgstr "listo"
 
-#: src/saidby/cli/lines.py:102 src/saidby/cli/progress.py:231
+#: src/saidby/cli/lines.py:102 src/saidby/cli/progress.py:237
 msgid "failed"
 msgstr "falló"
 
@@ -474,7 +476,7 @@ msgstr "{factor}x más rápido que el audio"
 msgid "{factor}x slower than the audio"
 msgstr "{factor}x más lento que el audio"
 
-#: src/saidby/cli/lines.py:120 src/saidby/pipeline/runner.py:499
+#: src/saidby/cli/lines.py:120 src/saidby/pipeline/runner.py:503
 #, python-brace-format
 msgid "{n} speaker"
 msgid_plural "{n} speakers"
@@ -534,22 +536,22 @@ msgstr "-i necesita la salida de progreso `human`; no la combines con --progress
 msgid "cached"
 msgstr "en caché"
 
-#: src/saidby/cli/progress.py:263
+#: src/saidby/cli/progress.py:269
 #, python-brace-format
 msgid "started {moment}"
 msgstr "inicio {moment}"
 
-#: src/saidby/cli/progress.py:264
+#: src/saidby/cli/progress.py:270
 #, python-brace-format
 msgid "finished {moment}"
 msgstr "fin {moment}"
 
-#: src/saidby/cli/progress.py:265 src/saidby/pipeline/runner.py:359 src/saidby/pipeline/runner.py:370
+#: src/saidby/cli/progress.py:271 src/saidby/pipeline/runner.py:363 src/saidby/pipeline/runner.py:374
 #, python-brace-format
 msgid "{duration} of audio"
 msgstr "{duration} de audio"
 
-#: src/saidby/cli/progress.py:271
+#: src/saidby/cli/progress.py:277
 #, python-brace-format
 msgid "{n} failed"
 msgstr "fallidos: {n}"
@@ -599,23 +601,31 @@ msgid_plural "saved {n} text corrections"
 msgstr[0] "se guardó {n} corrección de texto"
 msgstr[1] "se guardaron {n} correcciones de texto"
 
-#: src/saidby/cli/review.py:190
+#: src/saidby/cli/review.py:184
+msgid ""
+"the input ended before the review did: run saidby review in a terminal, or pipe one answer per "
+"line (/q quits)"
+msgstr ""
+"la entrada terminó antes que la revisión: ejecuta saidby review en una terminal, o pasa una "
+"respuesta por línea (/q sale)"
+
+#: src/saidby/cli/review.py:205
 #, python-brace-format
 msgid "  {target}: add variant {variant!r}"
 msgstr "  {target}: agregar la variante {variant!r}"
 
-#: src/saidby/cli/review.py:192
+#: src/saidby/cli/review.py:207
 msgid "Add these variants to the directory?"
 msgstr "¿Agregar estas variantes al directorio?"
 
-#: src/saidby/cli/review.py:195
+#: src/saidby/cli/review.py:210
 #, python-brace-format
 msgid "added {n} variant"
 msgid_plural "added {n} variants"
 msgstr[0] "se agregó {n} variante"
 msgstr[1] "se agregaron {n} variantes"
 
-#: src/saidby/cli/review.py:196
+#: src/saidby/cli/review.py:211
 #, python-brace-format
 msgid " (backup: {backup})"
 msgstr " (copia: {backup})"
@@ -852,7 +862,7 @@ msgstr "reproducir una muestra"
 msgid "skip naming"
 msgstr "omitir el nombrado"
 
-#: src/saidby/interactive/listen.py:71 src/saidby/interactive/plan.py:129
+#: src/saidby/interactive/listen.py:71 src/saidby/interactive/plan.py:130
 msgid "quit"
 msgstr "salir"
 
@@ -955,119 +965,119 @@ msgstr[1] "se renombraron {n} pistas"
 msgid "rewrote the transcript files and the RTTM; no audio was re-processed"
 msgstr "se reescribieron los archivos de transcripción y el RTTM; no se volvió a procesar audio"
 
-#: src/saidby/interactive/plan.py:47
+#: src/saidby/interactive/plan.py:48
 msgid "language"
 msgstr "idioma"
 
-#: src/saidby/interactive/plan.py:48 src/saidby/interactive/walk.py:271
+#: src/saidby/interactive/plan.py:49 src/saidby/interactive/walk.py:271
 #: src/saidby/interactive/walk.py:279
 msgid "glossary"
 msgstr "glosario"
 
-#: src/saidby/interactive/plan.py:56
+#: src/saidby/interactive/plan.py:57
 msgid "chosen just now"
 msgstr "elegido ahora"
 
-#: src/saidby/interactive/plan.py:59
+#: src/saidby/interactive/plan.py:60
 msgid "default"
 msgstr "por defecto"
 
-#: src/saidby/interactive/plan.py:61
+#: src/saidby/interactive/plan.py:62
 msgid "command line"
 msgstr "línea de comandos"
 
-#: src/saidby/interactive/plan.py:69 src/saidby/interactive/plan.py:108
+#: src/saidby/interactive/plan.py:70 src/saidby/interactive/plan.py:109
 msgid "none"
 msgstr "ninguno"
 
-#: src/saidby/interactive/plan.py:82
+#: src/saidby/interactive/plan.py:83
 msgid "this recording"
 msgstr "esta grabación"
 
-#: src/saidby/interactive/plan.py:98
+#: src/saidby/interactive/plan.py:99
 msgid "detect it from the audio"
 msgstr "detectarlo del audio"
 
-#: src/saidby/interactive/plan.py:104
+#: src/saidby/interactive/plan.py:105
 msgid "detect the number"
 msgstr "detectar la cantidad"
 
-#: src/saidby/interactive/plan.py:111
+#: src/saidby/interactive/plan.py:112
 #, python-brace-format
 msgid "Ready to process {n} file"
 msgid_plural "Ready to process {n} files"
 msgstr[0] "Listo para procesar {n} archivo"
 msgstr[1] "Listo para procesar {n} archivos"
 
-#: src/saidby/interactive/plan.py:117
+#: src/saidby/interactive/plan.py:118
 #, python-brace-format
 msgid "and {n} more"
 msgstr "y {n} más"
 
-#: src/saidby/interactive/plan.py:126
+#: src/saidby/interactive/plan.py:127
 msgid "start"
 msgstr "empezar"
 
-#: src/saidby/interactive/plan.py:127
+#: src/saidby/interactive/plan.py:128
 msgid "terms for this recording"
 msgstr "términos de esta grabación"
 
-#: src/saidby/interactive/plan.py:128
+#: src/saidby/interactive/plan.py:129
 msgid "change something"
 msgstr "cambiar algo"
 
-#: src/saidby/interactive/plan.py:147
+#: src/saidby/interactive/plan.py:148
 msgid "Language of the recording? (es, en, pt...)"
 msgstr "¿Idioma de la grabación? (es, en, pt...)"
 
-#: src/saidby/interactive/plan.py:148 src/saidby/interactive/plan.py:220
-#: src/saidby/interactive/plan.py:229
+#: src/saidby/interactive/plan.py:149 src/saidby/interactive/plan.py:221
+#: src/saidby/interactive/plan.py:230
 msgid "[Enter: detect it]"
 msgstr "[Enter: detectarlo]"
 
-#: src/saidby/interactive/plan.py:164
+#: src/saidby/interactive/plan.py:165
 msgid "Terms for this recording, separated by commas"
 msgstr "Términos de esta grabación, separados por comas"
 
-#: src/saidby/interactive/plan.py:177
+#: src/saidby/interactive/plan.py:178
 #, python-brace-format
 msgid "{path} is not a file"
 msgstr "{path} no es un archivo"
 
-#: src/saidby/interactive/plan.py:187
+#: src/saidby/interactive/plan.py:188
 msgid "type a number of 1 or more, or Enter to detect it"
 msgstr "escribe un número de 1 o más, o Enter para detectarlo"
 
-#: src/saidby/interactive/plan.py:191
+#: src/saidby/interactive/plan.py:192
 msgid "Directory file (replaces the current ones; Enter for none)"
 msgstr "Archivo de directorio (reemplaza los actuales; Enter para ninguno)"
 
-#: src/saidby/interactive/plan.py:206
+#: src/saidby/interactive/plan.py:207
 #, python-brace-format
 msgid "choose one of: {names}"
 msgstr "elige uno de: {names}"
 
-#: src/saidby/interactive/plan.py:210
+#: src/saidby/interactive/plan.py:211
 msgid "Change which one?"
 msgstr "¿Cuál quieres cambiar?"
 
-#: src/saidby/interactive/plan.py:219
+#: src/saidby/interactive/plan.py:220
 msgid "Language code (es, en, pt...)"
 msgstr "Código de idioma (es, en, pt...)"
 
-#: src/saidby/interactive/plan.py:228
+#: src/saidby/interactive/plan.py:229
 msgid "How many people speak?"
 msgstr "¿Cuántas personas hablan?"
 
-#: src/saidby/interactive/plan.py:240
+#: src/saidby/interactive/plan.py:241
 msgid "Output folder"
 msgstr "Carpeta de salida"
 
-#: src/saidby/interactive/plan.py:250
+#: src/saidby/interactive/plan.py:251
 msgid "type Enter, t, e or q"
 msgstr "escribe Enter, t, e o q"
 
-#: src/saidby/interactive/plan.py:256
+#: src/saidby/interactive/plan.py:257
 msgid "nothing was run"
 msgstr "no se corrió nada"
 
@@ -1301,38 +1311,38 @@ msgstr ""
 msgid "cannot download {repo_id}: {exc}"
 msgstr "no se puede descargar {repo_id}: {exc}"
 
-#: src/saidby/pipeline/compare_stage.py:93
+#: src/saidby/pipeline/compare_stage.py:94
 #, python-brace-format
 msgid "agreement {percent:.1f}%"
 msgstr "coincidencia {percent:.1f}%"
 
-#: src/saidby/pipeline/compare_stage.py:95
+#: src/saidby/pipeline/compare_stage.py:96
 #, python-brace-format
 msgid "{n} span differs"
 msgid_plural "{n} spans differ"
 msgstr[0] "{n} tramo difiere"
 msgstr[1] "{n} tramos difieren"
 
-#: src/saidby/pipeline/glossary_stages.py:47
+#: src/saidby/pipeline/glossary_stages.py:48
 msgid "--correct needs --directory or --term with the terms to correct"
 msgstr "--correct necesita --directory o --term con los términos a corregir"
 
-#: src/saidby/pipeline/glossary_stages.py:51
+#: src/saidby/pipeline/glossary_stages.py:52
 msgid "the LLM endpoint is not on this machine; pass --allow-remote-llm to confirm"
 msgstr "el servidor LLM no está en esta máquina; pasa --allow-remote-llm para confirmar"
 
-#: src/saidby/pipeline/glossary_stages.py:138
+#: src/saidby/pipeline/glossary_stages.py:139
 #, python-brace-format
 msgid "hotwords in {n} window"
 msgid_plural "hotwords in {n} windows"
 msgstr[0] "palabras clave en {n} ventana"
 msgstr[1] "palabras clave en {n} ventanas"
 
-#: src/saidby/pipeline/glossary_stages.py:142
+#: src/saidby/pipeline/glossary_stages.py:143
 msgid "with hotwords"
 msgstr "con palabras clave"
 
-#: src/saidby/pipeline/glossary_stages.py:235
+#: src/saidby/pipeline/glossary_stages.py:236
 msgid "bounded corrections"
 msgstr "correcciones acotadas"
 
@@ -1348,16 +1358,16 @@ msgstr "cargando PyTorch y CTranslate2"
 msgid "checking the GPU"
 msgstr "comprobando la GPU"
 
-#: src/saidby/pipeline/runner.py:337 src/saidby/stages/ingest.py:36
+#: src/saidby/pipeline/runner.py:341 src/saidby/stages/ingest.py:36
 #, python-brace-format
 msgid "input file not found: {media}"
 msgstr "no se encontró el archivo de entrada: {media}"
 
-#: src/saidby/pipeline/runner.py:348
+#: src/saidby/pipeline/runner.py:352
 msgid "output folder holds results for a different input; use --force to overwrite"
 msgstr "la carpeta de salida tiene resultados de otra entrada; usa --force para sobrescribir"
 
-#: src/saidby/pipeline/runner.py:568
+#: src/saidby/pipeline/runner.py:570
 #, python-brace-format
 msgid "{named} of {total} speaker named"
 msgid_plural "{named} of {total} speakers named"
@@ -1631,10 +1641,4 @@ msgstr "no se puede fusionar un hablante consigo mismo"
 #, python-brace-format
 msgid "no audio stream found in {name}"
 msgstr "no se encontró ninguna pista de audio en {name}"
-
-
-
-
-
-
 

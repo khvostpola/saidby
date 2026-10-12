@@ -31,6 +31,10 @@ with:
 | `/s` | Skip for now |
 | `/q` | Quit |
 
+Review reads its answers from the terminal, or one per line from standard input. If the input
+ends before the last span (no terminal, an empty pipe), it stops with a usage error, exit code 2,
+and keeps the answers already given.
+
 Playing needs `ffplay` (it comes with ffmpeg). The audio is the kept `.work/audio.wav` when the
 run used `--keep-intermediates`; otherwise the track of the voice that speaks most in the span;
 otherwise the original recording, if it is still where the run found it. If none is there,

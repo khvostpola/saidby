@@ -1,17 +1,20 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
+import io
 import json
 import sys
 from pathlib import Path
 from typing import Any
 
 import pytest
+import typer
 import yaml
 from typer.testing import CliRunner
 
 from saidby.cli import app
 from saidby.cli.progress import Progress
+from saidby.cli.review import _ask
 from saidby.config.settings import Settings
 from saidby.engines.asr.fake import FakeTranscriber
 from saidby.engines.diarize.fake import FakeDiarizer
@@ -106,6 +109,40 @@ def test_review_keeps_answered_edits_when_a_later_answer_fails(tmp_path: Path) -
         for x in (folder / "logs/review.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     assert [s["decision"] for s in state] == ["edited"]
+
+
+def test_review_without_a_terminal_says_the_input_ended(tmp_path: Path) -> None:
+    folder = _folder(tmp_path)
+    result = runner.invoke(app, ["review", str(folder), "--kinds", "diarization"], input="")
+    assert isinstance(result.exception, UsageError)
+    assert "run saidby review in a terminal" in str(result.exception)
+    assert result.exit_code != 0
+
+
+def test_review_keeps_the_answers_given_before_the_input_ended(tmp_path: Path) -> None:
+    folder = _folder(tmp_path)
+    result = runner.invoke(
+        app,
+        ["review", str(folder), "--kinds", "diarization", "--limit", "3"],
+        input="Acme nuevo texto\n",
+    )
+    assert isinstance(result.exception, UsageError)
+    log = read_corrections(folder / "corrections.jsonl")
+    assert [(c.by, c.status) for c in log] == [("review", "accepted")]
+
+
+def test_ctrl_c_on_a_terminal_still_aborts(monkeypatch: pytest.MonkeyPatch) -> None:
+    class Terminal(io.StringIO):
+        def isatty(self) -> bool:
+            return True
+
+    def interrupted(*args: Any, **kwargs: Any) -> str:
+        raise typer.Abort
+
+    monkeypatch.setattr(sys, "stdin", Terminal())
+    monkeypatch.setattr(typer, "prompt", interrupted)
+    with pytest.raises(typer.Abort):
+        _ask("Text?")
 
 
 def test_review_nothing_to_review(tmp_path: Path) -> None:
