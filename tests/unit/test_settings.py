@@ -235,3 +235,24 @@ def test_a_tilde_in_a_path_means_the_home_folder(
         tmp_path / "me" / "team.yaml",
         tmp_path / "local.yaml",
     ]
+
+
+def test_every_value_remembers_where_it_came_from(
+    isolated_user_config: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    global_file = global_config_path()
+    global_file.parent.mkdir(parents=True, exist_ok=True)
+    global_file.write_text('[saidby]\nlanguage = "es"\ndevice = "cpu"\n')
+    project = tmp_path / "saidby.toml"
+    project.write_text('[saidby]\nlanguage = "pt"\n[glossary]\nterms = ["Acme"]\n')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("SAIDBY_ASR_MODEL", "tiny")
+    settings = Settings.load(overrides={"num_speakers": 2})
+    assert settings.origins == {
+        "language": str(project),
+        "device": str(global_file),
+        "terms": str(project),
+        "asr_model": "env",
+        "num_speakers": "flag",
+    }
+    assert "out" not in settings.origins

@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
+import shlex
 import sys
 from pathlib import Path
 from typing import Annotated
@@ -11,8 +12,10 @@ from saidby.cli.banner import show_compact
 from saidby.cli.next_steps import next_steps, read_state
 from saidby.cli.progress import Progress
 from saidby.cli.term import detect
+from saidby.cli.ui import Ui, ensure_terminal
 from saidby.config.settings import Settings
-from saidby.errors import StageError
+from saidby.errors import StageError, UsageError
+from saidby.interactive.plan import plan_run
 from saidby.pipeline.runner import Pipeline
 
 IO = "Input and output"
@@ -29,6 +32,7 @@ Examples:
   saidby process call.m4a --term Acme --term "Rappi Pay"
   saidby process call.m4a --out results/ --directory directory.yaml --correct
   saidby process call.m4a --device cpu --asr-model tiny
+  saidby process call.m4a -i
 
 Each input gets its own folder under the output folder (./saidby unless you pass --out or set
 `out` in saidby.toml). A failed run keeps its work and the next run resumes from the last
@@ -231,6 +235,15 @@ def process(
             rich_help_panel=PRIVACY,
         ),
     ] = False,
+    interactive: Annotated[
+        bool,
+        typer.Option(
+            "--interactive",
+            "-i",
+            help="Show the plan and start with one key, asking only what is not set.",
+            rich_help_panel=BEHAVIOR,
+        ),
+    ] = False,
 ) -> None:
     """Turn recordings into transcripts with speakers, timestamps and a track per speaker."""
     settings = Settings.load(
@@ -263,8 +276,15 @@ def process(
             "progress": progress,
         },
     )
+    if interactive:
+        _check_interactive(inputs, settings)
     if settings.progress == "human":
         show_compact(len(inputs), settings.out)
+    if interactive:
+        plan = plan_run(_ui(), inputs, settings)
+        if plan is None:
+            return
+        settings = plan.settings
     results = Pipeline(settings, progress=Progress(settings.progress)).run(inputs, settings.out)
     if settings.progress == "human":
         states = [read_state(r.out_dir) for r in results if r.status == "ok"]
@@ -274,3 +294,14 @@ def process(
     if failed:
         code = failed[0].exit_code if len(failed) == 1 else StageError.exit_code
         raise typer.Exit(code)
+
+
+def _ui() -> Ui:
+    return Ui()
+
+
+def _check_interactive(inputs: list[Path], settings: Settings) -> None:
+    equivalent = "saidby process " + shlex.join(str(path) for path in inputs)
+    ensure_terminal(equivalent)
+    if settings.progress != "human":
+        raise UsageError("-i needs the human progress output; do not combine it with --progress")

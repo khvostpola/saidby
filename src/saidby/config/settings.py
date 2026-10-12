@@ -11,6 +11,8 @@ from pydantic import BaseModel, ConfigDict, PrivateAttr, ValidationError, field_
 from saidby.errors import UsageError
 
 ENV_PREFIX = "SAIDBY_"
+ORIGIN_ENV = "env"
+ORIGIN_FLAG = "flag"
 
 
 class Settings(BaseModel):
@@ -49,6 +51,7 @@ class Settings(BaseModel):
     progress: Literal["human", "json", "none"] = "human"
 
     _sources: list[Path] = PrivateAttr(default_factory=list)
+    _origins: dict[str, str] = PrivateAttr(default_factory=dict)
 
     @field_validator("directory", mode="before")
     @classmethod
@@ -63,16 +66,27 @@ class Settings(BaseModel):
     def sources(self) -> list[Path]:
         return list(self._sources)
 
+    @property
+    def origins(self) -> dict[str, str]:
+        return dict(self._origins)
+
     @classmethod
     def load(
         cls, config_path: Path | None = None, overrides: dict[str, Any] | None = None
     ) -> "Settings":
         files = config_files(config_path)
         merged: dict[str, Any] = {}
+        origins: dict[str, str] = {}
         for path in files:
-            _layer(merged, _read_file(path))
-        merged.update(_from_env())
-        merged.update({k: v for k, v in (overrides or {}).items() if v is not None})
+            flat = _read_file(path)
+            _layer(merged, flat)
+            origins.update(dict.fromkeys(flat, str(path)))
+        from_env = _from_env()
+        merged.update(from_env)
+        origins.update(dict.fromkeys(from_env, ORIGIN_ENV))
+        flags = {k: v for k, v in (overrides or {}).items() if v is not None}
+        merged.update(flags)
+        origins.update(dict.fromkeys(flags, ORIGIN_FLAG))
         try:
             settings = cls.model_validate(merged)
         except ValidationError as exc:
@@ -80,6 +94,7 @@ class Settings(BaseModel):
             where = ".".join(str(part) for part in first["loc"])
             raise UsageError(f"invalid configuration: {where}: {first['msg']}") from exc
         settings._sources = files
+        settings._origins = origins
         return settings
 
 

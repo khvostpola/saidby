@@ -99,6 +99,18 @@ It writes `saidby.toml` (language and output folder), an empty `directory.yaml` 
 `consent.yaml`. From then on `saidby process call.m4a` needs no flags in that folder. Run
 `saidby init --global` instead to set defaults for every folder.
 
+To be guided instead, add `-i`:
+
+```bash
+saidby process call.m4a -i
+```
+
+It shows what is about to happen (the glossary, language, number of speakers, output folder and
+extra terms, each with where the value comes from: a flag, the environment, `saidby.toml` or the
+default) and waits for one key: Enter starts, `t` adds terms for this recording only, `e` changes
+a value, `q` quits without running. It only asks about what nothing else decided, which today is
+the language. It needs a terminal, so it cannot be combined with `--progress json` or `none`.
+
 ## 5. Put names on the speakers
 
 Create a directory and add the people:

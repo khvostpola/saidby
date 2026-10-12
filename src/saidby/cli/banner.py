@@ -18,6 +18,7 @@ from saidby.cli.banner_art import (
     SHADOW_COLOR,
     WORDMARK,
 )
+from saidby.cli.paths import show_path
 from saidby.cli.term import RESET, Terminal, detect
 from saidby.errors import SaidbyError
 from saidby.i18n import _, ngettext
@@ -173,17 +174,6 @@ def plain_line() -> str:
     return f"saidby {__version__} · {_('who said what, and when, on your own machine')}"
 
 
-def _show_path(path: Path) -> str:
-    try:
-        return "./" + str(path.resolve().relative_to(Path.cwd().resolve()))
-    except ValueError:
-        pass
-    try:
-        return "~/" + str(path.resolve().relative_to(Path.home()))
-    except ValueError:
-        return str(path)
-
-
 def ago(moment: datetime, now: datetime | None = None) -> str:
     seconds = max(0, int(((now or datetime.now(UTC)) - moment).total_seconds()))
     if seconds < 60:
@@ -248,7 +238,7 @@ def _glossary_and_config_rows() -> tuple[list[InfoRow], bool]:
     if settings.directory:
         try:
             merged = load_directory_set(settings.directory).merged
-            names = ", ".join(_show_path(p) for p in settings.directory)
+            names = ", ".join(show_path(p) for p in settings.directory)
             people = ngettext("{n} person", "{n} people", len(merged.people))
             terms = ngettext("{n} term", "{n} terms", len(merged.terms))
             counts = f"{people.format(n=len(merged.people))} · {terms.format(n=len(merged.terms))}"
@@ -258,9 +248,9 @@ def _glossary_and_config_rows() -> tuple[list[InfoRow], bool]:
     else:
         rows.append(InfoRow("off", _("Glossary"), _("none (see saidby init)")))
     if settings.sources:
-        names = ", ".join(_show_path(p) for p in settings.sources)
+        names = ", ".join(show_path(p) for p in settings.sources)
         language = settings.language or _("auto")
-        output = f"{_show_path(settings.out)}/"
+        output = f"{show_path(settings.out)}/"
         rows.append(InfoRow("ok", _("Config"), f"{names} · {language} · {_('output')} {output}"))
         return rows, True
     rows.append(InfoRow("off", _("Config"), _("none found, using defaults")))
@@ -304,7 +294,7 @@ def show_compact(
     if not (term.tty and term.truecolor and term.columns >= COMPACT_MIN_COLUMNS):
         return
     count = ngettext("{n} file", "{n} files", files).format(n=files)
-    second = f"{count} · {_('output')} {_show_path(output)}/"
+    second = f"{count} · {_('output')} {show_path(output)}/"
     third = _("Ctrl+C is safe: running again resumes where it stopped")
     try:
         _emit([*compact_lines(term, second, third), ""], out)

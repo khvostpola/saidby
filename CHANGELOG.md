@@ -7,6 +7,10 @@ All notable changes are documented here, following
 ## [Unreleased]
 
 ### Added
+- `saidby process -i` shows a plan before running (glossary, language, speakers, output and extra
+  terms, each with where the value comes from) and waits for one key: Enter to start, `t` to add
+  terms for this recording, `e` to change a value, `q` to quit. It asks only what nothing else
+  set (the language). It needs a terminal and the human progress output.
 - `saidby enroll -i FOLDER` goes through the voices that already have a name in the directory and
   asks, for each person, whether they agreed to have their voiceprint stored. It asks how consent
   was given once and who declared it (the person by default). Without consent nothing is stored

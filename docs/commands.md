@@ -22,6 +22,7 @@ Measure        eval         score a run and arbitrate differences between two sy
 | download the models | `saidby models pull --all` |
 | stop retyping the same options | `saidby init` (this folder) or `saidby init --global` |
 | transcribe one or several files | `saidby process a.m4a b.mp4 --out out/ --language es` |
+| be guided: plan, one key to start | `saidby process call.m4a -i` |
 | use my names and terms | `saidby process ... --directory directory.yaml` |
 | name the speakers | `saidby enroll` (or `enroll -i`) once per person, then `process --directory` |
 | rename or merge speakers afterwards | `saidby speakers map -i` / `saidby speakers merge` |

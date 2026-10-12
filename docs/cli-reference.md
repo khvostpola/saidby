@@ -38,6 +38,7 @@ Arguments:
 | `--fail-fast` | flag |  | Stop at the first input that fails. |
 | `--progress` | str |  | human (default, on stderr), json (one event per line on stdout) or none. |
 | `--strict-offline` | flag |  | Fail with exit code 8 if anything tries to leave this machine. |
+| `--interactive`, `-i` | flag |  | Show the plan and start with one key, asking only what is not set. |
 
 Examples:
 
@@ -47,6 +48,7 @@ saidby process a.mp4 b.mp3 --directory directory.yaml
 saidby process call.m4a --term Acme --term "Rappi Pay"
 saidby process call.m4a --out results/ --directory directory.yaml --correct
 saidby process call.m4a --device cpu --asr-model tiny
+saidby process call.m4a -i
 ```
 
 ## `saidby review`
