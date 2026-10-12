@@ -6,6 +6,7 @@ import os
 import sys
 import threading
 import time
+from datetime import datetime
 from typing import Any, TextIO
 
 ACTIVITY = {
@@ -28,6 +29,13 @@ def fmt_clock(seconds: float) -> str:
     minutes, secs = divmod(round(seconds), 60)
     hours, minutes = divmod(minutes, 60)
     return f"{hours}:{minutes:02d}:{secs:02d}" if hours else f"{minutes}:{secs:02d}"
+
+
+def fmt_moment(moment: datetime, relative_to: datetime | None = None) -> str:
+    text = moment.strftime("%I:%M:%S %p").lstrip("0")
+    if relative_to is not None and moment.date() != relative_to.date():
+        return f"{moment.strftime('%b')} {moment.day}, {text}"
+    return text
 
 
 class Progress:
@@ -141,3 +149,43 @@ class Progress:
             )
         elif self.mode == "human":
             self._line(f"[{index}/{total}] {stage:<10} failed: {error_type}")
+
+    def summary(
+        self,
+        *,
+        started: datetime,
+        finished: datetime,
+        wall_s: float,
+        audio_s: float,
+        files: int,
+        failed: int,
+    ) -> None:
+        self.stop()
+        rtf = wall_s / audio_s if audio_s > 0 else None
+        if self.mode == "json":
+            print(
+                json.dumps(
+                    {
+                        "event": "run.end",
+                        "started": started.isoformat(timespec="seconds"),
+                        "finished": finished.isoformat(timespec="seconds"),
+                        "wall_s": round(wall_s, 1),
+                        "audio_s": round(audio_s, 1),
+                        "rtf": round(rtf, 3) if rtf else None,
+                        "files": files,
+                        "failed": failed,
+                    }
+                ),
+                flush=True,
+            )
+        elif self.mode == "human":
+            parts = [
+                f"started {fmt_moment(started)}",
+                f"finished {fmt_moment(finished, started)}",
+                f"{fmt_clock(audio_s)} of audio" + (f" at {rtf:.2f}x" if rtf else ""),
+            ]
+            if files > 1:
+                parts.append(f"{files} files")
+            if failed:
+                parts.append(f"{failed} failed")
+            self._line(f"[total]    {fmt_clock(wall_s)}   {' · '.join(parts)}")

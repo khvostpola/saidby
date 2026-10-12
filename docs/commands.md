@@ -45,10 +45,12 @@ fails, the others finish and the exit code tells you; `--fail-fast` stops at the
 ## Progress for scripts
 
 `--progress json` prints one JSON event per line on stdout (`stage.start`, `stage.end`,
-`stage.skip`, `stage.error`, `file.end`) instead of the human lines, so `saidby process ... --progress json >
+`stage.skip`, `stage.error`, `file.end`, and a final `run.end` with the start and finish times,
+the total seconds, the audio seconds and how many files failed) instead of the human lines, so `saidby process ... --progress json >
 events.jsonl` gives a machine-readable log. The human lines go to stderr. On a terminal, a stage that takes more than a moment shows what it is
 doing and how long it has been at it (`transcribing...  0:12`), replaced by the result line when it
-finishes; when stderr is not a terminal you only get the result lines.
+finishes; when stderr is not a terminal you only get the result lines. Every run ends with a
+`[total]` line: how long it took, when it started and finished, and how much audio it covered.
 
 ## Configuration
 

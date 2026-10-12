@@ -150,3 +150,18 @@ def test_device_fallback_note_reaches_the_manifest(
     manifest = read_manifest(tmp_path / "tones_2spk_10s/manifest.json")
     assert manifest.warnings == ["running on CPU: test"]
     assert manifest.device.used == "cpu"
+
+
+def test_run_ends_with_a_summary_line(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    pipeline = Pipeline(
+        Settings(device="cpu", language="es"),
+        transcriber=FakeTranscriber(),
+        diarizer=FakeDiarizer(rttm=RTTM),
+        progress=Progress("human"),
+    )
+    pipeline.run([FIXTURE], tmp_path)
+    last = capsys.readouterr().err.strip().splitlines()[-1]
+    assert last.startswith("[total]")
+    assert "started" in last
+    assert "finished" in last
+    assert "0:10 of audio" in last

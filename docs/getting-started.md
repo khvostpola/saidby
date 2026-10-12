@@ -66,9 +66,11 @@ saidby process call.m4a --out out/ --language es
 [1/1] tracks      2 tracks · aligned FLAC   0:01
 [1/1] outputs     txt · vtt · words.json · rttm   0:00
 [1/1] done        out/call · 2 speakers
+[total]    1:52   started 9:27:10 PM · finished 9:29:02 PM · 15:07 of audio at 0.12x
 ```
 
-`0.103x` is how long it took relative to the length of the audio. Open `out/call/transcript.txt`:
+`0.103x` is how long it took relative to the length of the audio. The last line is the whole run:
+its duration, when it started and finished, and the speed over all the audio. Open `out/call/transcript.txt`:
 
 ```
 [00:00:03] SPEAKER_00: Hola, buenas tardes, ¿cómo vas con el informe?

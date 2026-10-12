@@ -91,6 +91,7 @@ class Pipeline:
         self.compare = CompareStage(self, compare_diarizer)
         self._directory: Directory | None = None
         self.run_id = str(uuid.uuid4())
+        self._recs: list[Recording] = []
         self.device: DeviceInfo = DeviceInfo("cpu")
         self.warnings: list[str] = []
         self._audio_sha: dict[str, str] = {}
@@ -98,6 +99,8 @@ class Pipeline:
         self._loaded: set[str] = set()
 
     def run(self, inputs: list[Path], out_root: Path) -> list[RecordingResult]:
+        started = datetime.now().astimezone()
+        clock = time.perf_counter()
         self.device = resolve_device(self.settings.device)
         if self.device.note:
             self.warnings.append(self.device.note)
@@ -113,6 +116,15 @@ class Pipeline:
         finally:
             self.progress.stop()
             self.glossary.release_llm()
+            if self._recs:
+                self.progress.summary(
+                    started=started,
+                    finished=datetime.now().astimezone(),
+                    wall_s=time.perf_counter() - clock,
+                    audio_s=sum(r.duration_s for r in self._recs),
+                    files=len(self._recs),
+                    failed=sum(1 for r in self._recs if r.status != "ok"),
+                )
 
     def _recordings(self, inputs: list[Path], out_root: Path) -> list[Recording]:
         slugs = unique_slugs([p.stem for p in inputs])
@@ -136,6 +148,7 @@ class Pipeline:
 
     def _run(self, inputs: list[Path], out_root: Path) -> list[RecordingResult]:
         recs = self._recordings(inputs, out_root)
+        self._recs = recs
         total = len(recs)
         for rec in recs:
             rec.telemetry.emit(
