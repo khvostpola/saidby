@@ -6,6 +6,10 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+### Fixed
+- `saidby review` no longer loses the edits you already made when a later answer fails (an
+  unknown `@speaker`) or you press Ctrl+C: they are saved before the command stops.
+
 ## [0.4.4] - 2026-10-11
 
 ### Added

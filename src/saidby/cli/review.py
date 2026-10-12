@@ -73,31 +73,37 @@ def review(
     typer.echo(HELP)
     new_corrections: list[Correction] = []
     changed = False
-    for number, item in enumerate(queue, 1):
-        typer.echo(
-            f"\n[{number}/{len(queue)}] {item.kind} · {item.start:.1f}-{item.end:.1f} s · "
-            f"{_speakers(folder, item)}\n  {span_text(folder.transcript, item)}"
-        )
-        answer = typer.prompt(">", default="", show_default=False).strip()
-        if answer == "/q":
-            break
-        if answer == "/s":
-            continue
-        correction, speaker = _decide(folder, item, answer)
-        if correction is not None:
-            new_corrections.append(correction)
-            log_decision(out_dir, item, "edited", speaker)
-        else:
-            log_decision(out_dir, item, "speaker" if speaker else "kept", speaker)
-        changed = changed or correction is not None or speaker is not None
-    if changed:
-        if new_corrections:
-            existing = read_corrections(out_dir / "corrections.jsonl")
-            write_corrections(out_dir / "corrections.jsonl", [*existing, *new_corrections])
-        folder.save({"op": "review", "edited": str(len(new_corrections))})
+    try:
+        for number, item in enumerate(queue, 1):
+            typer.echo(
+                f"\n[{number}/{len(queue)}] {item.kind} · {item.start:.1f}-{item.end:.1f} s · "
+                f"{_speakers(folder, item)}\n  {span_text(folder.transcript, item)}"
+            )
+            answer = typer.prompt(">", default="", show_default=False).strip()
+            if answer == "/q":
+                break
+            if answer == "/s":
+                continue
+            correction, speaker = _decide(folder, item, answer)
+            if correction is not None:
+                new_corrections.append(correction)
+                log_decision(out_dir, item, "edited", speaker)
+            else:
+                log_decision(out_dir, item, "speaker" if speaker else "kept", speaker)
+            changed = changed or correction is not None or speaker is not None
+    finally:
+        if changed:
+            _save(folder, new_corrections)
     typer.echo(f"\nsaved {len(new_corrections)} text corrections")
     if directory is not None and new_corrections:
         _offer_directory(directory, new_corrections, yes)
+
+
+def _save(folder: Folder, new_corrections: list[Correction]) -> None:
+    if new_corrections:
+        log = folder.out_dir / "corrections.jsonl"
+        write_corrections(log, [*read_corrections(log), *new_corrections])
+    folder.save({"op": "review", "edited": str(len(new_corrections))})
 
 
 def _offer_directory(path: Path, corrections: list[Correction], yes: bool) -> None:

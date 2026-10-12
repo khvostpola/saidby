@@ -14,6 +14,7 @@ from saidby.cli.progress import Progress
 from saidby.config.settings import Settings
 from saidby.engines.asr.fake import FakeTranscriber
 from saidby.engines.diarize.fake import FakeDiarizer
+from saidby.errors import UsageError
 from saidby.formats.corrections_log import read_corrections
 from saidby.formats.manifest import read_manifest
 from saidby.formats.words_json import read_transcript
@@ -81,6 +82,22 @@ def test_review_edits_text_speaker_and_state(tmp_path: Path) -> None:
     again = runner.invoke(app, ["review", str(folder), "--kinds", "diarization"], input="/q\n")
     assert again.exit_code == 0
     assert "edited" not in again.output
+
+
+def test_review_keeps_answered_edits_when_a_later_answer_fails(tmp_path: Path) -> None:
+    folder = _folder(tmp_path)
+    result = runner.invoke(
+        app,
+        ["review", str(folder), "--kinds", "diarization", "--limit", "3"],
+        input="Acme nuevo texto\n@NOBODY\n",
+    )
+    assert isinstance(result.exception, UsageError)
+    log = read_corrections(folder / "corrections.jsonl")
+    assert [(c.by, c.status) for c in log] == [("review", "accepted")]
+    assert "review" in [w.source for w in read_transcript(folder / "transcript.words.json").words()]
+    assert read_manifest(folder / "manifest.json").edits[-1]["op"] == "review"
+    state = [json.loads(x) for x in (folder / "logs/review.jsonl").read_text().splitlines()]
+    assert [s["decision"] for s in state] == ["edited"]
 
 
 def test_review_nothing_to_review(tmp_path: Path) -> None:
