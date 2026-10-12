@@ -16,7 +16,7 @@ from saidby.speakers.enrollment import (
     ConsentInput,
     enroll_voices,
     ensure_audio,
-    resolve_consents,
+    prepare_consents,
 )
 from saidby.speakers.people import find_person
 from saidby.speakers.remap import Folder
@@ -166,7 +166,7 @@ class Voices:
         paint = self.ui.term.paint
         self.ui.say(paint(f"  {_('computing voiceprints...')}", "dim"))
         ensure_audio(self.folder.out_dir)
-        consents = resolve_consents(
+        pending = prepare_consents(
             [c.person for c in chosen],
             self.consent_file,
             {c.person.id: c.given for c in chosen if c.given},
@@ -177,7 +177,8 @@ class Voices:
             [(c.label, c.person.id) for c in chosen],
             self.target,
             raw,
-            consents,
+            pending,
+            self.consent_file,
             embedder_name=embedder_name,
             device=device,
             channel=channel,

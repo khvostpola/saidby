@@ -278,3 +278,24 @@ def test_a_failed_input_still_sets_the_exit_code_after_the_walk(
     monkeypatch.setattr(module, "Pipeline", FakePipeline)
     result = runner.invoke(app, ["process", str(FIXTURE), "-i"])
     assert result.exit_code == 4
+
+
+def test_a_failure_while_storing_voiceprints_does_not_end_the_walk(
+    work: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from saidby.errors import InputError
+
+    directory = _directory(work)
+    settings = _settings(directory)
+    results = _run(work, settings)
+
+    def broken(*args: Any, **kwargs: Any) -> None:
+        raise InputError("original recording not found: x")
+
+    monkeypatch.setattr("saidby.interactive.walk.store_voices", broken)
+    ui, out, _ = _session(["", "ana", "ben", "", "y"])
+    outcomes = walk_folders(ui, results, settings)
+    assert outcomes[0].renamed == 2
+    assert outcomes[0].voiceprints == 0
+    assert "original recording not found: x" in out.getvalue()
+    assert "no voiceprint was stored" in out.getvalue()

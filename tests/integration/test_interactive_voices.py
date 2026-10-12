@@ -291,3 +291,69 @@ def test_the_consent_source_has_no_default_and_cannot_be_empty(tmp_path: Path) -
     assert len(source_prompts) == 2
     assert "[for example: signed form]" in source_prompts[0]
     assert _consent(directory)[0]["source"] == "a signed form"
+
+
+def test_a_failed_enrollment_leaves_no_consent_behind(tmp_path: Path) -> None:
+    folder, directory = _folder(tmp_path), _directory(tmp_path)
+    result = runner.invoke(
+        app,
+        [
+            "enroll",
+            str(folder),
+            "--speaker",
+            "SPEAKER_09=alice",
+            "--directory",
+            str(directory),
+            "--embedder",
+            "fake",
+            "--device",
+            "cpu",
+            "--consent-source",
+            "signed form",
+            "--consent-declared-by",
+            "Alice",
+        ],
+    )
+    assert isinstance(result.exception, UsageError)
+    assert "no usable speech for speaker" in str(result.exception)
+    assert _consent(directory) == []
+    assert "voiceprint" not in _people(directory)["alice"]
+
+
+def test_enrolling_leaves_no_decoded_copy_of_the_recording_behind(tmp_path: Path) -> None:
+    folder, directory = _folder(tmp_path), _directory(tmp_path)
+    assert not (folder / ".work").exists()
+    ui, _, _ = _session(["y", "signed form", "", "n", ""])
+    _store(ui, folder, directory)
+    assert "voiceprint" in _people(directory)["alice"]
+    assert not (folder / ".work").exists()
+
+
+def test_a_consent_file_elsewhere_is_flagged(tmp_path: Path) -> None:
+    folder, directory = _folder(tmp_path), _directory(tmp_path)
+    elsewhere = tmp_path / "other" / "consent.yaml"
+    elsewhere.parent.mkdir()
+    result = runner.invoke(
+        app,
+        [
+            "enroll",
+            str(folder),
+            "--speaker",
+            "SPEAKER_00=alice",
+            "--directory",
+            str(directory),
+            "--consent-file",
+            str(elsewhere),
+            "--embedder",
+            "fake",
+            "--device",
+            "cpu",
+            "--consent-source",
+            "signed form",
+            "--consent-declared-by",
+            "Alice",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert f"saidby process only reads {directory.with_name('consent.yaml')}" in result.output
+    assert elsewhere.exists()

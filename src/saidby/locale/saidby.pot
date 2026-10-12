@@ -175,7 +175,7 @@ msgstr ""
 msgid "created {target}"
 msgstr ""
 
-#: src/saidby/cli/directory.py:86 src/saidby/cli/enroll.py:32
+#: src/saidby/cli/directory.py:86 src/saidby/cli/enroll.py:33
 msgid "no directory file: pass --directory or set one in saidby.toml"
 msgstr ""
 
@@ -219,15 +219,15 @@ msgstr[1] ""
 msgid "ready"
 msgstr ""
 
-#: src/saidby/cli/enroll.py:83
+#: src/saidby/cli/enroll.py:84
 msgid "pass --speaker LABEL=PERSON, or -i to be asked for each voice"
 msgstr ""
 
-#: src/saidby/cli/enroll.py:86
+#: src/saidby/cli/enroll.py:87
 msgid "expected --speaker LABEL=PERSON (an id or a name)"
 msgstr ""
 
-#: src/saidby/cli/enroll.py:95
+#: src/saidby/cli/enroll.py:96
 #, python-brace-format
 msgid "{key!r} is not in the directory; add the person first (saidby directory add-person)"
 msgstr ""
@@ -245,6 +245,13 @@ msgstr ""
 msgid ""
 "-i asks about consent itself; do not combine it with --consent-source, --consent-declared-by or "
 "--consent-date"
+msgstr ""
+
+#: src/saidby/cli/enroll.py:165
+#, python-brace-format
+msgid ""
+"warning: saidby process only reads {expected}, next to the directory file; the voiceprint stays "
+"unused until its consent is recorded there"
 msgstr ""
 
 #: src/saidby/cli/evaluate.py:20
@@ -319,7 +326,7 @@ msgstr ""
 msgid "the GPU cannot be used"
 msgstr ""
 
-#: src/saidby/cli/lines.py:29 src/saidby/interactive/walk.py:256 src/saidby/pipeline/runner.py:112
+#: src/saidby/cli/lines.py:29 src/saidby/interactive/walk.py:262 src/saidby/pipeline/runner.py:112
 msgid "device"
 msgstr ""
 
@@ -482,7 +489,7 @@ msgstr[1] ""
 msgid "name"
 msgstr ""
 
-#: src/saidby/cli/next_steps.py:60 src/saidby/interactive/walk.py:229
+#: src/saidby/cli/next_steps.py:60 src/saidby/interactive/walk.py:235
 #, python-brace-format
 msgid "{n} doubtful span"
 msgid_plural "{n} doubtful spans"
@@ -908,7 +915,7 @@ msgstr ""
 msgid "language"
 msgstr ""
 
-#: src/saidby/interactive/plan.py:48 src/saidby/interactive/walk.py:265
+#: src/saidby/interactive/plan.py:48 src/saidby/interactive/walk.py:271
 msgid "glossary"
 msgstr ""
 
@@ -1117,7 +1124,7 @@ msgstr ""
 msgid "no named voice to store"
 msgstr ""
 
-#: src/saidby/interactive/voices.py:155
+#: src/saidby/interactive/voices.py:155 src/saidby/interactive/walk.py:95
 msgid "no voiceprint was stored"
 msgstr ""
 
@@ -1133,93 +1140,93 @@ msgstr ""
 msgid "computing voiceprints..."
 msgstr ""
 
-#: src/saidby/interactive/voices.py:186 src/saidby/interactive/walk.py:223
+#: src/saidby/interactive/voices.py:187 src/saidby/interactive/walk.py:229
 #, python-brace-format
 msgid "{n} voiceprint stored"
 msgid_plural "{n} voiceprints stored"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/saidby/interactive/voices.py:189 src/saidby/interactive/walk.py:138
-#: src/saidby/interactive/walk.py:179
+#: src/saidby/interactive/voices.py:190 src/saidby/interactive/walk.py:144
+#: src/saidby/interactive/walk.py:185
 msgid "backup:"
 msgstr ""
 
-#: src/saidby/interactive/walk.py:79
+#: src/saidby/interactive/walk.py:80
 msgid "Store voiceprints so saidby recognizes these voices next time?"
 msgstr ""
 
-#: src/saidby/interactive/walk.py:96
+#: src/saidby/interactive/walk.py:102
 #, python-brace-format
 msgid "Voices in {folder}"
 msgstr ""
 
-#: src/saidby/interactive/walk.py:98
+#: src/saidby/interactive/walk.py:104
 #, python-brace-format
 msgid "({index} of {total})"
 msgstr ""
 
-#: src/saidby/interactive/walk.py:105
+#: src/saidby/interactive/walk.py:111
 #, python-brace-format
 msgid "Every voice in {folder} already has a name."
 msgstr ""
 
-#: src/saidby/interactive/walk.py:130
+#: src/saidby/interactive/walk.py:136
 #, python-brace-format
 msgid "Save the {n} term from this run to {path}?"
 msgid_plural "Save the {n} terms from this run to {path}?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/saidby/interactive/walk.py:141
+#: src/saidby/interactive/walk.py:147
 #, python-brace-format
 msgid "Keep these terms in a new glossary, {path}?"
 msgstr ""
 
-#: src/saidby/interactive/walk.py:162
+#: src/saidby/interactive/walk.py:168
 #, python-brace-format
 msgid "Save {what} to {path} so you do not have to say it again?"
 msgstr ""
 
-#: src/saidby/interactive/walk.py:209
+#: src/saidby/interactive/walk.py:215
 #, python-brace-format
 msgid "{n} voice named"
 msgid_plural "{n} voices named"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/saidby/interactive/walk.py:216
+#: src/saidby/interactive/walk.py:222
 #, python-brace-format
 msgid "{n} person added to the directory"
 msgid_plural "{n} people added to the directory"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/saidby/interactive/walk.py:233
+#: src/saidby/interactive/walk.py:239
 msgid "nothing changed"
 msgstr ""
 
-#: src/saidby/interactive/walk.py:253
+#: src/saidby/interactive/walk.py:259
 msgid "Summary"
 msgstr ""
 
-#: src/saidby/interactive/walk.py:263
+#: src/saidby/interactive/walk.py:269
 #, python-brace-format
 msgid "{n} term saved to {path}"
 msgid_plural "{n} terms saved to {path}"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/saidby/interactive/walk.py:269
+#: src/saidby/interactive/walk.py:275
 #, python-brace-format
 msgid "saved to {path}"
 msgstr ""
 
-#: src/saidby/interactive/walk.py:270
+#: src/saidby/interactive/walk.py:276
 msgid "settings"
 msgstr ""
 
-#: src/saidby/interactive/walk.py:278
+#: src/saidby/interactive/walk.py:284
 msgid "again"
 msgstr ""
 
@@ -1509,26 +1516,26 @@ msgstr ""
 msgid "{argv} failed: {value}"
 msgstr ""
 
-#: src/saidby/speakers/enrollment.py:55
+#: src/saidby/speakers/enrollment.py:65
 #, python-brace-format
 msgid ""
 "no voiceprint consent recorded for {id}; pass --consent-source and --consent-declared-by or add "
 "it to {consent_path}"
 msgstr ""
 
-#: src/saidby/speakers/enrollment.py:72
+#: src/saidby/speakers/enrollment.py:99
 #, python-brace-format
 msgid ""
 "original recording not found: {source}; run this from the folder where you ran saidby process, or"
 " run the process again with --keep-intermediates"
 msgstr ""
 
-#: src/saidby/speakers/enrollment.py:115
+#: src/saidby/speakers/enrollment.py:152
 #, python-brace-format
 msgid "no usable speech for speaker {label_arg!r} (known: {known})"
 msgstr ""
 
-#: src/saidby/speakers/enrollment.py:124
+#: src/saidby/speakers/enrollment.py:165
 #, python-brace-format
 msgid "{person}: {seconds} s of speech"
 msgstr ""

@@ -10,6 +10,7 @@ import typer
 from saidby.cli.ui import Ui, ensure_terminal
 from saidby.config.settings import Settings
 from saidby.errors import UsageError
+from saidby.formats.directory_set import consent_path
 from saidby.formats.directory_yaml import load_directory
 from saidby.i18n import _
 from saidby.interactive.voices import store_voices
@@ -18,7 +19,7 @@ from saidby.speakers.enrollment import (
     ConsentInput,
     enroll_voices,
     ensure_audio,
-    resolve_consents,
+    prepare_consents,
 )
 from saidby.speakers.people import find_person
 
@@ -103,17 +104,16 @@ def enroll(
         entry = ConsentInput(consent_source, consent_declared_by, when)
         given = {person.id: entry for _label, person in chosen}
     ensure_audio(out_dir)
-    consents = resolve_consents(
-        [person for _label, person in chosen],
-        consent_file or directory.with_name("consent.yaml"),
-        given,
-    )
+    target = consent_file or consent_path(directory)
+    _warn_if_not_read(target, directory)
+    pending = prepare_consents([person for _label, person in chosen], target, given)
     backup = enroll_voices(
         out_dir,
         [(label, person.id) for label, person in chosen],
         directory,
         raw,
-        consents,
+        pending,
+        target,
         embedder_name=embedder_name,
         device=device,
         channel=channel,
@@ -151,8 +151,18 @@ def _interactive_enroll(
         Ui(),
         out_dir,
         directory,
-        consent_file or directory.with_name("consent.yaml"),
+        consent_file or consent_path(directory),
         embedder_name=embedder_name,
         device=device,
         channel=channel,
     )
+
+
+def _warn_if_not_read(consent_file: Path, directory: Path) -> None:
+    expected = consent_path(directory)
+    if consent_file.resolve() != expected.resolve():
+        message = _(
+            "warning: saidby process only reads {expected}, next to the directory file; "
+            "the voiceprint stays unused until its consent is recorded there"
+        )
+        typer.echo(message.format(expected=expected), err=True)

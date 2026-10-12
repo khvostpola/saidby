@@ -192,7 +192,7 @@ msgstr "{target} ya existe"
 msgid "created {target}"
 msgstr "se creó {target}"
 
-#: src/saidby/cli/directory.py:86 src/saidby/cli/enroll.py:32
+#: src/saidby/cli/directory.py:86 src/saidby/cli/enroll.py:33
 msgid "no directory file: pass --directory or set one in saidby.toml"
 msgstr "no hay archivo de directorio: pasa --directory o defínelo en saidby.toml"
 
@@ -236,15 +236,15 @@ msgstr[1] "{n} problemas por arreglar antes de procesar"
 msgid "ready"
 msgstr "listo"
 
-#: src/saidby/cli/enroll.py:83
+#: src/saidby/cli/enroll.py:84
 msgid "pass --speaker LABEL=PERSON, or -i to be asked for each voice"
 msgstr "pasa --speaker ETIQUETA=PERSONA, o -i para que te pregunte por cada voz"
 
-#: src/saidby/cli/enroll.py:86
+#: src/saidby/cli/enroll.py:87
 msgid "expected --speaker LABEL=PERSON (an id or a name)"
 msgstr "se esperaba --speaker ETIQUETA=PERSONA (un id o un nombre)"
 
-#: src/saidby/cli/enroll.py:95
+#: src/saidby/cli/enroll.py:96
 #, python-brace-format
 msgid "{key!r} is not in the directory; add the person first (saidby directory add-person)"
 msgstr "{key!r} no está en el directorio; agrega primero a la persona (saidby directory add-person)"
@@ -265,6 +265,15 @@ msgid ""
 msgstr ""
 "-i pregunta por el consentimiento; no lo combines con --consent-source, --consent-declared-by ni "
 "--consent-date"
+
+#: src/saidby/cli/enroll.py:165
+#, python-brace-format
+msgid ""
+"warning: saidby process only reads {expected}, next to the directory file; the voiceprint stays "
+"unused until its consent is recorded there"
+msgstr ""
+"aviso: saidby process solo lee {expected}, junto al archivo de directorio; la huella de voz no se"
+" usará hasta que su consentimiento se registre ahí"
 
 #: src/saidby/cli/evaluate.py:20
 msgid "this command needs the evaluation extra: pip install 'saidby[eval]'"
@@ -338,7 +347,7 @@ msgstr "CPU · {threads} hilos"
 msgid "the GPU cannot be used"
 msgstr "no se puede usar la GPU"
 
-#: src/saidby/cli/lines.py:29 src/saidby/interactive/walk.py:256 src/saidby/pipeline/runner.py:112
+#: src/saidby/cli/lines.py:29 src/saidby/interactive/walk.py:262 src/saidby/pipeline/runner.py:112
 msgid "device"
 msgstr "dispositivo"
 
@@ -501,7 +510,7 @@ msgstr[1] "{n} carpetas tienen hablantes sin nombre"
 msgid "name"
 msgstr "nombrar"
 
-#: src/saidby/cli/next_steps.py:60 src/saidby/interactive/walk.py:229
+#: src/saidby/cli/next_steps.py:60 src/saidby/interactive/walk.py:235
 #, python-brace-format
 msgid "{n} doubtful span"
 msgid_plural "{n} doubtful spans"
@@ -933,7 +942,7 @@ msgstr "se reescribieron los archivos de transcripción y el RTTM; no se volvió
 msgid "language"
 msgstr "idioma"
 
-#: src/saidby/interactive/plan.py:48 src/saidby/interactive/walk.py:265
+#: src/saidby/interactive/plan.py:48 src/saidby/interactive/walk.py:271
 msgid "glossary"
 msgstr "glosario"
 
@@ -1142,7 +1151,7 @@ msgstr "{names} no están en {path}; pasa --directory con el archivo que las tie
 msgid "no named voice to store"
 msgstr "ninguna voz con nombre que guardar"
 
-#: src/saidby/interactive/voices.py:155
+#: src/saidby/interactive/voices.py:155 src/saidby/interactive/walk.py:95
 msgid "no voiceprint was stored"
 msgstr "no se guardó ninguna huella de voz"
 
@@ -1158,93 +1167,93 @@ msgstr "no se guardó nada"
 msgid "computing voiceprints..."
 msgstr "calculando las huellas de voz..."
 
-#: src/saidby/interactive/voices.py:186 src/saidby/interactive/walk.py:223
+#: src/saidby/interactive/voices.py:187 src/saidby/interactive/walk.py:229
 #, python-brace-format
 msgid "{n} voiceprint stored"
 msgid_plural "{n} voiceprints stored"
 msgstr[0] "se guardó {n} huella de voz"
 msgstr[1] "se guardaron {n} huellas de voz"
 
-#: src/saidby/interactive/voices.py:189 src/saidby/interactive/walk.py:138
-#: src/saidby/interactive/walk.py:179
+#: src/saidby/interactive/voices.py:190 src/saidby/interactive/walk.py:144
+#: src/saidby/interactive/walk.py:185
 msgid "backup:"
 msgstr "copia:"
 
-#: src/saidby/interactive/walk.py:79
+#: src/saidby/interactive/walk.py:80
 msgid "Store voiceprints so saidby recognizes these voices next time?"
 msgstr "¿Guardar huellas de voz para que saidby reconozca estas voces la próxima vez?"
 
-#: src/saidby/interactive/walk.py:96
+#: src/saidby/interactive/walk.py:102
 #, python-brace-format
 msgid "Voices in {folder}"
 msgstr "Voces en {folder}"
 
-#: src/saidby/interactive/walk.py:98
+#: src/saidby/interactive/walk.py:104
 #, python-brace-format
 msgid "({index} of {total})"
 msgstr "({index} de {total})"
 
-#: src/saidby/interactive/walk.py:105
+#: src/saidby/interactive/walk.py:111
 #, python-brace-format
 msgid "Every voice in {folder} already has a name."
 msgstr "Todas las voces en {folder} ya tienen nombre."
 
-#: src/saidby/interactive/walk.py:130
+#: src/saidby/interactive/walk.py:136
 #, python-brace-format
 msgid "Save the {n} term from this run to {path}?"
 msgid_plural "Save the {n} terms from this run to {path}?"
 msgstr[0] "¿Guardar el {n} término de esta corrida en {path}?"
 msgstr[1] "¿Guardar los {n} términos de esta corrida en {path}?"
 
-#: src/saidby/interactive/walk.py:141
+#: src/saidby/interactive/walk.py:147
 #, python-brace-format
 msgid "Keep these terms in a new glossary, {path}?"
 msgstr "¿Guardar estos términos en un glosario nuevo, {path}?"
 
-#: src/saidby/interactive/walk.py:162
+#: src/saidby/interactive/walk.py:168
 #, python-brace-format
 msgid "Save {what} to {path} so you do not have to say it again?"
 msgstr "¿Guardar {what} en {path} para no tener que decirlo otra vez?"
 
-#: src/saidby/interactive/walk.py:209
+#: src/saidby/interactive/walk.py:215
 #, python-brace-format
 msgid "{n} voice named"
 msgid_plural "{n} voices named"
 msgstr[0] "{n} voz nombrada"
 msgstr[1] "{n} voces nombradas"
 
-#: src/saidby/interactive/walk.py:216
+#: src/saidby/interactive/walk.py:222
 #, python-brace-format
 msgid "{n} person added to the directory"
 msgid_plural "{n} people added to the directory"
 msgstr[0] "{n} persona agregada al directorio"
 msgstr[1] "{n} personas agregadas al directorio"
 
-#: src/saidby/interactive/walk.py:233
+#: src/saidby/interactive/walk.py:239
 msgid "nothing changed"
 msgstr "nada cambió"
 
-#: src/saidby/interactive/walk.py:253
+#: src/saidby/interactive/walk.py:259
 msgid "Summary"
 msgstr "Resumen"
 
-#: src/saidby/interactive/walk.py:263
+#: src/saidby/interactive/walk.py:269
 #, python-brace-format
 msgid "{n} term saved to {path}"
 msgid_plural "{n} terms saved to {path}"
 msgstr[0] "{n} término guardado en {path}"
 msgstr[1] "{n} términos guardados en {path}"
 
-#: src/saidby/interactive/walk.py:269
+#: src/saidby/interactive/walk.py:275
 #, python-brace-format
 msgid "saved to {path}"
 msgstr "guardada en {path}"
 
-#: src/saidby/interactive/walk.py:270
+#: src/saidby/interactive/walk.py:276
 msgid "settings"
 msgstr "ajustes"
 
-#: src/saidby/interactive/walk.py:278
+#: src/saidby/interactive/walk.py:284
 msgid "again"
 msgstr "otra vez"
 
@@ -1538,7 +1547,7 @@ msgstr "no se encontró {argv} en el PATH"
 msgid "{argv} failed: {value}"
 msgstr "{argv} falló: {value}"
 
-#: src/saidby/speakers/enrollment.py:55
+#: src/saidby/speakers/enrollment.py:65
 #, python-brace-format
 msgid ""
 "no voiceprint consent recorded for {id}; pass --consent-source and --consent-declared-by or add "
@@ -1547,7 +1556,7 @@ msgstr ""
 "no hay consentimiento de huella de voz registrado para {id}; pasa --consent-source y --consent-"
 "declared-by o agrégalo a {consent_path}"
 
-#: src/saidby/speakers/enrollment.py:72
+#: src/saidby/speakers/enrollment.py:99
 #, python-brace-format
 msgid ""
 "original recording not found: {source}; run this from the folder where you ran saidby process, or"
@@ -1556,12 +1565,12 @@ msgstr ""
 "no se encontró la grabación original: {source}; corre esto desde la carpeta donde corriste saidby"
 " process, o corre el proceso de nuevo con --keep-intermediates"
 
-#: src/saidby/speakers/enrollment.py:115
+#: src/saidby/speakers/enrollment.py:152
 #, python-brace-format
 msgid "no usable speech for speaker {label_arg!r} (known: {known})"
 msgstr "no hay habla utilizable para el hablante {label_arg!r} (conocidos: {known})"
 
-#: src/saidby/speakers/enrollment.py:124
+#: src/saidby/speakers/enrollment.py:165
 #, python-brace-format
 msgid "{person}: {seconds} s of speech"
 msgstr "{person}: {seconds} s de habla"

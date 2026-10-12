@@ -11,6 +11,7 @@ from saidby.cli.paths import show_path
 from saidby.cli.ui import Ui
 from saidby.config.settings import Settings
 from saidby.config.writer import update_config
+from saidby.errors import SaidbyError
 from saidby.formats.directory_set import consent_path
 from saidby.formats.manifest import read_manifest, write_manifest
 from saidby.i18n import _, ngettext
@@ -79,15 +80,20 @@ class Walk:
         question = _("Store voiceprints so saidby recognizes these voices next time?")
         if not self.ui.confirm(question, default=False):
             return 0
-        enrolled = store_voices(
-            self.ui,
-            out_dir,
-            files[-1],
-            consent_path(files[-1]),
-            embedder_name=self.settings.embedder,
-            device=self.settings.device,
-            channel=DEFAULT_CHANNEL,
-        )
+        try:
+            enrolled = store_voices(
+                self.ui,
+                out_dir,
+                files[-1],
+                consent_path(files[-1]),
+                embedder_name=self.settings.embedder,
+                device=self.settings.device,
+                channel=DEFAULT_CHANNEL,
+            )
+        except SaidbyError as exc:
+            self.ui.error(str(exc))
+            self.ui.say(self.ui.term.paint(f"  {_('no voiceprint was stored')}", "dim"))
+            return 0
         return len(enrolled.stored) if enrolled else 0
 
     def folder(self, result: RecordingResult, index: int, total: int) -> FolderOutcome:

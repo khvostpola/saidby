@@ -2,10 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import datetime as dt
-from collections.abc import Callable, Mapping
+import tempfile
+from collections.abc import Callable, Iterator, Mapping
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+import numpy as np
 
 from saidby.config.settings import Settings
 from saidby.errors import ConsentMissingError, InputError, UsageError
@@ -33,14 +37,21 @@ class ConsentInput:
     date: dt.date | None = None
 
 
-def resolve_consents(
+@dataclass(frozen=True)
+class PendingConsent:
+    record: ConsentRecord
+    is_new: bool
+
+
+def prepare_consents(
     people: list[Person], consent_path: Path, provided: Mapping[str, ConsentInput]
-) -> dict[str, ConsentRecord]:
-    records, raw = load_consents(consent_path)
-    resolved: dict[str, ConsentRecord] = {}
+) -> dict[str, PendingConsent]:
+    records, _raw = load_consents(consent_path)
+    pending: dict[str, PendingConsent] = {}
     for person in people:
         record = find_consent(records, person.id, person.name)
         given = provided.get(person.id)
+        is_new = record is None and given is not None
         if record is None and given is not None:
             record = ConsentRecord(
                 person=person.id,
@@ -48,7 +59,6 @@ def resolve_consents(
                 declared_by=given.declared_by,
                 date=given.date or dt.date.today(),
             )
-            append_consent(consent_path, raw, record)
         if record is None:
             raise ConsentMissingError(
                 _(
@@ -56,8 +66,25 @@ def resolve_consents(
                     "--consent-declared-by or add it to {consent_path}"
                 ).format(id=person.id, consent_path=consent_path)
             )
-        resolved[person.id] = record
-    return resolved
+        pending[person.id] = PendingConsent(record, is_new)
+    return pending
+
+
+def record_consents(consent_path: Path, pending: Mapping[str, PendingConsent]) -> None:
+    fresh = [p.record for p in pending.values() if p.is_new]
+    if not fresh:
+        return
+    _records, raw = load_consents(consent_path)
+    for record in fresh:
+        append_consent(consent_path, raw, record)
+
+
+def resolve_consents(
+    people: list[Person], consent_path: Path, provided: Mapping[str, ConsentInput]
+) -> dict[str, ConsentRecord]:
+    pending = prepare_consents(people, consent_path, provided)
+    record_consents(consent_path, pending)
+    return {person_id: item.record for person_id, item in pending.items()}
 
 
 def _audio_files(out_dir: Path) -> tuple[Path | None, Path]:
@@ -81,12 +108,23 @@ def ensure_audio(out_dir: Path) -> None:
     _audio_files(out_dir)
 
 
+@contextmanager
+def _audio_of(out_dir: Path) -> Iterator[np.ndarray]:
+    kept, source = _audio_files(out_dir)
+    if kept is not None:
+        yield read_audio(kept)
+        return
+    with tempfile.TemporaryDirectory(prefix="saidby-") as scratch:
+        yield ingest(source, Path(scratch)).audio
+
+
 def enroll_voices(
     out_dir: Path,
     assignments: list[tuple[str, str]],
     directory_file: Path,
     raw: Any,
-    consents: Mapping[str, ConsentRecord],
+    pending: Mapping[str, PendingConsent],
+    consent_file: Path,
     *,
     embedder_name: str,
     device: str,
@@ -96,8 +134,6 @@ def enroll_voices(
     prepare(offline=True, want_cuda=device != "cpu")
     settings = Settings.load(overrides={"device": device})
     transcript = read_transcript(out_dir / "transcript.words.json")
-    kept, source = _audio_files(out_dir)
-    audio = read_audio(kept) if kept else ingest(source, out_dir / ".work").audio
     by_key = {key: s.label for s in transcript.speakers for key in (s.label, s.id) if key}
     spans: dict[str, list[tuple[float, float]]] = {}
     for turn in read_rttm(out_dir / "diarization.rttm"):
@@ -105,8 +141,9 @@ def enroll_voices(
         if label:
             spans.setdefault(label, []).append((turn.start, turn.end))
     embedder = make_embedder(embedder_name, device=resolve_device(settings.device))
-    centroids = speaker_centroids(audio, spans, embedder)
-    people = {p["id"]: p for p in raw["people"]}
+    with _audio_of(out_dir) as audio:
+        centroids = speaker_centroids(audio, spans, embedder)
+    labels: dict[str, str] = {}
     for label_arg, person_id in assignments:
         label = by_key.get(label_arg)
         if label is None or label not in centroids:
@@ -116,8 +153,12 @@ def enroll_voices(
                     label_arg=label_arg, known=known
                 )
             )
+        labels[person_id] = label
+    record_consents(consent_file, pending)
+    people = {p["id"]: p for p in raw["people"]}
+    for person_id, label in labels.items():
         voiceprint = make_voiceprint(
-            centroids[label], embedder, channel=channel, consent=consents[person_id]
+            centroids[label], embedder, channel=channel, consent=pending[person_id].record
         )
         people[person_id]["voiceprint"] = voiceprint.model_dump(mode="json", exclude_none=True)
         echo(
