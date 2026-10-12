@@ -79,10 +79,10 @@ saidby models pull --all      # downloads the models, about 3.5 GB; the only ste
 ## Quick start
 
 ```bash
-saidby process call.m4a --out out/ --language es                    # transcript, speakers, tracks
-saidby directory init directory.yaml                                # your people and terms
-saidby process call.m4a --out out/ --directory directory.yaml      # with your spelling
-saidby review out/call --directory directory.yaml                  # fix the doubtful spans
+saidby init --language es                                          # once per folder: no more flags
+saidby process call.m4a                                            # transcript, speakers, tracks in ./saidby/
+saidby directory add-term Acme --variant akme                      # your people and terms
+saidby review saidby/call                                          # fix the doubtful spans
 ```
 
 The [getting started guide](https://github.com/khvostpola/saidby/blob/main/docs/getting-started.md)

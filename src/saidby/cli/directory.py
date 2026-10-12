@@ -7,7 +7,7 @@ from typing import Annotated
 
 import typer
 
-from saidby.config.settings import Settings
+from saidby.config.settings import Settings, global_config_path
 from saidby.errors import UsageError
 from saidby.formats.directory_edit import add_person, add_term
 from saidby.formats.directory_yaml import load_directory, save_directory
@@ -50,14 +50,24 @@ def schema() -> None:
 
 @app.command("init")
 def init(
-    file: Annotated[Path, typer.Argument(help="Where to create the starter directory.")],
+    file: Annotated[
+        Path | None, typer.Argument(help="Where to create the starter directory.")
+    ] = None,
     language: Annotated[str, typer.Option(help="Recording language")] = "es",
+    global_: Annotated[
+        bool,
+        typer.Option("--global", help="Create it in ~/.config/saidby/, shared by every folder."),
+    ] = False,
 ) -> None:
     """Create a starter directory file."""
-    if file.exists():
-        raise UsageError(f"{file} already exists")
-    file.write_text(TEMPLATE.format(language=language), encoding="utf-8")
-    typer.echo(f"created {file}")
+    if file is None and not global_:
+        raise UsageError("give a file name, or use --global")
+    target = file or global_config_path().parent / "directory.yaml"
+    if target.exists():
+        raise UsageError(f"{target} already exists")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(TEMPLATE.format(language=language), encoding="utf-8")
+    typer.echo(f"created {target}")
 
 
 def _target(directory: Path | None) -> Path:

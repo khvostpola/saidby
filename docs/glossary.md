@@ -11,7 +11,8 @@ saidby process call.m4a --term Acme --term "Rappi Pay"
 
 Extra terms join the directory for that run only, with the same bias, transplant and correction
 as the rest. Nothing is written anywhere; a term that is already in the directory is not
-duplicated. The manifest counts them under `directory.extra_terms`.
+duplicated. The manifest counts them under `directory.extra_terms`. `terms` in the `[glossary]`
+section of `saidby.toml` does the same for every run; `--term` on the command line replaces it.
 
 ## Stages
 

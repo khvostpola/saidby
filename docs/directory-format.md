@@ -1,7 +1,8 @@
 # Directory format
 
 One YAML file with people and terms. Validate with `saidby directory validate FILE`, create a
-starter with `saidby directory init FILE`, and see the JSON Schema with
+starter with `saidby directory init FILE` (or `--global` for the one shared by every folder),
+and see the JSON Schema with
 `saidby directory schema` (also committed as `schemas/directory-1.schema.json`).
 
 ```yaml

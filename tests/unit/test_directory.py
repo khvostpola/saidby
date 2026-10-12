@@ -205,3 +205,14 @@ def test_edits_without_any_directory_say_how_to_fix_it(
     result = runner.invoke(app, ["directory", "add-term", "Rappi"])
     assert isinstance(result.exception, UsageError)
     assert "--directory" in str(result.exception)
+
+
+def test_init_global_creates_the_shared_directory(
+    tmp_path: Path, isolated_user_config: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    assert runner.invoke(app, ["directory", "init", "--global", "--language", "en"]).exit_code == 0
+    shared = isolated_user_config / "config" / "saidby" / "directory.yaml"
+    assert load_directory(shared)[0].language == "en"
+    assert runner.invoke(app, ["directory", "init", "--global"]).exit_code != 0
+    assert isinstance(runner.invoke(app, ["directory", "init"]).exception, UsageError)

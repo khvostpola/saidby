@@ -206,6 +206,7 @@ Arguments:
 | Option | Type | Default | What it does |
 |---|---|---|---|
 | `--language` | str | `es` | Recording language |
+| `--global` | flag |  | Create it in ~/.config/saidby/, shared by every folder. |
 
 ### `saidby directory add-person`
 
