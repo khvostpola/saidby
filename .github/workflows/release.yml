@@ -28,8 +28,31 @@ jobs:
           name: dist
           path: dist/
 
-  publish:
+  smoke:
     needs: build
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: astral-sh/setup-uv@v5
+      - name: Install the wheel and run the CLI
+        run: |
+          uv run --isolated --no-project --with dist/*.whl -- saidby --version
+          uv run --isolated --no-project --with dist/*.whl -- saidby doctor --json > doctor.json || true
+          python3 -c "import json; print(json.load(open('doctor.json'))['platform'])"
+
+  publish:
+    needs: [build, smoke]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment:
@@ -45,6 +68,28 @@ jobs:
           path: dist/
       - uses: astral-sh/setup-uv@v5
       - run: uv publish --trusted-publishing always
+
+  verify:
+    needs: publish
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: astral-sh/setup-uv@v5
+      - name: Install the published version (PyPI takes a few minutes to serve it)
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            if out="$(uv tool run --refresh --from "saidby==$version" saidby --version)"; then break; fi
+            echo "attempt $attempt: not on the index yet"; sleep 60
+          done
+          test "$out" = "$version"
 
   github-release:
     needs: publish

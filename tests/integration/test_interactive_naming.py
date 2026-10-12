@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import io
-import shutil
 import sys
 from pathlib import Path
 
@@ -32,7 +31,7 @@ RTTM = ROOT / "fixtures/synthetic/tones_2spk_10s.rttm"
 PLAIN = Terminal(tty=True, color=False, truecolor=False, columns=100)
 runner = CliRunner()
 
-pytestmark = pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg not installed")
+pytestmark = pytest.mark.needs_ffmpeg
 
 
 def _folder(tmp_path: Path) -> Path:

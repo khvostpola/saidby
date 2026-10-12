@@ -3,7 +3,6 @@
 
 import json
 import re
-import shutil
 from pathlib import Path
 
 import pytest
@@ -20,7 +19,7 @@ CONV = Path(__file__).resolve().parents[2] / "fixtures/conversations/dev/dev-con
 
 pytestmark = [
     pytest.mark.models,
-    pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg not installed"),
+    pytest.mark.needs_ffmpeg,
     pytest.mark.skipif(
         not model_store.is_installed(get_spec("asr:tiny")), reason="asr:tiny is not pulled"
     ),

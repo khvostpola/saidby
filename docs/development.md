@@ -16,6 +16,21 @@ adds about 1 GB of NVIDIA libraries that a CPU machine does not need).
 
 Fixtures: `uv run python tools/build_fixtures.py synthetic` regenerates the tone fixture.
 
+## Windows
+
+The same commands work in PowerShell once `uv` and ffmpeg are installed (`winget install ffmpeg`,
+then open a new terminal). Type-check both systems from either one:
+
+```bash
+uv run mypy && uv run mypy --platform win32
+```
+
+Calls into Windows APIs live inside literal `if sys.platform == "win32":` blocks and everything
+else that differs by system goes through `saidby.runtime.host`; `tests/unit/test_portability.py`
+keeps text files UTF-8 with LF and shell quoting inside `host`. `tools/screenshot.py` drives a pty
+and only runs on Linux. CI tests on Ubuntu and Windows; there, tests marked `needs_ffmpeg` fail
+instead of skipping (`CI_REQUIRE_FFMPEG=1`).
+
 ## Generated documentation
 
 One file is generated and checked by the tests, so it cannot go stale:

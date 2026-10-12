@@ -111,6 +111,7 @@ markers = [
   "gpu: needs a CUDA device (run with -m gpu)",
   "models: needs pre-pulled model weights in the local HF cache",
   "slow: longer than about 10 seconds",
+  "needs_ffmpeg: needs ffmpeg on PATH (skipped without it; a failure when CI_REQUIRE_FFMPEG is set)",
 ]
 
 [tool.coverage.run]

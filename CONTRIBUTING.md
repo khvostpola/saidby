@@ -7,6 +7,7 @@ uv sync --all-extras
 uv run saidby models pull asr:tiny
 uv run pytest
 uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run reuse lint
+uv run mypy --platform win32      # the Windows branches, from any system
 ```
 
 GPU tests are skipped by default; run them on a CUDA machine with `uv run pytest -m gpu`.

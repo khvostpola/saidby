@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import json
-import shutil
 import threading
 import urllib.error
 import urllib.request
@@ -144,7 +143,7 @@ def _arbitration(tmp_path: Path) -> Path:
     return out
 
 
-@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg not installed")
+@pytest.mark.needs_ffmpeg
 def test_arbitration_scoring_votes_and_typed_text(tmp_path: Path) -> None:
     out = _arbitration(tmp_path)
     items = json.loads((out / "items.json").read_text(encoding="utf-8"))
@@ -166,7 +165,7 @@ def test_arbitration_scoring_votes_and_typed_text(tmp_path: Path) -> None:
     assert first["non_inferior"] is False
 
 
-@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg not installed")
+@pytest.mark.needs_ffmpeg
 def test_typed_text_overrides_vote_and_ties_are_neutral(tmp_path: Path) -> None:
     out = _arbitration(tmp_path)
     items = json.loads((out / "items.json").read_text(encoding="utf-8"))
@@ -186,7 +185,7 @@ def test_typed_text_overrides_vote_and_ties_are_neutral(tmp_path: Path) -> None:
     assert typed["votes"] == dict.fromkeys(typed["votes"], 0)
 
 
-@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg not installed")
+@pytest.mark.needs_ffmpeg
 @pytest.mark.enable_socket
 def test_server_endpoints_and_privacy(tmp_path: Path) -> None:
     out = _arbitration(tmp_path)

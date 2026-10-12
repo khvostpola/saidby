@@ -2,12 +2,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+import shutil
 from collections.abc import Callable, Iterator
 from pathlib import Path
 
 import pytest
 
 from saidby.i18n import set_language
+
+REQUIRE_FFMPEG = bool(os.environ.get("CI_REQUIRE_FFMPEG"))
 
 
 def _default_hf_home() -> str:
@@ -19,6 +22,14 @@ os.environ.setdefault("HF_HOME", _default_hf_home())
 os.environ["HF_HUB_OFFLINE"] = "1"
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 os.environ["PYANNOTE_METRICS_ENABLED"] = "false"
+
+
+def pytest_runtest_setup(item: pytest.Item) -> None:
+    if item.get_closest_marker("needs_ffmpeg") is None or shutil.which("ffmpeg") is not None:
+        return
+    if REQUIRE_FFMPEG:
+        pytest.fail("ffmpeg is missing and CI_REQUIRE_FFMPEG is set: install it on the runner")
+    pytest.skip("ffmpeg not installed")
 
 
 @pytest.fixture

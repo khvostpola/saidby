@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import json
-import shutil
 from pathlib import Path
 from typing import Any
 
@@ -27,7 +26,7 @@ ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / "fixtures/synthetic/tones_2spk_10s.flac"
 RTTM = ROOT / "fixtures/synthetic/tones_2spk_10s.rttm"
 
-pytestmark = pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg not installed")
+pytestmark = pytest.mark.needs_ffmpeg
 
 PLAIN = "hola akme vamos parse con converse hoy"
 BIASED = "hola Acme vamos parse con converse hoy"

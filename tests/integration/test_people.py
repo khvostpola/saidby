@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
-import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -30,7 +29,7 @@ RTTM = ROOT / "fixtures/synthetic/tones_2spk_10s.rttm"
 VOICES = {(0.0, 3.3): "alice", (3.3, 6.2): "bob", (6.2, 8.4): "alice", (8.4, 10.0): "bob"}
 runner = CliRunner()
 
-pytestmark = pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg not installed")
+pytestmark = pytest.mark.needs_ffmpeg
 
 
 def _voiceprint(name: str) -> dict[str, Any]:

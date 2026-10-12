@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / "fixtures/synthetic/tones_2spk_10s.flac"
 RTTM = ROOT / "fixtures/synthetic/tones_2spk_10s.rttm"
 
-pytestmark = pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg not installed")
+pytestmark = pytest.mark.needs_ffmpeg
 
 
 def _pipeline(**kwargs: object) -> Pipeline:

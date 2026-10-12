@@ -4,7 +4,6 @@
 import io
 import json
 import os
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -24,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / "fixtures/synthetic/tones_2spk_10s.flac"
 RTTM = ROOT / "fixtures/synthetic/tones_2spk_10s.rttm"
 PLAIN = Terminal(tty=True, color=False, truecolor=False, columns=100)
-needs_ffmpeg = pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg not installed")
+needs_ffmpeg = pytest.mark.needs_ffmpeg
 
 
 def _saidby(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:

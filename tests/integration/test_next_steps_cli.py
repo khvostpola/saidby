@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
-import shutil
 import sys
 from pathlib import Path
 from typing import Any, ClassVar
@@ -23,7 +22,7 @@ FIXTURE = ROOT / "fixtures/synthetic/tones_2spk_10s.flac"
 RTTM = ROOT / "fixtures/synthetic/tones_2spk_10s.rttm"
 runner = CliRunner()
 
-pytestmark = pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg not installed")
+pytestmark = pytest.mark.needs_ffmpeg
 
 
 def _folder(tmp_path: Path) -> Path:
