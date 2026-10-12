@@ -7,10 +7,11 @@ from typing import Annotated
 
 import typer
 
-from saidby.cli.ui import Ui, interactive_streams
+from saidby.cli.ui import Ui, ensure_terminal, interactive_streams
 from saidby.config.settings import Settings
 from saidby.errors import UsageError
 from saidby.formats.directory_set import load_directory_set
+from saidby.interactive.flows import name_voices
 from saidby.speakers import remap
 from saidby.speakers.naming import person_id_for
 from saidby.speakers.people import add_person_to_file, find_person
@@ -77,9 +78,9 @@ def map_speaker(
         typer.Argument(help="Output folder of a finished run (the one `saidby process` wrote)."),
     ],
     assign: Annotated[
-        list[str],
+        list[str] | None,
         typer.Option("--set", help='LABEL=PERSON (an id or a name) or LABEL="Free name"'),
-    ],
+    ] = None,
     directory: Annotated[
         list[Path] | None,
         typer.Option(help="Directory to find people in (default: the configured ones)"),
@@ -91,9 +92,22 @@ def map_speaker(
             help="Add names that are not in the directory to its last file, without asking.",
         ),
     ] = False,
+    interactive: Annotated[
+        bool,
+        typer.Option(
+            "--interactive",
+            "-i",
+            help="Listen to each voice and name it, with questions, instead of --set.",
+        ),
+    ] = False,
 ) -> None:
     """Give speakers a person id and name without reprocessing audio."""
     files = directory or Settings.load().directory
+    if interactive:
+        _interactive_map(out_dir, assign, files)
+        return
+    if not assign:
+        raise UsageError("pass --set LABEL=PERSON, or -i to listen and name each voice")
     people = load_directory_set(files).merged if files else None
     for item in assign:
         label, _, target = item.partition("=")
@@ -110,6 +124,14 @@ def map_speaker(
         else:
             remap.map_speaker(out_dir, label, person_id_for(target), target)
         typer.echo(f"{label} -> {target}")
+
+
+def _interactive_map(out_dir: Path, assign: list[str] | None, files: list[Path]) -> None:
+    if assign:
+        raise UsageError("use either --set or -i, not both")
+    ensure_terminal(f"saidby speakers map {out_dir} --set SPEAKER_00=NAME")
+    title = f"Speakers in {out_dir}"
+    name_voices(_ui(), out_dir, files, title=title)
 
 
 def _offer_to_add(name: str, file: Path) -> bool:

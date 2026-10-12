@@ -7,6 +7,10 @@ All notable changes are documented here, following
 ## [Unreleased]
 
 ### Added
+- `saidby speakers map -i FOLDER` lists the voices of a run (speech, turns, a stretch where nobody
+  else talks), plays a sample of each one with `ffplay` and asks a name for each, completing
+  people from the directory with Tab. Nothing is written until you confirm. It needs a terminal;
+  `--set` still works without one. `saidby doctor` warns when `ffplay` is missing.
 - `saidby enroll --speaker LABEL=PERSON` takes a person's id or name, and tells you to run
   `saidby directory add-person` when the person is not in the directory yet.
 - `saidby speakers map --set LABEL=PERSON` finds the person by id, name or alias, and a new name
@@ -53,6 +57,7 @@ All notable changes are documented here, following
 ### Changed
 - `saidby speakers show` prints a table (speaker, name, speech, how it was named, track); the JSON
   it used to print is now `--json`, and gains the `track` of each speaker.
+- The `name:` line at the end of a run suggests `saidby speakers map -i FOLDER`.
 - Errors print as `error: message  [id · exit N]` instead of `error: ClassName: message`. The id
   (`consent_missing`, `model_unavailable`...) and the number are stable, and are the way to look
   an error up in the docs.

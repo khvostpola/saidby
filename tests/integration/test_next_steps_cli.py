@@ -81,7 +81,7 @@ def test_process_ends_with_the_next_steps(tmp_path: Path, monkeypatch: pytest.Mo
     output = _process(monkeypatch, [RecordingResult("tones", folder, "ok", 0)])
     lines = output.rstrip().splitlines()
     assert lines[-2].startswith("  name:")
-    assert f"saidby speakers map {folder} --set SPEAKER_00=NAME" in lines[-2]
+    assert f"saidby speakers map -i {folder}" in lines[-2]
     assert lines[-1].startswith("  review:")
     assert "doubtful span" in lines[-1]
 

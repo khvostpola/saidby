@@ -23,7 +23,7 @@ def test_nothing_to_do_means_no_footer() -> None:
 
 def test_unnamed_speakers_point_to_speakers_map() -> None:
     lines = next_steps([_state(unnamed=("SPEAKER_00", "SPEAKER_01"))], PLAIN)
-    assert lines == ["  name:     saidby speakers map saidby/call --set SPEAKER_00=NAME"]
+    assert lines == ["  name:     saidby speakers map -i saidby/call"]
 
 
 def test_doubtful_spans_point_to_review_with_the_count() -> None:
@@ -45,15 +45,14 @@ def test_several_folders_name_the_first_and_count_them_all() -> None:
     ]
     lines = next_steps(states, PLAIN)
     assert lines[0] == (
-        "  name:     saidby speakers map saidby/a --set SPEAKER_01=NAME"
-        "   2 folders have speakers without names"
+        "  name:     saidby speakers map -i saidby/a   2 folders have speakers without names"
     )
     assert lines[1] == "  review:   saidby review saidby/a   7 doubtful spans"
 
 
 def test_paths_with_spaces_are_quoted() -> None:
     lines = next_steps([_state("my results/call 1", unnamed=("SPEAKER_00",))], PLAIN)
-    assert "saidby speakers map 'my results/call 1' --set SPEAKER_00=NAME" in lines[0]
+    assert "saidby speakers map -i 'my results/call 1'" in lines[0]
 
 
 def test_color_goes_on_the_label_and_the_command_only() -> None:

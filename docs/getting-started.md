@@ -75,7 +75,7 @@ when it started and finished, and the speed over all the audio. `logs/run.log` a
 and which command does it:
 
 ```
-  name:     saidby speakers map out/call --set SPEAKER_00=NAME
+  name:     saidby speakers map -i out/call
   review:   saidby review out/call   3 doubtful spans
 ```
 
@@ -141,8 +141,15 @@ audio.
 
 ```bash
 saidby speakers show out/call                                  # who is who, in a table
+saidby speakers map -i out/call                                # listen to each voice and name it
 saidby speakers map out/call --set SPEAKER_00="Ana Gómez" --set SPEAKER_01=ben
 ```
+
+With `-i`, saidby lists the voices (how long each one speaks, how many turns, and a clean
+stretch where nobody else talks) and plays a sample of each one through `ffplay`. Press Enter to
+listen, `p` to hear it again, `s` to skip the voice and `q` to stop. Then type the name of each
+voice: Tab completes people from your directory, and a new name is offered for the directory.
+Nothing is changed until you confirm the summary. It needs a terminal; without one, use `--set`.
 
 `--set` takes a person from your directory by id, by name or by alias. A name that is not in the
 directory is used as it is for this folder; if you have a directory, `saidby` asks whether to add

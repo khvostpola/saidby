@@ -133,9 +133,10 @@ Arguments:
 
 | Option | Type | Default | What it does |
 |---|---|---|---|
-| `--set` | str |  | LABEL=PERSON (an id or a name) or LABEL="Free name" (required) |
+| `--set` | str |  | LABEL=PERSON (an id or a name) or LABEL="Free name" |
 | `--directory` | path |  | Directory to find people in (default: the configured ones) |
 | `--add-missing` | flag |  | Add names that are not in the directory to its last file, without asking. |
+| `--interactive`, `-i` | flag |  | Listen to each voice and name it, with questions, instead of --set. |
 
 ### `saidby speakers merge`
 

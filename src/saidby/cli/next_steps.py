@@ -45,7 +45,7 @@ def next_steps(states: list[FolderState], term: Terminal) -> list[str]:
     if needing_names:
         first = needing_names[0]
         quoted = shlex.quote(str(first.out_dir))
-        command = term.paint(f"saidby speakers map {quoted} --set {first.unnamed[0]}=NAME", "cyan")
+        command = term.paint(f"saidby speakers map -i {quoted}", "cyan")
         count = len(needing_names)
         many = ngettext(
             "{n} folder has speakers without names",

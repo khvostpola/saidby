@@ -24,7 +24,7 @@ Measure        eval         score a run and arbitrate differences between two sy
 | transcribe one or several files | `saidby process a.m4a b.mp4 --out out/ --language es` |
 | use my names and terms | `saidby process ... --directory directory.yaml` |
 | name the speakers | `saidby enroll` once per person, then `process --directory` |
-| rename or merge speakers afterwards | `saidby speakers map` / `saidby speakers merge` |
+| rename or merge speakers afterwards | `saidby speakers map -i` / `saidby speakers merge` |
 | fix mistakes by listening | `saidby process ... --compare pyannote-community1`, then `saidby review` |
 | get the same result every time | `saidby process ... --deterministic` |
 | work with no GPU | `saidby process ... --device cpu` (use `--asr-model tiny` on slow machines) |
