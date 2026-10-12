@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
-import io
 import json
 import sys
 from pathlib import Path
@@ -131,17 +130,32 @@ def test_review_keeps_the_answers_given_before_the_input_ended(tmp_path: Path) -
     assert [(c.by, c.status) for c in log] == [("review", "accepted")]
 
 
-def test_ctrl_c_on_a_terminal_still_aborts(monkeypatch: pytest.MonkeyPatch) -> None:
-    class Terminal(io.StringIO):
-        def isatty(self) -> bool:
-            return True
+class _ConsoleLikeStdin:
+    """What Python 3.12 gives on Windows for NUL: a stream that says it is a console."""
 
-    def interrupted(*args: Any, **kwargs: Any) -> str:
-        raise typer.Abort
+    def __init__(self, error: BaseException | None = None) -> None:
+        self.error = error
 
-    monkeypatch.setattr(sys, "stdin", Terminal())
-    monkeypatch.setattr(typer, "prompt", interrupted)
+    def isatty(self) -> bool:
+        return True
+
+    def readline(self, size: int = -1) -> str:
+        if self.error is not None:
+            raise self.error
+        return ""
+
+
+def test_ctrl_c_still_aborts(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(sys, "stdin", _ConsoleLikeStdin(KeyboardInterrupt()))
     with pytest.raises(typer.Abort):
+        _ask("Text?")
+
+
+def test_the_end_of_input_is_told_apart_even_when_stdin_claims_to_be_a_terminal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(sys, "stdin", _ConsoleLikeStdin())
+    with pytest.raises(UsageError, match="input ended"):
         _ask("Text?")
 
 

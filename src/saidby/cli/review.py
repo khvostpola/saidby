@@ -176,8 +176,8 @@ def review(
 def _ask(question: str) -> str:
     try:
         answer: str = typer.prompt(question, default="", show_default=False)
-    except typer.Abort:
-        if sys.stdin.isatty():
+    except typer.Abort as aborted:
+        if not isinstance(aborted.__context__, EOFError):
             raise
         raise UsageError(
             _(
