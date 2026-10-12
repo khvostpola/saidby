@@ -74,6 +74,7 @@ def show(out_dir: Path) -> list[dict[str, object]]:
             "identified": s.identified,
             "score": s.score,
             "speech_s": s.speech_s,
+            "track": s.track,
             "merged_from": s.merged_from,
         }
         for s in folder.transcript.speakers

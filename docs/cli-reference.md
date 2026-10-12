@@ -119,6 +119,10 @@ Arguments:
 
 - `OUT_DIR`: Output folder of a finished run (the one `saidby process` wrote).
 
+| Option | Type | Default | What it does |
+|---|---|---|---|
+| `--json` | flag |  | Machine-readable output. |
+
 ### `saidby speakers map`
 
 Give speakers a person id and name without reprocessing audio.
@@ -129,8 +133,9 @@ Arguments:
 
 | Option | Type | Default | What it does |
 |---|---|---|---|
-| `--set` | str |  | LABEL=PERSON_ID or LABEL="Free name" (required) |
-| `--directory` | path |  | Directory to resolve person ids (default: the configured ones) |
+| `--set` | str |  | LABEL=PERSON (an id or a name) or LABEL="Free name" (required) |
+| `--directory` | path |  | Directory to find people in (default: the configured ones) |
+| `--add-missing` | flag |  | Add names that are not in the directory to its last file, without asking. |
 
 ### `saidby speakers merge`
 

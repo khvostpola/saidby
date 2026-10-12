@@ -138,6 +138,15 @@ If the diarizer split one person in two, or you want to rename someone, use
 `saidby speakers merge` and `saidby speakers map`: they rewrite the results without reprocessing
 audio.
 
+```bash
+saidby speakers show out/call                                  # who is who, in a table
+saidby speakers map out/call --set SPEAKER_00="Ana Gómez" --set SPEAKER_01=ben
+```
+
+`--set` takes a person from your directory by id, by name or by alias. A name that is not in the
+directory is used as it is for this folder; if you have a directory, `saidby` asks whether to add
+the person to it (or add them without asking with `--add-missing`).
+
 ## 6. Teach it your words
 
 Add the terms the recognizer gets wrong to the same file:

@@ -7,6 +7,9 @@ All notable changes are documented here, following
 ## [Unreleased]
 
 ### Added
+- `saidby speakers map --set LABEL=PERSON` finds the person by id, name or alias, and a new name
+  is offered for the directory: it asks on a terminal, or use `--add-missing`. Ids made from names
+  no longer break on accents.
 - The pixel-art cassette, drawn in the terminal with half-block characters. `saidby` with no
   arguments shows it with the models, the device from the last run, the glossary and the
   configuration in use; `saidby process` shows a three-row version. Plain text (or nothing)
@@ -46,6 +49,8 @@ All notable changes are documented here, following
   to the configured directory when `--directory` is not given.
 
 ### Changed
+- `saidby speakers show` prints a table (speaker, name, speech, how it was named, track); the JSON
+  it used to print is now `--json`, and gains the `track` of each speaker.
 - Errors print as `error: message  [id · exit N]` instead of `error: ClassName: message`. The id
   (`consent_missing`, `model_unavailable`...) and the number are stable, and are the way to look
   an error up in the docs.
