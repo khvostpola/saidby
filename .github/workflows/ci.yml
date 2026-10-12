@@ -39,7 +39,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-      - run: uv sync --all-extras
+      - run: uv sync --extra pyannote --extra eval
       - run: uv run mypy
 
   reuse:
@@ -74,7 +74,7 @@ jobs:
         with:
           enable-cache: true
       - run: uv python install ${{ matrix.python }}
-      - run: uv sync --python ${{ matrix.python }} --all-extras
+      - run: uv sync --python ${{ matrix.python }} --extra pyannote --extra eval
       - uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface/hub
