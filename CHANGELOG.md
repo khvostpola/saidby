@@ -19,7 +19,8 @@ All notable changes are documented here, following
   GPU is checked. `--progress json` gains `run.start` and `device` events.
 - `manifest.json` says why the CPU ran (`device.reason`: `requested_cpu`, `no_gpu` or
   `gpu_unusable`). Every run and `saidby doctor` also remember the last device check in
-  `~/.cache/saidby/device.json`, so the banner can show it without probing the GPU.
+  `~/.cache/saidby/device.json` (a forced `--device cpu` is not remembered, because it says
+  nothing about the machine), so the banner can show it without probing the GPU.
 - Message translation support: `--ui-lang` (or `SAIDBY_UI_LANG`, or your system language) picks
   the language of messages, with English for anything not translated. No translations ship yet.
 - `out` setting (`[saidby] out`, `SAIDBY_OUT`) with `saidby/` as the default, so

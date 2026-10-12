@@ -99,7 +99,8 @@ def check_device(requested: str = "auto") -> Check:
         device = dev.resolve_device(requested)
     except Exception as exc:
         return Check("device", "fail", str(exc))
-    write_cache(device)
+    if requested != "cpu":
+        write_cache(device)
     if device.kind == "cuda":
         return Check("device", "ok", f"auto selects the GPU ({device.name})")
     return Check("device", "ok", "auto selects the CPU", device.note)

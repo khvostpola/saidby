@@ -147,3 +147,9 @@ def test_doctor_remembers_the_verdict_for_the_banner(monkeypatch: pytest.MonkeyP
     cached = read_cache()
     assert cached is not None
     assert (cached.kind, cached.reason) == ("cpu", "gpu_unusable")
+
+
+def test_a_forced_cpu_check_says_nothing_about_the_machine(monkeypatch: pytest.MonkeyPatch) -> None:
+    _world(monkeypatch)
+    diagnose.check_device("cpu")
+    assert read_cache() is None

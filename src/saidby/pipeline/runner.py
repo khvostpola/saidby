@@ -111,7 +111,8 @@ class Pipeline:
             preload_runtime()
         with self.progress.phase(_("device"), _("checking the GPU")):
             self.device = resolve_device(self.settings.device)
-        write_cache(self.device)
+        if self.settings.device != "cpu":
+            write_cache(self.device)
         self.progress.device(self.device, self.settings.device)
         self.progress.track_usage(self.device, probe_for(self.device))
         if self.device.note:

@@ -242,10 +242,8 @@ def test_voiceprints_without_consent_are_skipped_and_reported(tmp_path: Path) ->
     assert "identify" not in [s.stage for s in manifest.stages]
 
 
-def test_the_run_records_why_it_used_the_cpu_and_remembers_the_device(tmp_path: Path) -> None:
+def test_the_run_records_why_it_used_the_cpu_and_forgets_a_forced_choice(tmp_path: Path) -> None:
     folder = _run(tmp_path, None)
     device = read_manifest(folder / "manifest.json").device
     assert (device.used, device.reason) == ("cpu", "requested_cpu")
-    cached = read_cache()
-    assert cached is not None
-    assert (cached.kind, cached.reason) == ("cpu", "requested_cpu")
+    assert read_cache() is None
