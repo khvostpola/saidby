@@ -6,6 +6,8 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-12
+
 ### Added
 - Windows support: `saidby` runs on Windows 11 with the CPU or an NVIDIA GPU. The `[cuda]` extra
   installs cuBLAS 12 there too; the GPU build of PyTorch comes from PyTorch's index, and the
