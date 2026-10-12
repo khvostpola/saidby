@@ -15,7 +15,7 @@ def format_rttm(uri: str, turns: list[Turn]) -> str:
 
 def write_rttm(path: Path, uri: str, turns: list[Turn]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(format_rttm(uri, turns), encoding="utf-8")
+    path.write_text(format_rttm(uri, turns), encoding="utf-8", newline="\n")
 
 
 def parse_rttm(text: str) -> list[Turn]:

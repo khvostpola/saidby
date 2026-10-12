@@ -8,7 +8,9 @@ from saidby.schema.transcript import Transcript
 
 def write_transcript(path: Path, transcript: Transcript) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(transcript.model_dump_json(by_alias=True, indent=1), encoding="utf-8")
+    path.write_text(
+        transcript.model_dump_json(by_alias=True, indent=1), encoding="utf-8", newline="\n"
+    )
 
 
 def read_transcript(path: Path) -> Transcript:

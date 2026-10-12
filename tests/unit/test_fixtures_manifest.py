@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2] / "fixtures"
-MANIFEST = json.loads((ROOT / "MANIFEST.json").read_text())
+MANIFEST = json.loads((ROOT / "MANIFEST.json").read_text(encoding="utf-8"))
 
 
 def test_every_file_matches_its_checksum() -> None:

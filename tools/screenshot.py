@@ -2,6 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
+import sys
+
+if sys.platform == "win32":
+    sys.exit("tools/screenshot.py drives a pty: run it on Linux")
+
 import fcntl
 import os
 import pty
@@ -10,7 +15,6 @@ import select
 import shutil
 import struct
 import subprocess
-import sys
 import tempfile
 import termios
 import time
@@ -311,7 +315,7 @@ def main(argv: list[str] | None = None) -> int:
     screen = Screen()
     screen.feed(raw.decode("utf-8", "replace"))
     page = args.out.with_suffix(".html")
-    page.write_text(PAGE.format(title=TITLE, body=screen.html()), encoding="utf-8")
+    page.write_text(PAGE.format(title=TITLE, body=screen.html()), encoding="utf-8", newline="\n")
     try:
         screenshot(chrome_command(args.chrome, args.flatpak, args.out.parent), page, args.out)
     finally:

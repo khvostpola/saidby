@@ -46,7 +46,8 @@ def _directory(tmp_path: Path) -> Path:
     path = tmp_path / "directory.yaml"
     path.write_text(
         "# team\nversion: 1\nlanguage: es\npeople:\n  - id: ana\n    name: Ana Gómez\n"
-        "    aliases: [Anita]\n"
+        "    aliases: [Anita]\n",
+        encoding="utf-8",
     )
     return path
 
@@ -81,11 +82,11 @@ def test_an_alias_and_an_id_resolve_too(tmp_path: Path) -> None:
 
 def test_a_new_name_is_not_added_without_a_terminal_unless_asked(tmp_path: Path) -> None:
     folder, directory = _folder(tmp_path), _directory(tmp_path)
-    before = directory.read_text()
+    before = directory.read_text(encoding="utf-8")
     result = _map(folder, directory, "--set", "SPEAKER_01=Carla Díaz")
     assert result.exit_code == 0, result.output  # type: ignore[attr-defined]
     assert _names(folder)["SPEAKER_01"] == ("carla-diaz", "Carla Díaz")
-    assert directory.read_text() == before
+    assert directory.read_text(encoding="utf-8") == before
 
 
 def test_add_missing_writes_the_person_to_the_directory(tmp_path: Path) -> None:
@@ -93,9 +94,9 @@ def test_add_missing_writes_the_person_to_the_directory(tmp_path: Path) -> None:
     result = _map(folder, directory, "--set", "SPEAKER_01=Carla Díaz", "--add-missing")
     assert result.exit_code == 0, result.output  # type: ignore[attr-defined]
     assert "added carla-diaz (Carla Díaz)" in result.output  # type: ignore[attr-defined]
-    saved = yaml.safe_load(directory.read_text())
+    saved = yaml.safe_load(directory.read_text(encoding="utf-8"))
     assert [p["id"] for p in saved["people"]] == ["ana", "carla-diaz"]
-    assert "# team" in directory.read_text()
+    assert "# team" in directory.read_text(encoding="utf-8")
     assert list(tmp_path.glob("directory.bak-*.yaml"))
     assert _names(folder)["SPEAKER_01"] == ("carla-diaz", "Carla Díaz")
 
@@ -121,7 +122,7 @@ def test_on_a_terminal_it_asks_before_adding(
     result = _map(folder, directory, "--set", "SPEAKER_00=Carla Díaz", "--set", "SPEAKER_01=Ben")
     assert result.exit_code == 0, result.output  # type: ignore[attr-defined]
     assert "Add it to" in prompts[0]
-    ids = [p["id"] for p in yaml.safe_load(directory.read_text())["people"]]
+    ids = [p["id"] for p in yaml.safe_load(directory.read_text(encoding="utf-8"))["people"]]
     assert ids == ["ana", "carla-diaz"]
     assert _names(folder)["SPEAKER_01"] == ("ben", "Ben")
 

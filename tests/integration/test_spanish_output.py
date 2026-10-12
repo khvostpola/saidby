@@ -35,6 +35,7 @@ def _saidby(*args: str, env: dict[str, str] | None = None) -> subprocess.Complet
         text=True,
         check=False,
         env={**base, **(env or {})},
+        encoding="utf-8",
     )
 
 
@@ -120,8 +121,8 @@ def test_failures_are_recorded_in_english_even_when_shown_in_spanish(tmp_path: P
     missing = tmp_path / "nope.m4a"
     result = pipeline.run([missing], tmp_path / "out")[0]
     assert result.status == "failed"
-    manifest = json.loads((result.out_dir / "manifest.json").read_text())
+    manifest = json.loads((result.out_dir / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["error"] == f"input file not found: {missing}"
-    log = (result.out_dir / "logs" / "run.log").read_text()
+    log = (result.out_dir / "logs" / "run.log").read_text(encoding="utf-8")
     assert f"InputError: input file not found: {missing}" in log
     assert "no se encontró" not in log

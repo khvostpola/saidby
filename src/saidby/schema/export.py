@@ -26,7 +26,7 @@ def render(name: str) -> str:
 def write_all(folder: Path) -> None:
     folder.mkdir(parents=True, exist_ok=True)
     for name in SCHEMAS:
-        (folder / f"{name}.schema.json").write_text(render(name), encoding="utf-8")
+        (folder / f"{name}.schema.json").write_text(render(name), encoding="utf-8", newline="\n")
 
 
 def main() -> None:

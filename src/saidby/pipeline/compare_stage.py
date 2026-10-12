@@ -72,9 +72,9 @@ class CompareStage:
                 "disagreement_s": result.disagreement_s,
                 "disagreement_spans": [{"start": s, "end": e} for s, e in result.spans],
             }
-            artifact.write_text(json.dumps(record), encoding="utf-8")
+            artifact.write_text(json.dumps(record), encoding="utf-8", newline="\n")
             (rec.work_dir / "compare.diarization.json").write_text(
-                other.model_dump_json(by_alias=True), encoding="utf-8"
+                other.model_dump_json(by_alias=True), encoding="utf-8", newline="\n"
             )
             cache.write_marker(rec.work_dir, "compare", key)
         self.results[rec.slug] = record

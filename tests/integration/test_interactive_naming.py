@@ -50,7 +50,8 @@ def _directory(tmp_path: Path) -> Path:
     path = tmp_path / "directory.yaml"
     path.write_text(
         "# team\nversion: 1\nlanguage: es\npeople:\n  - id: ana\n    name: Ana Gómez\n"
-        "  - id: ben\n    name: Ben Ruiz\n"
+        "  - id: ben\n    name: Ben Ruiz\n",
+        encoding="utf-8",
     )
     return path
 
@@ -147,7 +148,7 @@ def test_naming_a_directory_person_and_a_new_one(tmp_path: Path) -> None:
     assert (out_dir / "speakers/carla-diaz.flac").exists()
     ids = [p.id for p in load_directory_set([directory]).merged.people]
     assert ids == ["ana", "ben", "carla-diaz"]
-    assert "# team" in directory.read_text()
+    assert "# team" in directory.read_text(encoding="utf-8")
     assert list(tmp_path.glob("directory.bak-*.yaml"))
     assert "Carla Díaz added to" in out.getvalue()
     assert "2 tracks renamed" in out.getvalue()
@@ -179,21 +180,21 @@ def test_the_same_new_name_cannot_be_used_twice(tmp_path: Path) -> None:
 
 def test_keeping_everything_changes_nothing(tmp_path: Path) -> None:
     out_dir, directory = _folder(tmp_path), _directory(tmp_path)
-    before = (out_dir / "manifest.json").read_text()
+    before = (out_dir / "manifest.json").read_text(encoding="utf-8")
     ui, out, _ = _session(["", "", "", ""])
     assert name_voices(ui, out_dir, [directory], title="t", player=Played()) is None
     assert "Nothing to rename." in out.getvalue()
-    assert (out_dir / "manifest.json").read_text() == before
+    assert (out_dir / "manifest.json").read_text(encoding="utf-8") == before
 
 
 def test_declining_the_confirmation_changes_nothing(tmp_path: Path) -> None:
     out_dir, directory = _folder(tmp_path), _directory(tmp_path)
-    before = directory.read_text()
+    before = directory.read_text(encoding="utf-8")
     ui, out, _ = _session(["", "ana", "Carla", "n"])
     assert name_voices(ui, out_dir, [directory], title="t", player=Played()) is None
     assert "nothing was changed" in out.getvalue()
     assert _names(out_dir)["SPEAKER_00"] == (None, None)
-    assert directory.read_text() == before
+    assert directory.read_text(encoding="utf-8") == before
 
 
 def test_skipping_and_quitting_leave_the_folder_alone(tmp_path: Path) -> None:
@@ -240,7 +241,7 @@ def test_the_command_runs_the_whole_flow_on_a_terminal(
     )
     assert result.exit_code == 0, result.output
     assert _names(out_dir)["SPEAKER_00"] == ("ben", "Ben Ruiz")
-    assert yaml.safe_load(directory.read_text())["people"][1]["id"] == "ben"
+    assert yaml.safe_load(directory.read_text(encoding="utf-8"))["people"][1]["id"] == "ben"
 
 
 def test_a_voice_that_keeps_its_name_still_blocks_that_name_for_another(tmp_path: Path) -> None:
@@ -292,7 +293,9 @@ def test_a_name_with_no_letters_or_digits_is_refused(tmp_path: Path) -> None:
 def test_the_promised_id_is_the_one_that_gets_written(tmp_path: Path) -> None:
     out_dir = _folder(tmp_path)
     directory = tmp_path / "d.yaml"
-    directory.write_text("version: 1\nlanguage: es\npeople:\n  - id: ana-gomez\n    name: Ana\n")
+    directory.write_text(
+        "version: 1\nlanguage: es\npeople:\n  - id: ana-gomez\n    name: Ana\n", encoding="utf-8"
+    )
     ui, out, _ = _session(["", "Ana Gómez", "", ""])
     naming = name_voices(ui, out_dir, [directory], title="t", player=Played())
     assert naming is not None
@@ -323,7 +326,7 @@ def test_with_the_questions_off_a_new_name_is_not_offered_for_the_directory(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     out_dir, directory = _folder(tmp_path), _directory(tmp_path)
-    before = directory.read_text()
+    before = directory.read_text(encoding="utf-8")
     monkeypatch.setattr("saidby.cli.ui.interactive_streams", lambda: True)
     monkeypatch.setenv("SAIDBY_INTERACTIVE", "false")
     result = runner.invoke(
@@ -339,5 +342,5 @@ def test_with_the_questions_off_a_new_name_is_not_offered_for_the_directory(
         ],
     )
     assert result.exit_code == 0, result.output
-    assert directory.read_text() == before
+    assert directory.read_text(encoding="utf-8") == before
     assert _names(out_dir)["SPEAKER_00"] == ("carla", "Carla")

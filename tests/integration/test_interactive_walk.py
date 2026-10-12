@@ -61,7 +61,8 @@ def _directory(tmp_path: Path) -> Path:
     path = tmp_path / "directory.yaml"
     path.write_text(
         "version: 1\nlanguage: es\npeople:\n  - id: ana\n    name: Ana\n"
-        "  - id: ben\n    name: Ben\nterms:\n  - term: Acme\n"
+        "  - id: ben\n    name: Ben\nterms:\n  - term: Acme\n",
+        encoding="utf-8",
     )
     return path
 
@@ -108,9 +109,9 @@ def test_voiceprints_are_stored_with_consent_when_asked(work: Path) -> None:
     ui, out, _ = _session(answers)
     outcomes = walk_folders(ui, results, settings)
     assert outcomes[0].voiceprints == 2
-    saved = yaml.safe_load(directory.read_text())
+    saved = yaml.safe_load(directory.read_text(encoding="utf-8"))
     assert all("voiceprint" in p for p in saved["people"])
-    assert len(yaml.safe_load((work / "consent.yaml").read_text())) == 2
+    assert len(yaml.safe_load((work / "consent.yaml").read_text(encoding="utf-8"))) == 2
     assert "2 voiceprints stored" in out.getvalue()
     assert read_manifest(results[0].out_dir / "manifest.json").edits[-1]["voiceprints"] == 2
 
@@ -158,10 +159,10 @@ def test_run_terms_are_saved_to_the_glossary_only_when_asked(work: Path) -> None
     plan = _plan(settings, ["Acme", "Zeta"], {})
     ui, out, _ = _session(["n"])
     finish_run(ui, [FIXTURE], results, plan, [], None)
-    assert "Zeta" not in directory.read_text()
+    assert "Zeta" not in directory.read_text(encoding="utf-8")
     ui, out, _ = _session(["y"])
     finish_run(ui, [FIXTURE], results, plan, [], None)
-    terms = [t["term"] for t in yaml.safe_load(directory.read_text())["terms"]]
+    terms = [t["term"] for t in yaml.safe_load(directory.read_text(encoding="utf-8"))["terms"]]
     assert terms == ["Acme", "Zeta"]
     assert list(work.glob("directory.bak-*.yaml"))
     assert "1 term saved to" in out.getvalue()
@@ -173,10 +174,11 @@ def test_without_a_glossary_the_terms_can_start_one_and_register_it(work: Path) 
     plan = _plan(settings, ["Acme"], {})
     ui, out, prompts = _session(["y", "y"])
     finish_run(ui, [FIXTURE], results, plan, [], None)
-    assert [t["term"] for t in yaml.safe_load((work / "directory.yaml").read_text())["terms"]] == [
-        "Acme"
-    ]
-    assert tomllib.loads((work / "saidby.toml").read_text()) == {
+    assert [
+        t["term"]
+        for t in yaml.safe_load((work / "directory.yaml").read_text(encoding="utf-8"))["terms"]
+    ] == ["Acme"]
+    assert tomllib.loads((work / "saidby.toml").read_text(encoding="utf-8")) == {
         "glossary": {"directory": ["directory.yaml"]}
     }
     assert any("new glossary" in p for p in prompts)
@@ -184,13 +186,13 @@ def test_without_a_glossary_the_terms_can_start_one_and_register_it(work: Path) 
 
 
 def test_chosen_defaults_are_saved_into_the_project_file(work: Path) -> None:
-    (work / "saidby.toml").write_text('# mine\n[saidby]\ndevice = "cpu"\n')
+    (work / "saidby.toml").write_text('# mine\n[saidby]\ndevice = "cpu"\n', encoding="utf-8")
     settings = _settings(None, out=Path("results"))
     results = _run(work, settings)
     chosen = {"language": "es", "out": "results"}
     ui, out, _ = _session([""])
     finish_run(ui, [FIXTURE], results, _plan(settings, [], chosen), [], None)
-    text = (work / "saidby.toml").read_text()
+    text = (work / "saidby.toml").read_text(encoding="utf-8")
     assert text.startswith("# mine")
     assert tomllib.loads(text) == {"saidby": {"device": "cpu", "language": "es", "out": "results"}}
     assert "settings  saved to ./saidby.toml" in out.getvalue()
@@ -302,15 +304,20 @@ def test_a_failure_while_storing_voiceprints_does_not_end_the_walk(
 
 
 def test_a_dropped_glossary_is_saved_or_flagged_as_for_this_run_only(work: Path) -> None:
-    (work / "saidby.toml").write_text('[glossary]\ndirectory = ["directory.yaml"]\n')
+    (work / "saidby.toml").write_text(
+        '[glossary]\ndirectory = ["directory.yaml"]\n', encoding="utf-8"
+    )
     settings = _settings(None)
     results = _run(work, settings)
     plan = _plan(settings, [], {"directory": ""})
     ui, out, _ = _session(["n"])
     finish_run(ui, [FIXTURE], results, plan, [], None)
     assert "none for this run only; the next run uses the configured one" in out.getvalue()
-    assert "directory" in (work / "saidby.toml").read_text()
+    assert "directory" in (work / "saidby.toml").read_text(encoding="utf-8")
     ui, out, _ = _session([""])
     finish_run(ui, [FIXTURE], results, plan, [], None)
-    assert tomllib.loads((work / "saidby.toml").read_text())["glossary"]["directory"] == []
+    assert (
+        tomllib.loads((work / "saidby.toml").read_text(encoding="utf-8"))["glossary"]["directory"]
+        == []
+    )
     assert "none for this run only" not in out.getvalue()

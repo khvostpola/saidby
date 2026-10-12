@@ -238,10 +238,11 @@ def test_glossary_and_config_rows_describe_the_folder(
     ]
     (tmp_path / "directory.yaml").write_text(
         "version: 1\nlanguage: es\npeople:\n  - id: ana\n    name: Ana\nterms:\n  - term: Acme\n"
-        "  - term: Rappi\n"
+        "  - term: Rappi\n",
+        encoding="utf-8",
     )
     (tmp_path / "saidby.toml").write_text(
-        '[saidby]\nlanguage = "es"\n[glossary]\ndirectory = "directory.yaml"\n'
+        '[saidby]\nlanguage = "es"\n[glossary]\ndirectory = "directory.yaml"\n', encoding="utf-8"
     )
     rows, has_config = gather_rows()
     assert has_config
@@ -254,7 +255,7 @@ def test_a_broken_config_shows_up_as_an_alert_row(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.chdir(tmp_path)
-    (tmp_path / "saidby.toml").write_text("this is not toml")
+    (tmp_path / "saidby.toml").write_text("this is not toml", encoding="utf-8")
     rows, has_config = gather_rows()
     config = next(r for r in rows if r.label == "Config")
     assert config.mark == "alert"

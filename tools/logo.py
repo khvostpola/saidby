@@ -74,5 +74,5 @@ def build() -> str:
 
 
 if __name__ == "__main__":
-    Path("docs/img/logo.svg").write_text(build(), encoding="utf-8")
+    Path("docs/img/logo.svg").write_text(build(), encoding="utf-8", newline="\n")
     print("wrote docs/img/logo.svg")

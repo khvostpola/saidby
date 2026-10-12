@@ -81,7 +81,10 @@ target-version = "py312"
 src = ["src", "tests", "tools"]
 
 [tool.ruff.lint]
+preview = true
+explicit-preview-rules = true
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "PL", "RUF", "PT", "N", "TC"]
+extend-select = ["PLW1514"]
 ignore = ["PLR0913", "PLR0917", "PLR2004", "PLC0415"]
 
 [tool.ruff.lint.per-file-ignores]

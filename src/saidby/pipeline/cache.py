@@ -56,7 +56,7 @@ def read_marker(work_dir: Path, stage: str) -> dict[str, Any] | None:
 
 def write_marker(work_dir: Path, stage: str, key: str, **extra: Any) -> None:
     marker_path(work_dir, stage).write_text(
-        json.dumps({"key": key, **extra}, sort_keys=True), encoding="utf-8"
+        json.dumps({"key": key, **extra}, sort_keys=True), encoding="utf-8", newline="\n"
     )
 
 

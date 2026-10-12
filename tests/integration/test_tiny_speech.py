@@ -42,10 +42,11 @@ def test_tiny_transcribes_clean_conversation_offline(tmp_path: Path) -> None:
     results = pipeline.run([CONV.with_suffix(".flac")], tmp_path)
     assert results[0].status == "ok"
     transcript = read_transcript(tmp_path / "dev-conv-01" / "transcript.words.json")
-    expected = json.loads(CONV.with_suffix(".expected.json").read_text())["text"]
+    expected = json.loads(CONV.with_suffix(".expected.json").read_text(encoding="utf-8"))["text"]
     hypothesis = " ".join(w.word for w in transcript.words())
     wer = jiwer.wer(" ".join(_normalize(expected)), " ".join(_normalize(hypothesis)))
     assert wer < 0.6
     assert {s.label for s in transcript.speakers} == {
-        t["speaker"] for t in json.loads(CONV.with_suffix(".expected.json").read_text())["turns"]
+        t["speaker"]
+        for t in json.loads(CONV.with_suffix(".expected.json").read_text(encoding="utf-8"))["turns"]
     }

@@ -23,4 +23,4 @@ def test_synthetic_fixture_matches_generator() -> None:
 
 def test_synthetic_rttm_matches_generator() -> None:
     path = ROOT / "fixtures/synthetic/tones_2spk_10s.rttm"
-    assert path.read_text() == synthetic_rttm("tones_2spk_10s")
+    assert path.read_text(encoding="utf-8") == synthetic_rttm("tones_2spk_10s")

@@ -32,7 +32,9 @@ def _slug(heading: str) -> str:
 
 
 def _anchors(path: Path) -> set[str]:
-    return {_slug(m) for m in re.findall(r"^#{1,6}\s+(.*)$", path.read_text(), re.M)}
+    return {
+        _slug(m) for m in re.findall(r"^#{1,6}\s+(.*)$", path.read_text(encoding="utf-8"), re.M)
+    }
 
 
 def _local(target: str, source: Path) -> tuple[Path, str] | None:
@@ -49,7 +51,7 @@ def _local(target: str, source: Path) -> tuple[Path, str] | None:
 
 @pytest.mark.parametrize("doc", DOCS, ids=lambda p: p.name)
 def test_links_images_and_anchors_resolve(doc: Path) -> None:
-    text = doc.read_text()
+    text = doc.read_text(encoding="utf-8")
     broken = []
     images = [a or b for a, b in IMAGE.findall(text)]
     for target in [*LINK.findall(text), *images]:
@@ -78,7 +80,7 @@ def _commands() -> dict[str, Any]:
 def _doc_commands() -> list[tuple[str, str]]:
     found = []
     for doc in DOCS:
-        for language, block in FENCE.findall(doc.read_text()):
+        for language, block in FENCE.findall(doc.read_text(encoding="utf-8")):
             if language not in {"bash", "sh", ""}:
                 continue
             joined = re.sub(r"\\\n\s*", " ", block)
@@ -111,7 +113,9 @@ def test_every_documented_command_and_option_exists(doc: str, line: str) -> None
 
 
 def test_cli_reference_is_up_to_date() -> None:
-    assert (ROOT / "docs/cli-reference.md").read_text() == gen_cli_reference.render(), (
+    assert (ROOT / "docs/cli-reference.md").read_text(
+        encoding="utf-8"
+    ) == gen_cli_reference.render(), (
         "docs/cli-reference.md is stale: run `uv run python tools/gen_cli_reference.py`"
     )
 
@@ -121,12 +125,18 @@ DIAGRAM_TYPES = {"flowchart", "sequenceDiagram", "gantt", "stateDiagram-v2", "ti
 
 
 def _mermaid_blocks() -> list[tuple[str, str]]:
-    return [(doc.name, block) for doc in DOCS for block in MERMAID.findall(doc.read_text())]
+    return [
+        (doc.name, block)
+        for doc in DOCS
+        for block in MERMAID.findall(doc.read_text(encoding="utf-8"))
+    ]
 
 
 def test_there_are_diagrams_and_readme_has_none() -> None:
     assert len(_mermaid_blocks()) >= 5
-    assert "```mermaid" not in (ROOT / "README.md").read_text(), "PyPI does not render Mermaid"
+    assert "```mermaid" not in (ROOT / "README.md").read_text(encoding="utf-8"), (
+        "PyPI does not render Mermaid"
+    )
 
 
 @pytest.mark.parametrize(("doc", "block"), _mermaid_blocks())

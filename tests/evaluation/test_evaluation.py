@@ -58,7 +58,8 @@ def _directory(tmp_path: Path) -> Path:
                     {"term": "parce", "type": "dialect", "variants": ["parse"]},
                 ],
             }
-        )
+        ),
+        encoding="utf-8",
     )
     return path
 
@@ -117,7 +118,7 @@ def test_term_scoring_counts_min_of_reference_and_hypothesis() -> None:
 def test_score_run_end_to_end(tmp_path: Path) -> None:
     run = _run(tmp_path, "run", "hola Acme con Ana hoy")
     ref = tmp_path / "ref.txt"
-    ref.write_text("00:00-00:05 | Ana | hola Acme con Ana hoy\n")
+    ref.write_text("00:00-00:05 | Ana | hola Acme con Ana hoy\n", encoding="utf-8")
     result = score_run(ref, run, _directory(tmp_path))
     assert result["wer_pct"] == 0.0
     assert result["terms_correct_pct"] == 100.0
@@ -134,7 +135,8 @@ def _arbitration(tmp_path: Path) -> Path:
     )
     ref = tmp_path / "ref.txt"
     ref.write_text(
-        "00:00-00:09 | ? | uno dos tres Acme cinco seis siete ocho nueve diez once doce\n"
+        "00:00-00:09 | ? | uno dos tres Acme cinco seis siete ocho nueve diez once doce\n",
+        encoding="utf-8",
     )
     out = tmp_path / "arb"
     summary = arbitrate.build(out, "call1", "Call 1", FIXTURE, ref, candidate, baseline)
@@ -145,15 +147,17 @@ def _arbitration(tmp_path: Path) -> Path:
 @pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg not installed")
 def test_arbitration_scoring_votes_and_typed_text(tmp_path: Path) -> None:
     out = _arbitration(tmp_path)
-    items = json.loads((out / "items.json").read_text())
-    keys = json.loads((out / "keys.json").read_text())
+    items = json.loads((out / "items.json").read_text(encoding="utf-8"))
+    keys = json.loads((out / "keys.json").read_text(encoding="utf-8"))
     assert (out / "clips" / items[0]["clip"]).exists()
     answers = []
     for item in items:
         shown_a = keys[item["id"]]["a"]
         choice = "a" if shown_a == "baseline" else "b"
         answers.append({"id": item["id"], "choice": choice})
-    (out / "answers.jsonl").write_text("".join(json.dumps(a) + "\n" for a in answers))
+    (out / "answers.jsonl").write_text(
+        "".join(json.dumps(a) + "\n" for a in answers), encoding="utf-8"
+    )
     first = arbitrate.score(out, margin=1.0)[0]
     assert first["judged"] == len(items)
     assert first["votes"]["baseline"] == len(items)
@@ -165,15 +169,17 @@ def test_arbitration_scoring_votes_and_typed_text(tmp_path: Path) -> None:
 @pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg not installed")
 def test_typed_text_overrides_vote_and_ties_are_neutral(tmp_path: Path) -> None:
     out = _arbitration(tmp_path)
-    items = json.loads((out / "items.json").read_text())
+    items = json.loads((out / "items.json").read_text(encoding="utf-8"))
     (out / "answers.jsonl").write_text(
-        "".join(json.dumps({"id": i["id"], "choice": "neither"}) + "\n" for i in items)
+        "".join(json.dumps({"id": i["id"], "choice": "neither"}) + "\n" for i in items),
+        encoding="utf-8",
     )
     neutral = arbitrate.score(out)[0]
     assert neutral["delta_errors"] == 0
     assert neutral["point_estimate_not_worse"] is True
     (out / "truths.jsonl").write_text(
-        "".join(json.dumps({"id": i["id"], "text": "Acme once"}) + "\n" for i in items)
+        "".join(json.dumps({"id": i["id"], "text": "Acme once"}) + "\n" for i in items),
+        encoding="utf-8",
     )
     typed = arbitrate.score(out)[0]
     assert sum(typed["typed"].values()) == len(items)
@@ -189,7 +195,7 @@ def test_server_endpoints_and_privacy(tmp_path: Path) -> None:
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     base = f"http://127.0.0.1:{port}"
-    item = json.loads((out / "items.json").read_text())[0]
+    item = json.loads((out / "items.json").read_text(encoding="utf-8"))[0]
 
     def post(path: str, body: dict[str, Any]) -> int:
         request = urllib.request.Request(

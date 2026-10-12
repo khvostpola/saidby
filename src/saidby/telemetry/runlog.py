@@ -12,7 +12,7 @@ class RunLog:
 
     def write(self, level: str, stage: str, message: str) -> None:
         stamp = datetime.now().strftime("%H:%M:%S")
-        with self.path.open("a", encoding="utf-8") as fh:
+        with self.path.open("a", encoding="utf-8", newline="\n") as fh:
             fh.write(f"{stamp} {level} {stage}: {message}\n")
 
     def note(self, stage: str, message: str) -> None:

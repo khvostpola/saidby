@@ -88,7 +88,7 @@ def _directory(tmp_path: Path) -> Path:
         ],
     }
     path = tmp_path / "directory.yaml"
-    path.write_text(yaml.safe_dump(data))
+    path.write_text(yaml.safe_dump(data), encoding="utf-8")
     return path
 
 
@@ -179,12 +179,13 @@ def test_llm_correction_runs_after_bias_and_logs(tmp_path: Path) -> None:
     assert manifest.glossary is not None
     assert manifest.glossary["llm"]["accepted"] == 1
     events = [
-        json.loads(line) for line in (folder / "logs/telemetry.jsonl").read_text().splitlines()
+        json.loads(line)
+        for line in (folder / "logs/telemetry.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     correct = next(e for e in events if e["event"] == "stage.end" and e["stage"] == "correct")
     assert correct["llm_accepted"] == 1
-    assert "Converge" not in (folder / "logs/telemetry.jsonl").read_text()
-    assert "Converge" not in (folder / "logs/run.log").read_text()
+    assert "Converge" not in (folder / "logs/telemetry.jsonl").read_text(encoding="utf-8")
+    assert "Converge" not in (folder / "logs/run.log").read_text(encoding="utf-8")
 
 
 def test_correct_without_directory_is_a_usage_error(tmp_path: Path) -> None:
@@ -226,7 +227,10 @@ def test_windows_mode_biases_only_candidate_windows(tmp_path: Path) -> None:
     assert manifest.glossary is not None
     assert manifest.glossary["bias_mode"] == "windows"
     assert manifest.glossary["bias_windows"] == len(windows)
-    events = [json.loads(x) for x in (folder / "logs/telemetry.jsonl").read_text().splitlines()]
+    events = [
+        json.loads(x)
+        for x in (folder / "logs/telemetry.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
     end = next(e for e in events if e["event"] == "stage.end" and e["stage"] == "asr_bias")
     assert end["bias_windows"] == len(windows)
 
@@ -262,4 +266,4 @@ def test_extra_terms_join_the_directory_without_duplicating_its_terms(tmp_path: 
     assert record is not None
     assert (record["terms"], record["extra_terms"]) == (4, 3)
     assert "directory.yaml" in Path(record["path"]).name
-    assert "Rappi" not in (tmp_path / "directory.yaml").read_text()
+    assert "Rappi" not in (tmp_path / "directory.yaml").read_text(encoding="utf-8")

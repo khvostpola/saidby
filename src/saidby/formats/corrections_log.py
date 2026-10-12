@@ -11,6 +11,7 @@ def write_corrections(path: Path, corrections: list[Correction]) -> None:
     path.write_text(
         "".join(c.model_dump_json(by_alias=True, exclude_none=True) + "\n" for c in corrections),
         encoding="utf-8",
+        newline="\n",
     )
 
 

@@ -26,7 +26,7 @@ def test_sink_writes_one_json_line(tmp_path: Path) -> None:
         wall_s=1.5,
         rtf=0.1,
     )
-    lines = (tmp_path / "logs" / "telemetry.jsonl").read_text().splitlines()
+    lines = (tmp_path / "logs" / "telemetry.jsonl").read_text(encoding="utf-8").splitlines()
     assert len(lines) == 1
     record = json.loads(lines[0])
     assert record["event"] == "stage.end"

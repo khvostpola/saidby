@@ -6,6 +6,24 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+### Added
+- `SAIDBY_CONFIG_DIR` and `SAIDBY_CACHE_DIR` override where the global config and the device
+  cache live.
+
+### Changed
+- On Windows the global config lives in `%APPDATA%\saidby` and the device cache in
+  `%LOCALAPPDATA%\saidby\Cache`; on macOS in `~/Library/Application Support/saidby` and
+  `~/Library/Caches/saidby`. Linux keeps `~/.config/saidby` and `~/.cache/saidby`.
+- Every file saidby writes is UTF-8 with LF line endings on every system, and the paths it
+  stores in `saidby.toml`, `manifest.json` and `directory.yaml` use forward slashes.
+- Output folders avoid the names Windows reserves (`con`, `nul`, `com1` and the like get a `_`),
+  and two recordings whose names differ only in case no longer share a folder.
+- On Windows the commands saidby suggests are quoted for PowerShell.
+
+### Fixed
+- The language guessed for a new directory on Windows ("Spanish_Colombia" came out as "Sp").
+- A path pasted with the quotes that "Copy as path" adds is accepted in the guided questions.
+
 ## [0.6.0] - 2026-10-12
 
 ### Changed

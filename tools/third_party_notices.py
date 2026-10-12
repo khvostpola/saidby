@@ -12,7 +12,7 @@ from packaging.requirements import Requirement
 from packaging.utils import canonicalize_name
 
 ROOT = Path(__file__).resolve().parent.parent
-POLICY = tomllib.loads((ROOT / "tools" / "licenses_policy.toml").read_text())
+POLICY = tomllib.loads((ROOT / "tools" / "licenses_policy.toml").read_text(encoding="utf-8"))
 OUTPUT = ROOT / "THIRD_PARTY_NOTICES.md"
 
 
@@ -100,7 +100,7 @@ def main() -> None:
         print("licenses outside the allow-list:", *violations, sep="\n  ", file=sys.stderr)
         sys.exit(1)
     if args.write:
-        OUTPUT.write_text(render(rows))
+        OUTPUT.write_text(render(rows), encoding="utf-8", newline="\n")
     print(f"{len(rows)} runtime dependencies, all within policy")
 
 

@@ -50,7 +50,10 @@ def test_disagreeing_second_diarizer_is_recorded(tmp_path: Path) -> None:
     spans = manifest.compare["disagreement_spans"]
     assert spans
     assert all(0 <= s["start"] < s["end"] <= 10.5 for s in spans)
-    events = [json.loads(x) for x in (folder / "logs/telemetry.jsonl").read_text().splitlines()]
+    events = [
+        json.loads(x)
+        for x in (folder / "logs/telemetry.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
     end = next(e for e in events if e["event"] == "stage.end" and e["stage"] == "compare")
     assert end["compare_engine"] == "fake"
     assert end["disagreement_spans"] == len(spans)

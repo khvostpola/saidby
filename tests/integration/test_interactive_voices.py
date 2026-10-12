@@ -51,7 +51,8 @@ def _directory(tmp_path: Path) -> Path:
     path = tmp_path / "directory.yaml"
     path.write_text(
         "version: 1\nlanguage: es\npeople:\n  - id: alice\n    name: Alice\n"
-        "  - id: bob\n    name: Bob\n"
+        "  - id: bob\n    name: Bob\n",
+        encoding="utf-8",
     )
     return path
 
@@ -81,12 +82,12 @@ def _store(ui: Ui, folder: Path, directory: Path) -> object:
 
 
 def _people(directory: Path) -> dict[str, dict[str, object]]:
-    return {p["id"]: p for p in yaml.safe_load(directory.read_text())["people"]}
+    return {p["id"]: p for p in yaml.safe_load(directory.read_text(encoding="utf-8"))["people"]}
 
 
 def _consent(directory: Path) -> list[dict[str, str]]:
     path = directory.with_name("consent.yaml")
-    return yaml.safe_load(path.read_text()) if path.exists() else []
+    return yaml.safe_load(path.read_text(encoding="utf-8")) if path.exists() else []
 
 
 def test_each_person_who_agreed_gets_a_voiceprint_and_a_consent_record(tmp_path: Path) -> None:
@@ -125,10 +126,10 @@ def test_a_person_who_did_not_agree_is_not_stored_and_leaves_no_record(tmp_path:
 
 def test_nobody_agreeing_changes_nothing(tmp_path: Path) -> None:
     folder, directory = _folder(tmp_path), _directory(tmp_path)
-    before = directory.read_text()
+    before = directory.read_text(encoding="utf-8")
     ui, out, _ = _session(["n", "n"])
     assert _store(ui, folder, directory) is None
-    assert directory.read_text() == before
+    assert directory.read_text(encoding="utf-8") == before
     assert _consent(directory) == []
     assert not list(tmp_path.glob("directory.bak-*.yaml"))
     assert "no voiceprint was stored" in out.getvalue()
@@ -136,17 +137,17 @@ def test_nobody_agreeing_changes_nothing(tmp_path: Path) -> None:
 
 def test_declining_the_final_question_changes_nothing(tmp_path: Path) -> None:
     folder, directory = _folder(tmp_path), _directory(tmp_path)
-    before = directory.read_text()
+    before = directory.read_text(encoding="utf-8")
     ui, out, _ = _session(["y", "signed form", "", "n", "n"])
     assert _store(ui, folder, directory) is None
-    assert directory.read_text() == before
+    assert directory.read_text(encoding="utf-8") == before
     assert _consent(directory) == []
     assert "nothing was stored" in out.getvalue()
 
 
 def test_an_interruption_before_the_end_changes_nothing(tmp_path: Path) -> None:
     folder, directory = _folder(tmp_path), _directory(tmp_path)
-    before = directory.read_text()
+    before = directory.read_text(encoding="utf-8")
     feed = iter(["y", "signed form", ""])
 
     def fake_input(prompt: str) -> str:
@@ -158,7 +159,7 @@ def test_an_interruption_before_the_end_changes_nothing(tmp_path: Path) -> None:
     ui = Ui(PLAIN, input_fn=fake_input, out=io.StringIO())
     with pytest.raises(KeyboardInterrupt):
         _store(ui, folder, directory)
-    assert directory.read_text() == before
+    assert directory.read_text(encoding="utf-8") == before
     assert _consent(directory) == []
 
 
@@ -174,7 +175,8 @@ def test_consent_already_on_record_is_shown_and_not_asked_again(tmp_path: Path) 
                     "date": "2026-10-01",
                 }
             ]
-        )
+        ),
+        encoding="utf-8",
     )
     ui, out, prompts = _session(["", "n", ""])
     assert _store(ui, folder, directory) is not None
@@ -202,9 +204,9 @@ def test_a_missing_original_recording_stops_before_any_consent_is_recorded(
 ) -> None:
     folder, directory = _folder(tmp_path), _directory(tmp_path)
     manifest = folder / "manifest.json"
-    data = json.loads(manifest.read_text())
+    data = json.loads(manifest.read_text(encoding="utf-8"))
     data["source"]["path"] = "gone.m4a"
-    manifest.write_text(json.dumps(data))
+    manifest.write_text(json.dumps(data), encoding="utf-8")
     ui, _, _ = _session(["y", "signed form", "", "n", ""])
     with pytest.raises(InputError, match=r"original recording not found: gone\.m4a"):
         _store(ui, folder, directory)
@@ -225,7 +227,9 @@ def test_voices_without_a_name_are_pointed_to_speakers_map(tmp_path: Path) -> No
 def test_a_named_voice_missing_from_the_file_says_where_to_look(tmp_path: Path) -> None:
     folder = _folder(tmp_path)
     directory = tmp_path / "other.yaml"
-    directory.write_text("version: 1\nlanguage: es\npeople:\n  - id: alice\n    name: Alice\n")
+    directory.write_text(
+        "version: 1\nlanguage: es\npeople:\n  - id: alice\n    name: Alice\n", encoding="utf-8"
+    )
     ui, out, _ = _session(["n"])
     assert _store(ui, folder, directory) is None
     assert "Bob are not in" in out.getvalue()

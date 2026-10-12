@@ -39,14 +39,15 @@ def _directory(
     path.write_text(
         yaml.safe_dump(
             {"version": 1, "language": language, "people": people or [], "terms": terms or []}
-        )
+        ),
+        encoding="utf-8",
     )
     if consented:
         records = [
             {"person": p, "source": "form", "declared_by": p, "date": "2026-10-12"}
             for p in consented
         ]
-        consent_path(path).write_text(yaml.safe_dump(records))
+        consent_path(path).write_text(yaml.safe_dump(records), encoding="utf-8")
     return path
 
 
@@ -100,7 +101,8 @@ def test_consent_by_person_name_also_counts(tmp_path: Path) -> None:
     consent_path(path).write_text(
         yaml.safe_dump(
             [{"person": "Ana", "source": "f", "declared_by": "Ana", "date": "2026-10-12"}]
-        )
+        ),
+        encoding="utf-8",
     )
     result = load_directory_set([path])
     assert result.merged.people[0].voiceprint is not None

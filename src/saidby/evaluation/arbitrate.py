@@ -153,9 +153,13 @@ def build(
         "baseline": str(baseline),
     }
     meta[name] = summary
-    (out / "items.json").write_text(json.dumps(items, ensure_ascii=False), encoding="utf-8")
-    (out / "keys.json").write_text(json.dumps(keys, indent=1), encoding="utf-8")
-    (out / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
+    (out / "items.json").write_text(
+        json.dumps(items, ensure_ascii=False), encoding="utf-8", newline="\n"
+    )
+    (out / "keys.json").write_text(json.dumps(keys, indent=1), encoding="utf-8", newline="\n")
+    (out / "meta.json").write_text(
+        json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n"
+    )
     return {"call": name, "regions": len(found), "ref_words": summary["ref_words"]}
 
 
@@ -214,7 +218,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_error(404)
             return
         row = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
-        valid = {i["id"] for i in json.loads((self.out / "items.json").read_text())}
+        valid = {i["id"] for i in json.loads((self.out / "items.json").read_text(encoding="utf-8"))}
         field, allowed = ("choice", CHOICES) if self.path == "/answer" else ("text", None)
         value = row.get(field)
         bad = row.get("id") not in valid or not isinstance(value, str)
@@ -226,7 +230,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_error(400)
             return
         name = "answers.jsonl" if allowed is not None else "truths.jsonl"
-        with (self.out / name).open("a", encoding="utf-8") as fh:
+        with (self.out / name).open("a", encoding="utf-8", newline="\n") as fh:
             fh.write(json.dumps({"id": row["id"], field: value}, ensure_ascii=False) + "\n")
         self._send(b"{}", "application/json")
 
@@ -249,9 +253,9 @@ def score(
     margin: float | None = None,
     seed: int = 7,
 ) -> list[dict[str, Any]]:
-    items = {i["id"]: i for i in json.loads((out / "items.json").read_text())}
-    keys = json.loads((out / "keys.json").read_text())
-    meta = json.loads((out / "meta.json").read_text())
+    items = {i["id"]: i for i in json.loads((out / "items.json").read_text(encoding="utf-8"))}
+    keys = json.loads((out / "keys.json").read_text(encoding="utf-8"))
+    meta = json.loads((out / "meta.json").read_text(encoding="utf-8"))
     mapping = dialect_map(load_directory(directory)[0] if directory else None)
     answers = load_answers(out)
     truths = load_truths(out, mapping)

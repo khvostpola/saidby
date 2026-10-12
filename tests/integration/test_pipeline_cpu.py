@@ -51,9 +51,9 @@ def test_end_to_end_with_fakes(tmp_path: Path) -> None:
     transcript = read_transcript(out / "transcript.words.json")
     assert transcript.words()
     assert {s.label for s in transcript.speakers} == {"SPEAKER_00", "SPEAKER_01"}
-    assert (out / "transcript.vtt").read_text().startswith("WEBVTT")
-    assert "SPEAKER_00" in (out / "transcript.txt").read_text()
-    assert (out / "diarization.rttm").read_text().count("SPEAKER") >= 4
+    assert (out / "transcript.vtt").read_text(encoding="utf-8").startswith("WEBVTT")
+    assert "SPEAKER_00" in (out / "transcript.txt").read_text(encoding="utf-8")
+    assert (out / "diarization.rttm").read_text(encoding="utf-8").count("SPEAKER") >= 4
     source, _ = sf.read(FIXTURE)
     for track in (out / "speakers").glob("*.flac"):
         data, _ = sf.read(track)
@@ -63,7 +63,9 @@ def test_end_to_end_with_fakes(tmp_path: Path) -> None:
 
 def test_telemetry_is_valid_and_has_no_text(tmp_path: Path) -> None:
     _pipeline().run([FIXTURE], tmp_path)
-    lines = (tmp_path / "tones_2spk_10s/logs/telemetry.jsonl").read_text().splitlines()
+    lines = (
+        (tmp_path / "tones_2spk_10s/logs/telemetry.jsonl").read_text(encoding="utf-8").splitlines()
+    )
     events = [json.loads(line) for line in lines]
     names = [e["event"] for e in events]
     assert names[0] == "run.start"
@@ -71,7 +73,7 @@ def test_telemetry_is_valid_and_has_no_text(tmp_path: Path) -> None:
     assert not any(
         "word" in json.dumps(e) for e in events if e["event"] == "stage.end" and "text" in e
     )
-    run_log = (tmp_path / "tones_2spk_10s/logs/run.log").read_text()
+    run_log = (tmp_path / "tones_2spk_10s/logs/run.log").read_text(encoding="utf-8")
     assert "asr:" in run_log
     assert "word0" not in run_log
 
@@ -81,7 +83,10 @@ def test_resume_skips_cached_stages(tmp_path: Path) -> None:
     out = tmp_path / "tones_2spk_10s"
     (out / ".work" / "stage.diarize.json").unlink()
     _pipeline(keep_intermediates=True).run([FIXTURE], tmp_path)
-    events = [json.loads(line) for line in (out / "logs/telemetry.jsonl").read_text().splitlines()]
+    events = [
+        json.loads(line)
+        for line in (out / "logs/telemetry.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
     second_run = events[len(events) // 2 :]
     skipped = {e["stage"] for e in second_run if e["event"] == "stage.skip"}
     assert {"ingest", "asr"} <= skipped

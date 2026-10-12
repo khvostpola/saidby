@@ -27,7 +27,7 @@ def test_each_person_gets_their_own_record(tmp_path: Path) -> None:
     assert resolved["ana"].date == dt.date(2026, 10, 1)
     assert resolved["ben"].declared_by == "Carla (team lead)"
     assert resolved["ben"].date == dt.date.today()
-    saved = yaml.safe_load(path.read_text())
+    saved = yaml.safe_load(path.read_text(encoding="utf-8"))
     assert [(r["person"], r["declared_by"]) for r in saved] == [
         ("ana", "Ana Gómez"),
         ("ben", "Carla (team lead)"),
@@ -53,6 +53,7 @@ def test_a_record_found_by_the_persons_name_counts(tmp_path: Path) -> None:
     path.write_text(
         yaml.safe_dump(
             [{"person": "Ana Gómez", "source": "form", "declared_by": "Ana", "date": "2026-10-01"}]
-        )
+        ),
+        encoding="utf-8",
     )
     assert resolve_consents([ANA], path, {})["ana"].source == "form"

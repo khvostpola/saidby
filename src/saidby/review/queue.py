@@ -51,7 +51,7 @@ def log_decision(out_dir: Path, item: Item, decision: str, speaker: str | None =
     }
     if speaker:
         row["speaker"] = speaker
-    with path.open("a", encoding="utf-8") as fh:
+    with path.open("a", encoding="utf-8", newline="\n") as fh:
         fh.write(json.dumps(row) + "\n")
 
 

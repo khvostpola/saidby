@@ -12,4 +12,4 @@ ROOT = Path(__file__).resolve().parents[2] / "schemas"
 
 @pytest.mark.parametrize("name", sorted(SCHEMAS))
 def test_committed_schema_is_current(name: str) -> None:
-    assert (ROOT / f"{name}.schema.json").read_text() == render(name)
+    assert (ROOT / f"{name}.schema.json").read_text(encoding="utf-8") == render(name)

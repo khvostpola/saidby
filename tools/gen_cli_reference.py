@@ -95,7 +95,7 @@ def render() -> str:
 
 def main() -> None:
     set_language("en")
-    OUTPUT.write_text(render(), encoding="utf-8")
+    OUTPUT.write_text(render(), encoding="utf-8", newline="\n")
     print(f"wrote {OUTPUT}")
 
 

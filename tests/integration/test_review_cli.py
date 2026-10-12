@@ -52,7 +52,8 @@ def _directory(tmp_path: Path) -> Path:
                 "people": [],
                 "terms": [{"term": "Acme", "variants": ["akme"]}],
             }
-        )
+        ),
+        encoding="utf-8",
     )
     return path
 
@@ -73,13 +74,16 @@ def test_review_edits_text_speaker_and_state(tmp_path: Path) -> None:
     assert len(after.words()) != len(before.words()) or sources != ["asr"] * len(sources)
     log = read_corrections(folder / "corrections.jsonl")
     assert [(c.by, c.status) for c in log] == [("review", "accepted")]
-    assert "Acme" in (folder / "transcript.txt").read_text()
+    assert "Acme" in (folder / "transcript.txt").read_text(encoding="utf-8")
     manifest = read_manifest(folder / "manifest.json")
     assert manifest.edits[-1]["op"] == "review"
     assert manifest.files["corrections"] == "corrections.jsonl"
-    state = [json.loads(x) for x in (folder / "logs/review.jsonl").read_text().splitlines()]
+    state = [
+        json.loads(x)
+        for x in (folder / "logs/review.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
     assert [s["decision"] for s in state] == ["edited", "speaker"]
-    assert "Acme" not in (folder / "logs/review.jsonl").read_text()
+    assert "Acme" not in (folder / "logs/review.jsonl").read_text(encoding="utf-8")
 
     again = runner.invoke(app, ["review", str(folder), "--kinds", "diarization"], input="/q\n")
     assert again.exit_code == 0
@@ -98,7 +102,10 @@ def test_review_keeps_answered_edits_when_a_later_answer_fails(tmp_path: Path) -
     assert [(c.by, c.status) for c in log] == [("review", "accepted")]
     assert "review" in [w.source for w in read_transcript(folder / "transcript.words.json").words()]
     assert read_manifest(folder / "manifest.json").edits[-1]["op"] == "review"
-    state = [json.loads(x) for x in (folder / "logs/review.jsonl").read_text().splitlines()]
+    state = [
+        json.loads(x)
+        for x in (folder / "logs/review.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
     assert [s["decision"] for s in state] == ["edited"]
 
 
@@ -130,18 +137,20 @@ def test_review_offers_directory_variants(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
     original = read_corrections(folder / "corrections.jsonl")[0].from_
     assert original
-    variants = yaml.safe_load(directory.read_text())["terms"][0]["variants"]
+    variants = yaml.safe_load(directory.read_text(encoding="utf-8"))["terms"][0]["variants"]
     assert variants == ["akme", original]
     backups = list(tmp_path.glob("directory.bak-*.yaml"))
     assert len(backups) == 1
-    assert yaml.safe_load(backups[0].read_text())["terms"][0]["variants"] == ["akme"]
+    assert yaml.safe_load(backups[0].read_text(encoding="utf-8"))["terms"][0]["variants"] == [
+        "akme"
+    ]
     assert "added 1 variant" in result.output
 
 
 def test_review_directory_prompt_can_be_declined(tmp_path: Path) -> None:
     folder = _folder(tmp_path)
     directory = _directory(tmp_path)
-    before = directory.read_text()
+    before = directory.read_text(encoding="utf-8")
     result = runner.invoke(
         app,
         [
@@ -157,7 +166,7 @@ def test_review_directory_prompt_can_be_declined(tmp_path: Path) -> None:
         input="Acme\nn\n",
     )
     assert result.exit_code == 0, result.output
-    assert directory.read_text() == before
+    assert directory.read_text(encoding="utf-8") == before
 
 
 def _review(folder: Path, answers: str, *extra: str) -> Any:
@@ -229,7 +238,7 @@ def test_retyping_the_neighbours_asks_to_replace_only_the_span(tmp_path: Path) -
     assert result.exit_code == 0, result.output
     assert 'Your text repeats "word4 word6" from next to the span' in result.output
     assert [c.to for c in read_corrections(folder / "corrections.jsonl")] == ["Acme"]
-    text = (folder / "transcript.txt").read_text()
+    text = (folder / "transcript.txt").read_text(encoding="utf-8")
     assert "word4 Acme word6" in text
     assert "word4 word4" not in text
 

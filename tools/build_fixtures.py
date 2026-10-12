@@ -47,7 +47,9 @@ def build_synthetic(out: Path) -> None:
     sf.write(
         out / "tones_2spk_10s.flac", synthetic_audio(), SAMPLE_RATE, format="FLAC", subtype="PCM_16"
     )
-    (out / "tones_2spk_10s.rttm").write_text(synthetic_rttm("tones_2spk_10s"))
+    (out / "tones_2spk_10s.rttm").write_text(
+        synthetic_rttm("tones_2spk_10s"), encoding="utf-8", newline="\n"
+    )
 
 
 MLS_REPO = "facebook/multilingual_librispeech"
@@ -209,7 +211,9 @@ def build_speech(out: Path, cache: Path) -> None:
                     f"SPEAKER {conv_id} 1 {t['start']:.3f} {t['end'] - t['start']:.3f} <NA> <NA> "
                     f"{t['speaker']} <NA> <NA>\n"
                     for t in turns
-                )
+                ),
+                encoding="utf-8",
+                newline="\n",
             )
             expected = {
                 "id": conv_id,
@@ -219,7 +223,7 @@ def build_speech(out: Path, cache: Path) -> None:
                 "text": " ".join(t["text"] for t in turns),
             }
             stem.with_suffix(".expected.json").write_text(
-                json.dumps(expected, ensure_ascii=False, indent=1)
+                json.dumps(expected, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n"
             )
             files = [
                 clean,
@@ -243,12 +247,16 @@ def build_speech(out: Path, cache: Path) -> None:
     manifest["total_bytes"] = total
     if total > BUDGET_BYTES:
         raise SystemExit(f"fixtures use {total} bytes, over the {BUDGET_BYTES} budget")
-    (out / "MANIFEST.json").write_text(json.dumps(manifest, indent=1))
+    (out / "MANIFEST.json").write_text(
+        json.dumps(manifest, indent=1), encoding="utf-8", newline="\n"
+    )
     (out / "ATTRIBUTION.md").write_text(
         "# Attribution\n\nThe speech in `conversations/` is built from clips of "
         f"{ATTRIBUTION}.\n\nModifications: utterances were concatenated into two-speaker "
         "conversations, mixed with a fixed seed, normalized and re-encoded with the channel "
-        "profiles listed in `MANIFEST.json`.\n"
+        "profiles listed in `MANIFEST.json`.\n",
+        encoding="utf-8",
+        newline="\n",
     )
 
 

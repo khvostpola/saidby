@@ -12,7 +12,7 @@ from saidby.models.registry import REGISTRY, get_spec, render_markdown
 
 def test_model_licenses_file_is_in_sync() -> None:
     path = Path(__file__).resolve().parents[2] / "MODEL_LICENSES.md"
-    assert path.read_text() == render_markdown()
+    assert path.read_text(encoding="utf-8") == render_markdown()
 
 
 def test_default_must_allow_commercial_use() -> None:

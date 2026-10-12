@@ -26,6 +26,6 @@ class TelemetrySink:
                 **fields,
             }
         )
-        with self.path.open("a", encoding="utf-8") as fh:
+        with self.path.open("a", encoding="utf-8", newline="\n") as fh:
             fh.write(record.model_dump_json(exclude_none=True) + "\n")
         return record
