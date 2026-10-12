@@ -7,10 +7,17 @@ from typing import TYPE_CHECKING, Annotated
 
 import typer
 
+from saidby.cli.ui import Ui, ensure_terminal
 from saidby.config.settings import Settings
 from saidby.errors import UsageError
 from saidby.formats.directory_yaml import load_directory
-from saidby.speakers.enrollment import ConsentInput, enroll_voices, resolve_consents
+from saidby.interactive.voices import store_voices
+from saidby.speakers.enrollment import (
+    ConsentInput,
+    enroll_voices,
+    ensure_audio,
+    resolve_consents,
+)
 from saidby.speakers.people import find_person
 
 if TYPE_CHECKING:
@@ -29,7 +36,10 @@ def enroll(
         Path,
         typer.Argument(help="Output folder of a finished run (the one `saidby process` wrote)."),
     ],
-    speaker: Annotated[list[str], typer.Option("--speaker", help="LABEL=PERSON (an id or a name)")],
+    speaker: Annotated[
+        list[str] | None,
+        typer.Option("--speaker", help="LABEL=PERSON (an id or a name)"),
+    ] = None,
     directory: Annotated[
         Path | None,
         typer.Option(help="Directory file to update (default: the last configured one)"),
@@ -45,8 +55,30 @@ def enroll(
         str, typer.Option("--embedder", help="Voiceprint model.")
     ] = "wespeaker-resnet34",
     device: Annotated[str, typer.Option(help="auto, cuda or cpu.")] = "auto",
+    interactive: Annotated[
+        bool,
+        typer.Option(
+            "--interactive",
+            "-i",
+            help="Ask for each named voice whether the person consented, instead of --speaker.",
+        ),
+    ] = False,
 ) -> None:
     """Store voiceprints of people who spoke in a finished run. Requires recorded consent."""
+    if interactive:
+        _interactive_enroll(
+            out_dir,
+            speaker,
+            directory or _configured_directory(),
+            consent_file,
+            (consent_source, consent_declared_by, consent_date),
+            channel=channel,
+            embedder_name=embedder_name,
+            device=device,
+        )
+        return
+    if not speaker:
+        raise UsageError("pass --speaker LABEL=PERSON, or -i to be asked for each voice")
     parsed = [item.partition("=") for item in speaker]
     if any(not label or not person for label, _, person in parsed):
         raise UsageError("expected --speaker LABEL=PERSON (an id or a name)")
@@ -66,6 +98,7 @@ def enroll(
         when = dt.date.fromisoformat(consent_date) if consent_date else None
         entry = ConsentInput(consent_source, consent_declared_by, when)
         given = {person.id: entry for _, person in chosen}
+    ensure_audio(out_dir)
     consents = resolve_consents(
         [person for _, person in chosen],
         consent_file or directory.with_name("consent.yaml"),
@@ -84,3 +117,36 @@ def enroll(
     )
     if backup:
         typer.echo(f"backup: {backup}")
+
+
+def _interactive_enroll(
+    out_dir: Path,
+    speaker: list[str] | None,
+    directory: Path,
+    consent_file: Path | None,
+    consent_flags: tuple[str | None, str | None, str | None],
+    *,
+    channel: str,
+    embedder_name: str,
+    device: str,
+) -> None:
+    if speaker:
+        raise UsageError("use either --speaker or -i, not both")
+    if any(consent_flags):
+        raise UsageError(
+            "-i asks about consent itself; do not combine it with "
+            "--consent-source, --consent-declared-by or --consent-date"
+        )
+    ensure_terminal(
+        f"saidby enroll {out_dir} --speaker SPEAKER_00=PERSON "
+        "--consent-source SOURCE --consent-declared-by NAME"
+    )
+    store_voices(
+        Ui(),
+        out_dir,
+        directory,
+        consent_file or directory.with_name("consent.yaml"),
+        embedder_name=embedder_name,
+        device=device,
+        channel=channel,
+    )

@@ -7,6 +7,12 @@ All notable changes are documented here, following
 ## [Unreleased]
 
 ### Added
+- `saidby enroll -i FOLDER` goes through the voices that already have a name in the directory and
+  asks, for each person, whether they agreed to have their voiceprint stored. It asks how consent
+  was given once and who declared it (the person by default). Without consent nothing is stored
+  and no record is written; nothing is changed until you confirm the summary. It needs a
+  terminal; `--speaker` still works without one, and `--speaker` is no longer required when `-i`
+  is used.
 - `saidby speakers map -i FOLDER` lists the voices of a run (speech, turns, a stretch where nobody
   else talks), plays a sample of each one with `ffplay` and asks a name for each, completing
   people from the directory with Tab. Nothing is written until you confirm. It needs a terminal;

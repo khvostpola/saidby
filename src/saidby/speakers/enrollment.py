@@ -55,6 +55,24 @@ def resolve_consents(
     return resolved
 
 
+def _audio_files(out_dir: Path) -> tuple[Path | None, Path]:
+    manifest = read_manifest(out_dir / "manifest.json")
+    source = Path(manifest.source.path)
+    kept = out_dir / ".work" / "audio.wav"
+    if kept.exists():
+        return kept, source
+    if not source.is_file():
+        raise InputError(
+            f"original recording not found: {source}; run this from the folder where you ran "
+            "saidby process, or run the process again with --keep-intermediates"
+        )
+    return None, source
+
+
+def ensure_audio(out_dir: Path) -> None:
+    _audio_files(out_dir)
+
+
 def enroll_voices(
     out_dir: Path,
     assignments: list[tuple[str, str]],
@@ -69,16 +87,9 @@ def enroll_voices(
 ) -> Path | None:
     prepare(offline=True, want_cuda=device != "cpu")
     settings = Settings.load(overrides={"device": device})
-    manifest = read_manifest(out_dir / "manifest.json")
     transcript = read_transcript(out_dir / "transcript.words.json")
-    wav = out_dir / ".work" / "audio.wav"
-    if wav.exists():
-        audio = read_audio(wav)
-    else:
-        source = Path(manifest.source.path)
-        if not source.is_file():
-            raise InputError(f"original recording not found: {source}")
-        audio = ingest(source, out_dir / ".work").audio
+    kept, source = _audio_files(out_dir)
+    audio = read_audio(kept) if kept else ingest(source, out_dir / ".work").audio
     by_key = {key: s.label for s in transcript.speakers for key in (s.label, s.id) if key}
     spans: dict[str, list[tuple[float, float]]] = {}
     for turn in read_rttm(out_dir / "diarization.rttm"):

@@ -77,7 +77,7 @@ Arguments:
 
 | Option | Type | Default | What it does |
 |---|---|---|---|
-| `--speaker` | str |  | LABEL=PERSON (an id or a name) (required) |
+| `--speaker` | str |  | LABEL=PERSON (an id or a name) |
 | `--directory` | path |  | Directory file to update (default: the last configured one) |
 | `--consent-file` | path |  | consent.yaml (default: next to the directory) |
 | `--consent-source` | str |  | How consent was given |
@@ -86,6 +86,7 @@ Arguments:
 | `--channel` | str | `mobile-call` | Recording channel label |
 | `--embedder` | str | `wespeaker-resnet34` | Voiceprint model. |
 | `--device` | str | `auto` | auto, cuda or cpu. |
+| `--interactive`, `-i` | flag |  | Ask for each named voice whether the person consented, instead of --speaker. |
 
 ## `saidby init`
 

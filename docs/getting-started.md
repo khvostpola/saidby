@@ -125,6 +125,19 @@ saidby enroll out/call --speaker SPEAKER_01="Ben Ruiz" --directory directory.yam
   --consent-source "signed form" --consent-declared-by "Ben Ruiz"
 ```
 
+Or let saidby ask. With `-i` it lists the voices that already have a name from your directory
+and asks, for each person, whether they agreed to have their voiceprint stored:
+
+```bash
+saidby enroll -i out/call --directory directory.yaml
+```
+
+It asks how consent was given once (the default is "signed form") and who declared it (the
+default is the person). No consent, no voiceprint: nothing is stored for that person and no
+record is written. Nothing is changed until you confirm the summary, and the directory file is
+backed up first. A person whose consent is already recorded is not asked again. It needs a
+terminal; without one, use `--speaker` as above.
+
 From now on:
 
 ```bash
