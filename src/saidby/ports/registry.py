@@ -44,7 +44,7 @@ def make_diarizer(name: str, *, device: DeviceInfo) -> Diarizer:
         try:
             from saidby.engines.diarize.pyannote_community1 import PyannoteCommunity1Diarizer
         except ImportError as exc:
-            raise UsageError(_("install the extra: pip install 'saidby[pyannote]'")) from exc
+            raise UsageError(_('install the extra: pip install "saidby[pyannote]"')) from exc
         return PyannoteCommunity1Diarizer(device)
     if name == "fake":
         from saidby.engines.diarize.fake import FakeDiarizer

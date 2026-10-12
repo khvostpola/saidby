@@ -17,7 +17,7 @@ app = typer.Typer(
 
 
 def _need_extra() -> UsageError:
-    return UsageError(_("this command needs the evaluation extra: pip install 'saidby[eval]'"))
+    return UsageError(_('this command needs the evaluation extra: pip install "saidby[eval]"'))
 
 
 @app.command("score")

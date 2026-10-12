@@ -2,15 +2,19 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import contextlib
+import importlib.util
 import os
 import socket
+from pathlib import Path
+from typing import ClassVar
 
 import pytest
 
 from saidby.errors import NetworkAttemptError, UsageError
-from saidby.runtime import prepare
+from saidby.runtime import host, prepare
 from saidby.runtime.device import resolve_device
 from saidby.runtime.netguard import guard_network, is_loopback
+from saidby.runtime.prepare import _preload_windows, nvidia_package_dirs, preload_cuda_libs
 
 
 def test_prepare_sets_offline_environment(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -57,3 +61,33 @@ def test_device_cpu_and_invalid() -> None:
     assert resolve_device("cpu").kind == "cpu"
     with pytest.raises(UsageError):
         resolve_device("tpu")
+
+
+def test_nvidia_wheel_folders_are_found_by_package(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (tmp_path / "bin").mkdir()
+    (tmp_path / "lib").mkdir()
+
+    class Spec:
+        submodule_search_locations: ClassVar[list[str]] = [str(tmp_path)]
+
+    monkeypatch.setattr(importlib.util, "find_spec", lambda name: Spec())
+    assert nvidia_package_dirs("cublas", "bin") == [tmp_path / "bin"]
+    assert nvidia_package_dirs("cublas", "lib") == [tmp_path / "lib"]
+    assert nvidia_package_dirs("cublas", "share") == []
+    monkeypatch.setattr(importlib.util, "find_spec", lambda name: None)
+    assert nvidia_package_dirs("cublas", "bin") == []
+
+
+def test_preloading_without_the_wheels_loads_nothing(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(importlib.util, "find_spec", lambda name: None)
+    assert preload_cuda_libs() == []
+    assert _preload_windows() == []
+
+
+def test_windows_sets_the_symlink_warning_off(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("HF_HUB_DISABLE_SYMLINKS_WARNING", raising=False)
+    monkeypatch.setattr(host, "is_windows", lambda: True)
+    prepare(want_cuda=False)
+    assert os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] == "1"

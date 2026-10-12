@@ -15,7 +15,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: src/saidby/cli/__init__.py:102
+#: src/saidby/cli/__init__.py:101
+#, python-brace-format
+msgid "saidby supports Linux and Windows; {system} is untested (set {env}=1 to hide this)"
+msgstr "saidby funciona en Linux y Windows; {system} no está probado (define {env}=1 para ocultar este aviso)"
+
+#: src/saidby/cli/__init__.py:117
 #, python-brace-format
 msgid "error: {message}"
 msgstr "error: {message}"
@@ -276,8 +281,8 @@ msgstr ""
 " usará hasta que su consentimiento se registre ahí"
 
 #: src/saidby/cli/evaluate.py:20
-msgid "this command needs the evaluation extra: pip install 'saidby[eval]'"
-msgstr "este comando necesita el extra de evaluación: pip install 'saidby[eval]'"
+msgid "this command needs the evaluation extra: pip install \"saidby[eval]\""
+msgstr "este comando necesita el extra de evaluación: pip install \"saidby[eval]\""
 
 #: src/saidby/cli/init.py:30
 #, python-brace-format
@@ -752,12 +757,12 @@ msgstr "llama-server terminó antes de tiempo con el código {returncode}"
 msgid "llama-server did not become healthy in time"
 msgstr "llama-server no estuvo listo a tiempo"
 
-#: src/saidby/engines/llm/openai_compat.py:69
+#: src/saidby/engines/llm/openai_compat.py:76
 #, python-brace-format
 msgid "LLM endpoint {base_url} is not reachable: {exc}"
 msgstr "no se puede alcanzar el servidor LLM {base_url}: {exc}"
 
-#: src/saidby/engines/llm/openai_compat.py:76
+#: src/saidby/engines/llm/openai_compat.py:83
 msgid "LLM returned incomplete JSON"
 msgstr "el LLM devolvió un JSON incompleto"
 
@@ -1365,8 +1370,8 @@ msgid "unknown transcriber {name!r}; valid: {items}"
 msgstr "transcriptor desconocido {name!r}; válidos: {items}"
 
 #: src/saidby/ports/registry.py:47
-msgid "install the extra: pip install 'saidby[pyannote]'"
-msgstr "instala el extra: pip install 'saidby[pyannote]'"
+msgid "install the extra: pip install \"saidby[pyannote]\""
+msgstr "instala el extra: pip install \"saidby[pyannote]\""
 
 #: src/saidby/ports/registry.py:54
 #, python-brace-format
@@ -1383,164 +1388,170 @@ msgstr "modelo de huellas desconocido {name!r}; válidos: {items}"
 msgid "unknown speaker {name!r}; known: {known}"
 msgstr "hablante desconocido {name!r}; conocidos: {known}"
 
-#: src/saidby/runtime/device.py:102
+#: src/saidby/runtime/device.py:120
 msgid "no NVIDIA GPU found (nvidia-smi is missing or reports nothing)"
 msgstr "no se encontró GPU NVIDIA (falta nvidia-smi o no informa nada)"
 
-#: src/saidby/runtime/device.py:107
+#: src/saidby/runtime/device.py:125
 msgid "PyTorch cannot use the GPU (check the NVIDIA driver, 580 or newer)"
 msgstr "PyTorch no puede usar la GPU (revisa el controlador NVIDIA, 580 o más nuevo)"
 
-#: src/saidby/runtime/device.py:109
+#: src/saidby/runtime/device.py:127
 msgid "CTranslate2 cannot see the GPU"
 msgstr "CTranslate2 no ve la GPU"
 
-#: src/saidby/runtime/device.py:117
+#: src/saidby/runtime/device.py:137
 #, python-brace-format
 msgid "unknown device: {requested}"
 msgstr "dispositivo desconocido: {requested}"
 
-#: src/saidby/runtime/device.py:126
+#: src/saidby/runtime/device.py:146
 #, python-brace-format
 msgid "--device cuda requested but the GPU is not usable: {problems}"
 msgstr "se pidió --device cuda pero la GPU no se puede usar: {problems}"
 
-#: src/saidby/runtime/diagnose.py:49
+#: src/saidby/runtime/diagnose.py:48
+msgid "saidby supports Linux and Windows; this system is untested"
+msgstr "saidby funciona en Linux y Windows; este sistema no está probado"
+
+#: src/saidby/runtime/diagnose.py:59
 msgid "saidby needs Python 3.12 or newer"
 msgstr "saidby necesita Python 3.12 o más nuevo"
 
-#: src/saidby/runtime/diagnose.py:59
+#: src/saidby/runtime/diagnose.py:69
 msgid "not found on PATH"
 msgstr "no se encontró en el PATH"
 
-#: src/saidby/runtime/diagnose.py:60
-msgid "install ffmpeg (for example: sudo dnf install ffmpeg)"
-msgstr "instala ffmpeg (por ejemplo: sudo dnf install ffmpeg)"
+#: src/saidby/runtime/diagnose.py:70
+#, python-brace-format
+msgid "install ffmpeg (for example: {command})"
+msgstr "instala ffmpeg (por ejemplo: {command})"
 
-#: src/saidby/runtime/diagnose.py:71
+#: src/saidby/runtime/diagnose.py:81
 msgid "not found: listening to samples in interactive mode will show the file path instead"
 msgstr "no se encontró: en modo interactivo, escuchar las muestras mostrará la ruta del archivo"
 
-#: src/saidby/runtime/diagnose.py:74
-msgid "ffplay comes with ffmpeg on most systems (for example: sudo dnf install ffmpeg)"
-msgstr "ffplay viene con ffmpeg en la mayoría de los sistemas (por ejemplo: sudo dnf install ffmpeg)"
+#: src/saidby/runtime/diagnose.py:84
+#, python-brace-format
+msgid "ffplay comes with ffmpeg on most systems (for example: {command})"
+msgstr "ffplay viene con ffmpeg en casi todos los sistemas (por ejemplo: {command})"
 
-#: src/saidby/runtime/diagnose.py:76
+#: src/saidby/runtime/diagnose.py:88
 msgid "found"
 msgstr "encontrado"
 
-#: src/saidby/runtime/diagnose.py:84
+#: src/saidby/runtime/diagnose.py:96
 msgid "no NVIDIA GPU found; processing will run on the CPU, much slower"
 msgstr "no se encontró GPU NVIDIA; el procesamiento correrá en la CPU, mucho más lento"
 
-#: src/saidby/runtime/diagnose.py:87
+#: src/saidby/runtime/diagnose.py:99
 #, python-brace-format
 msgid ", driver {version}"
 msgstr ", controlador {version}"
 
-#: src/saidby/runtime/diagnose.py:94
+#: src/saidby/runtime/diagnose.py:106
 #, python-brace-format
 msgid "update the NVIDIA driver to {minimum} or newer"
 msgstr "actualiza el controlador NVIDIA a {minimum} o más nuevo"
 
-#: src/saidby/runtime/diagnose.py:101 src/saidby/runtime/diagnose.py:178
+#: src/saidby/runtime/diagnose.py:113 src/saidby/runtime/diagnose.py:190
 msgid "not installed"
 msgstr "no instalado"
 
-#: src/saidby/runtime/diagnose.py:107
+#: src/saidby/runtime/diagnose.py:119
 msgid "GPU is usable by PyTorch and CTranslate2"
 msgstr "PyTorch y CTranslate2 pueden usar la GPU"
 
-#: src/saidby/runtime/diagnose.py:109
+#: src/saidby/runtime/diagnose.py:121
 msgid "GPU present but not usable"
 msgstr "hay GPU pero no se puede usar"
 
-#: src/saidby/runtime/diagnose.py:124
+#: src/saidby/runtime/diagnose.py:136
 #, python-brace-format
 msgid "auto selects the GPU ({name})"
 msgstr "auto elige la GPU ({name})"
 
-#: src/saidby/runtime/diagnose.py:125
+#: src/saidby/runtime/diagnose.py:137
 msgid "auto selects the CPU"
 msgstr "auto elige la CPU"
 
-#: src/saidby/runtime/diagnose.py:133
+#: src/saidby/runtime/diagnose.py:145
 msgid "all default models are installed"
 msgstr "todos los modelos predeterminados están instalados"
 
-#: src/saidby/runtime/diagnose.py:135
+#: src/saidby/runtime/diagnose.py:147
 #, python-brace-format
 msgid "missing: {models}"
 msgstr "faltan: {models}"
 
-#: src/saidby/runtime/diagnose.py:138
+#: src/saidby/runtime/diagnose.py:150
 msgid "run: saidby models pull --all"
 msgstr "corre: saidby models pull --all"
 
-#: src/saidby/runtime/diagnose.py:142
+#: src/saidby/runtime/diagnose.py:154
 #, python-brace-format
 msgid "installed: {models}"
 msgstr "instalados: {models}"
 
-#: src/saidby/runtime/diagnose.py:159 src/saidby/runtime/diagnose.py:162
+#: src/saidby/runtime/diagnose.py:171 src/saidby/runtime/diagnose.py:174
 #, python-brace-format
 msgid "{free:.0f} GB free for the model cache"
 msgstr "{free:.0f} GB libres para el caché de modelos"
 
-#: src/saidby/runtime/diagnose.py:160
+#: src/saidby/runtime/diagnose.py:172
 #, python-brace-format
 msgid "the default models need about {needed} GB"
 msgstr "los modelos predeterminados necesitan unos {needed} GB"
 
-#: src/saidby/runtime/diagnose.py:167
-msgid "pyannote.audio (alternative diarizer): pip install 'saidby[pyannote]'"
-msgstr "pyannote.audio (diarizador alternativo): pip install 'saidby[pyannote]'"
+#: src/saidby/runtime/diagnose.py:179
+msgid "pyannote.audio (alternative diarizer): pip install \"saidby[pyannote]\""
+msgstr "pyannote.audio (diarizador alternativo): pip install \"saidby[pyannote]\""
 
-#: src/saidby/runtime/diagnose.py:168
-msgid "evaluation: pip install 'saidby[eval]'"
-msgstr "evaluación: pip install 'saidby[eval]'"
+#: src/saidby/runtime/diagnose.py:180
+msgid "evaluation: pip install \"saidby[eval]\""
+msgstr "evaluación: pip install \"saidby[eval]\""
 
-#: src/saidby/runtime/diagnose.py:178
+#: src/saidby/runtime/diagnose.py:190
 msgid "installed"
 msgstr "instalado"
 
-#: src/saidby/runtime/diagnose.py:191
+#: src/saidby/runtime/diagnose.py:204
 msgid "not found (only needed for --correct)"
 msgstr "no se encontró (solo hace falta para --correct)"
 
-#: src/saidby/runtime/diagnose.py:192
+#: src/saidby/runtime/diagnose.py:205
 msgid "install llama.cpp and put llama-server on PATH or set SAIDBY_LLAMA_SERVER"
 msgstr "instala llama.cpp y pon llama-server en el PATH o define SAIDBY_LLAMA_SERVER"
 
-#: src/saidby/runtime/diagnose.py:204
+#: src/saidby/runtime/diagnose.py:217
 msgid "processing always runs offline; only `saidby models pull` uses the network"
 msgstr "el procesamiento siempre corre sin conexión; solo `saidby models pull` usa la red"
 
-#: src/saidby/runtime/diagnose.py:205
+#: src/saidby/runtime/diagnose.py:218
 msgid " (HF_HUB_OFFLINE is set in this shell)"
 msgstr " (HF_HUB_OFFLINE está definida en esta shell)"
 
-#: src/saidby/runtime/diagnose.py:210
+#: src/saidby/runtime/diagnose.py:223
 msgid "set"
 msgstr "definido"
 
-#: src/saidby/runtime/diagnose.py:210
+#: src/saidby/runtime/diagnose.py:223
 msgid "not set (needed only for gated models such as pyannote)"
 msgstr "sin definir (solo hace falta para modelos de acceso restringido como pyannote)"
 
-#: src/saidby/runtime/diagnose.py:224
+#: src/saidby/runtime/diagnose.py:237
 msgid "skipped: asr:tiny is not installed"
 msgstr "omitida: asr:tiny no está instalado"
 
-#: src/saidby/runtime/diagnose.py:225
+#: src/saidby/runtime/diagnose.py:238
 msgid "run: saidby models pull asr:tiny"
 msgstr "corre: saidby models pull asr:tiny"
 
-#: src/saidby/runtime/diagnose.py:243
+#: src/saidby/runtime/diagnose.py:256
 msgid "run `saidby doctor` again after fixing the problems above"
 msgstr "vuelve a correr `saidby doctor` después de arreglar los problemas de arriba"
 
-#: src/saidby/runtime/diagnose.py:249
+#: src/saidby/runtime/diagnose.py:262
 #, python-brace-format
 msgid ""
 "transcribed {seconds} s of audio with asr:tiny on the {kind} (load {load:.1f} s, total "
@@ -1554,12 +1565,12 @@ msgstr ""
 msgid "outbound network attempt blocked: {event}"
 msgstr "se bloqueó un intento de conexión saliente: {event}"
 
-#: src/saidby/runtime/procs.py:25
+#: src/saidby/runtime/procs.py:29
 #, python-brace-format
 msgid "{argv} not found on PATH"
 msgstr "no se encontró {argv} en el PATH"
 
-#: src/saidby/runtime/procs.py:28
+#: src/saidby/runtime/procs.py:32
 #, python-brace-format
 msgid "{argv} failed: {value}"
 msgstr "{argv} falló: {value}"
@@ -1620,4 +1631,10 @@ msgstr "no se puede fusionar un hablante consigo mismo"
 #, python-brace-format
 msgid "no audio stream found in {name}"
 msgstr "no se encontró ninguna pista de audio en {name}"
+
+
+
+
+
+
 

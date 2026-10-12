@@ -10,7 +10,7 @@ from saidby.cli import app
 from saidby.errors import UsageError
 from saidby.models import store as model_store
 from saidby.runtime import device as dev
-from saidby.runtime import diagnose
+from saidby.runtime import diagnose, host
 from saidby.runtime.device_cache import read_cache
 
 runner = CliRunner()
@@ -25,12 +25,14 @@ def _world(
     torch_ready: bool = True,
     ct2: int = 1,
     cublas: bool = True,
+    cudnn: bool = True,
 ) -> None:
     monkeypatch.setattr(dev, "read_gpu", lambda: gpu)
     monkeypatch.setattr(dev, "torch_build", lambda: build)
     monkeypatch.setattr(dev, "torch_cuda_ready", lambda: torch_ready)
     monkeypatch.setattr(dev, "ct2_cuda_devices", lambda: ct2)
     monkeypatch.setattr(dev, "cublas12_available", lambda: cublas)
+    monkeypatch.setattr(dev, "cudnn9_available", lambda: cudnn)
 
 
 def test_usable_gpu_is_selected(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -153,3 +155,59 @@ def test_a_forced_cpu_check_says_nothing_about_the_machine(monkeypatch: pytest.M
     _world(monkeypatch)
     diagnose.check_device("cpu")
     assert read_cache() is None
+
+
+def test_missing_cudnn_points_to_the_cuda_extra(monkeypatch: pytest.MonkeyPatch) -> None:
+    _world(monkeypatch, cudnn=False)
+    problems = dev.cuda_problems(GPU)
+    assert len(problems) == 1
+    assert "cuDNN 9" in problems[0]
+    assert 'uv tool install "saidby[cuda]"' in problems[0]
+
+
+def test_the_gpu_hints_name_the_install_command_of_this_system(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(host, "is_windows", lambda: False)
+    assert dev.cpu_torch_hint().endswith('uv tool install "saidby[cuda]"')
+    monkeypatch.setattr(host, "is_windows", lambda: True)
+    hint = dev.cpu_torch_hint()
+    assert "--index https://download.pytorch.org/whl/cu130" in hint
+    assert "--index-strategy unsafe-best-match" in hint
+    _world(monkeypatch, cublas=False)
+    assert "download.pytorch.org" in dev.cuda_problems(GPU)[0]
+
+
+def test_the_platform_row_leads_the_report(monkeypatch: pytest.MonkeyPatch) -> None:
+    _world(monkeypatch, gpu=None)
+    checks = diagnose.run_checks()
+    assert checks[0].name == "platform"
+    assert checks[0].status == "ok"
+    assert checks[0].detail == host.platform_label()
+    monkeypatch.setattr(host, "is_supported", lambda: False)
+    untested = diagnose.check_platform()
+    assert untested.status == "warn"
+    assert "Linux and Windows" in (untested.hint or "")
+
+
+def test_the_ffmpeg_hints_follow_the_system(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(diagnose, "tool_version", lambda *a, **k: None)
+    monkeypatch.setattr(diagnose, "which", lambda name: None)
+    monkeypatch.setattr(host, "is_windows", lambda: True)
+    assert "winget install ffmpeg" in (diagnose.check_ffmpeg().hint or "")
+    assert "winget install ffmpeg" in (diagnose.check_ffplay().hint or "")
+    monkeypatch.setattr(host, "is_windows", lambda: False)
+    assert "dnf install ffmpeg" in (diagnose.check_ffmpeg().hint or "")
+
+
+def test_the_llm_check_honours_the_binary_override(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen: list[str] = []
+
+    def record(name: str, flag: str = "-version") -> str | None:
+        seen.append(name)
+        return "llama-server 1"
+
+    monkeypatch.setattr(diagnose, "tool_version", record)
+    monkeypatch.setenv("SAIDBY_LLAMA_SERVER", "/opt/llama/llama-server")
+    assert diagnose.check_llm().status == "ok"
+    assert seen == ["/opt/llama/llama-server"]

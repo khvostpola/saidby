@@ -7,6 +7,12 @@ All notable changes are documented here, following
 ## [Unreleased]
 
 ### Added
+- Windows support: `saidby` runs on Windows 11 with the CPU or an NVIDIA GPU. The `[cuda]` extra
+  installs cuBLAS 12 there too; the GPU build of PyTorch comes from PyTorch's index, and the
+  hints say so: `uv tool install "saidby[cuda]" --index https://download.pytorch.org/whl/cu130
+  --index-strategy unsafe-best-match`.
+- `saidby doctor` starts with a `platform` row. On a system saidby is not tested on (macOS),
+  every run prints one warning; `SAIDBY_UNSUPPORTED_OS=1` hides it.
 - `SAIDBY_CONFIG_DIR` and `SAIDBY_CACHE_DIR` override where the global config and the device
   cache live.
 
@@ -19,6 +25,9 @@ All notable changes are documented here, following
 - Output folders avoid the names Windows reserves (`con`, `nul`, `com1` and the like get a `_`),
   and two recordings whose names differ only in case no longer share a folder.
 - On Windows the commands saidby suggests are quoted for PowerShell.
+- Install hints use double quotes (`pip install "saidby[eval]"`), which every shell accepts.
+- `saidby doctor` reports a missing cuDNN 9 next to cuBLAS, and checks the `llama-server`
+  named by `SAIDBY_LLAMA_SERVER`.
 
 ### Fixed
 - Windows consoles: colours, the live progress line and the cassette work in Windows Terminal,

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+import sys
 import time
 from pathlib import Path
 
@@ -118,3 +119,25 @@ def test_a_case_only_rename_goes_through_a_staging_name(tmp_path: Path) -> None:
     assert sorted(p.name for p in tmp_path.iterdir()) == ["Ana.flac"]
     _rename_track(tmp_path / "Ana.flac", tmp_path / "ana-gomez.flac")
     assert sorted(p.name for p in tmp_path.iterdir()) == ["ana-gomez.flac"]
+
+
+def test_the_gpu_install_command_adds_the_pytorch_index_on_windows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(host, "is_windows", lambda: False)
+    assert host.gpu_install_command() == 'uv tool install "saidby[cuda]"'
+    assert host.ffmpeg_install_hint() == "sudo dnf install ffmpeg"
+    monkeypatch.setattr(host, "is_windows", lambda: True)
+    assert host.gpu_install_command() == (
+        'uv tool install "saidby[cuda]" --index https://download.pytorch.org/whl/cu130 '
+        "--index-strategy unsafe-best-match"
+    )
+    assert host.ffmpeg_install_hint() == "winget install ffmpeg"
+
+
+def test_the_platform_label_names_the_system() -> None:
+    label = host.platform_label()
+    assert label
+    if host.is_windows():
+        assert label.startswith("Windows")
+    assert host.is_supported() == (host.is_windows() or sys.platform == "linux")

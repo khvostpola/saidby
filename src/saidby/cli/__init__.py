@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
+import os
 import sys
 from typing import Annotated
 
@@ -21,7 +22,9 @@ from saidby.cli.review import review
 from saidby.cli.term import prepare_streams
 from saidby.errors import SaidbyError
 from saidby.i18n import _, set_language
+from saidby.runtime import host
 
+UNSUPPORTED_ENV = "SAIDBY_UNSUPPORTED_OS"
 RUN = "Transcribe"
 AFTER = "After a run"
 SETUP = "Set up"
@@ -91,9 +94,19 @@ def root(
     pass
 
 
+def warn_unsupported_system() -> None:
+    if host.is_supported() or os.environ.get(UNSUPPORTED_ENV):
+        return
+    message = _(
+        "saidby supports Linux and Windows; {system} is untested (set {env}=1 to hide this)"
+    )
+    print(message.format(system=host.platform_label(), env=UNSUPPORTED_ENV), file=sys.stderr)
+
+
 def main() -> None:
     prepare_streams()
     set_language()
+    warn_unsupported_system()
     if len(sys.argv) == 1:
         show_home()
     try:

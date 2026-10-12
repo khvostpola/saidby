@@ -15,6 +15,7 @@ from saidby.i18n import _
 from saidby.models import REGISTRY
 from saidby.models import store as model_store
 from saidby.runtime import device as dev
+from saidby.runtime import host
 from saidby.runtime.device_cache import write_cache
 from saidby.runtime.procs import tool_version, which
 
@@ -39,6 +40,15 @@ def _driver_major(driver: str | None) -> int | None:
         return None
 
 
+def check_platform() -> Check:
+    label = host.platform_label()
+    if host.is_supported():
+        return Check("platform", "ok", label)
+    return Check(
+        "platform", "warn", label, _("saidby supports Linux and Windows; this system is untested")
+    )
+
+
 def check_python() -> Check:
     version = platform.python_version()
     ok = tuple(int(x) for x in version.split(".")[:2]) >= (3, 12)
@@ -57,7 +67,7 @@ def check_ffmpeg() -> Check:
             "ffmpeg",
             "fail",
             _("not found on PATH"),
-            _("install ffmpeg (for example: sudo dnf install ffmpeg)"),
+            _("install ffmpeg (for example: {command})").format(command=host.ffmpeg_install_hint()),
         )
     return Check("ffmpeg", "ok", version.split(" Copyright")[0])
 
@@ -71,7 +81,9 @@ def check_ffplay() -> Check:
                 "not found: listening to samples in interactive mode "
                 "will show the file path instead"
             ),
-            _("ffplay comes with ffmpeg on most systems (for example: sudo dnf install ffmpeg)"),
+            _("ffplay comes with ffmpeg on most systems (for example: {command})").format(
+                command=host.ffmpeg_install_hint()
+            ),
         )
     return Check("ffplay", "ok", _("found"))
 
@@ -164,8 +176,8 @@ def check_disk(missing_models: bool) -> Check:
 
 def check_extras() -> list[Check]:
     labels = {
-        "pyannote": _("pyannote.audio (alternative diarizer): pip install 'saidby[pyannote]'"),
-        "jiwer": _("evaluation: pip install 'saidby[eval]'"),
+        "pyannote": _('pyannote.audio (alternative diarizer): pip install "saidby[pyannote]"'),
+        "jiwer": _('evaluation: pip install "saidby[eval]"'),
     }
     out = []
     for module, hint in labels.items():
@@ -183,7 +195,8 @@ def check_extras() -> list[Check]:
 
 
 def check_llm() -> Check:
-    version = tool_version("llama-server", "--version")
+    binary = os.environ.get("SAIDBY_LLAMA_SERVER") or "llama-server"
+    version = tool_version(binary, "--version")
     if version is None:
         return Check(
             "llama-server",
@@ -255,6 +268,7 @@ def smoke_test(requested: str = "auto") -> Check:
 def run_checks(smoke: bool = False, requested: str = "auto") -> list[Check]:
     gpu = dev.read_gpu()
     checks = [
+        check_platform(),
         check_python(),
         check_ffmpeg(),
         check_ffplay(),
