@@ -1,12 +1,15 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
+import sys
 from pathlib import Path
 from typing import Annotated
 
 import typer
 
+from saidby.cli.next_steps import next_steps, read_state
 from saidby.cli.progress import Progress
+from saidby.cli.term import detect
 from saidby.config.settings import Settings
 from saidby.errors import StageError
 from saidby.pipeline.runner import Pipeline
@@ -260,6 +263,10 @@ def process(
         },
     )
     results = Pipeline(settings, progress=Progress(settings.progress)).run(inputs, settings.out)
+    if settings.progress == "human":
+        states = [read_state(r.out_dir) for r in results if r.status == "ok"]
+        for line in next_steps([s for s in states if s], detect(sys.stderr)):
+            print(line, file=sys.stderr)
     failed = [r for r in results if r.status != "ok"]
     if failed:
         code = failed[0].exit_code if len(failed) == 1 else StageError.exit_code

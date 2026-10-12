@@ -7,6 +7,10 @@ All notable changes are documented here, following
 ## [Unreleased]
 
 ### Added
+- A run that leaves something to do now ends by saying what and the command for it: `name`
+  (speakers without names, `saidby speakers map`) and `review` (doubtful spans, `saidby review`
+  with how many). Nothing is printed when there is nothing to do, with `--progress json` or
+  `none`, or after a failure.
 - The live line of a stage now says when it is loading its model, then what it is doing, and
   shows how much of the GPU memory (or the CPU) is in use. `--progress json` gains a
   `stage.loading` event.

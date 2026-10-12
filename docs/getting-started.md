@@ -71,7 +71,15 @@ The first line says which device does the work. Then one line per step that take
 fast it went compared with the length of the audio; the quick steps (aligning words, writing the
 tracks and files) are counted in the `done` line. The last line is the whole run: its duration,
 when it started and finished, and the speed over all the audio. `logs/run.log` and
-`--progress json` list every step. Open `out/call/transcript.txt`:
+`--progress json` list every step. When something is left to do, the run ends by saying what
+and which command does it:
+
+```
+  name:     saidby speakers map out/call --set SPEAKER_00=NAME
+  review:   saidby review out/call   3 doubtful spans
+```
+
+Open `out/call/transcript.txt`:
 
 ```
 [00:00:03] SPEAKER_00: Hola, buenas tardes, ¿cómo vas con el informe?
