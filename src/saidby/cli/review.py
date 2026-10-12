@@ -1,25 +1,37 @@
 # SPDX-FileCopyrightText: 2026 the saidby authors
 # SPDX-License-Identifier: Apache-2.0
 
+import sys
 from pathlib import Path
 from typing import Annotated
 
 import typer
 
+from saidby.cli.term import Terminal, detect
 from saidby.config.settings import Settings
 from saidby.errors import UsageError
 from saidby.formats.corrections_log import read_corrections, write_corrections
 from saidby.formats.directory_yaml import load_directory, save_directory
-from saidby.review.apply import apply_speaker, apply_text, resolve_speaker, span_text
+from saidby.review.apply import apply_speaker, apply_text, resolve_speaker
+from saidby.review.context import (
+    audio_source,
+    context_of,
+    find_overlap,
+    play_window,
+    repeated_words,
+    strip_overlap,
+)
 from saidby.review.queue import DEFAULT_LOW_P, KINDS, Item, build_queue, log_decision
 from saidby.review.suggest import apply_suggestions, suggest_variants
+from saidby.runtime.procs import play
 from saidby.schema.correction import Correction
 from saidby.speakers.remap import Folder
 
 HELP = (
-    "Enter keeps the text; type the corrected text to replace it; "
+    "Enter keeps the text; type the corrected text to replace it; p plays the span; "
     "@SPEAKER (optionally followed by text) sets who spoke; /s skips; /q quits"
 )
+QUESTION_WIDTH = 40
 
 
 def _speakers(folder: Folder, item: Item) -> str:
@@ -34,9 +46,49 @@ def _decide(folder: Folder, item: Item, answer: str) -> tuple[Correction | None,
         speaker = resolve_speaker(folder.transcript.speakers, name)
         folder.transcript = apply_speaker(folder.transcript, item, speaker)
     correction = None
-    if answer.strip():
-        folder.transcript, correction = apply_text(folder.transcript, item, answer.strip())
+    text = answer.strip()
+    if text:
+        text = _without_repeats(folder, item, text)
+        folder.transcript, correction = apply_text(folder.transcript, item, text)
     return correction, speaker
+
+
+def _without_repeats(folder: Folder, item: Item, text: str) -> str:
+    overlap = find_overlap(folder.transcript, item, text)
+    if not overlap:
+        return text
+    repeated = repeated_words(text, overlap)
+    question = f'Your text repeats "{repeated}" from next to the span. Replace only the span?'
+    return strip_overlap(text, overlap) if typer.confirm(question, default=True) else text
+
+
+def _show(folder: Folder, item: Item, number: int, total: int, term: Terminal) -> str:
+    context = context_of(folder.transcript, item)
+    paint = term.paint
+    parts = []
+    if context.before:
+        parts.append(paint(("… " if context.more_before else "") + context.before, "dim"))
+    parts.append(f"[{paint(context.span, 'bold', 'yellow')}]")
+    if context.after:
+        parts.append(paint(context.after + (" …" if context.more_after else ""), "dim"))
+    typer.echo(
+        f"\n[{number}/{total}] {item.kind} · {item.start:.1f}-{item.end:.1f} s · "
+        f"{_speakers(folder, item)}\n  {' '.join(parts)}"
+    )
+    shown = context.span
+    if len(shown) > QUESTION_WIDTH:
+        shown = shown[: QUESTION_WIDTH - 1] + "…"
+    return f'Text for "{shown}"?'
+
+
+def _play(folder: Folder, item: Item) -> None:
+    source = audio_source(folder.out_dir, folder.transcript, folder.manifest, item)
+    if source is None:
+        typer.echo("no audio to play: there is no work folder, track or original recording")
+        return
+    start, duration = play_window(item)
+    if not play(source.path, start, duration):
+        typer.echo(f"ffplay not found; open {source.path} at {start:.1f} s")
 
 
 def review(
@@ -78,12 +130,13 @@ def review(
     new_corrections: list[Correction] = []
     changed = False
     try:
+        term = detect(sys.stdout)
         for number, item in enumerate(queue, 1):
-            typer.echo(
-                f"\n[{number}/{len(queue)}] {item.kind} · {item.start:.1f}-{item.end:.1f} s · "
-                f"{_speakers(folder, item)}\n  {span_text(folder.transcript, item)}"
-            )
-            answer = typer.prompt(">", default="", show_default=False).strip()
+            question = _show(folder, item, number, len(queue), term)
+            answer = typer.prompt(question, default="", show_default=False).strip()
+            while answer in {"p", "/p"}:
+                _play(folder, item)
+                answer = typer.prompt(question, default="", show_default=False).strip()
             if answer == "/q":
                 break
             if answer == "/s":

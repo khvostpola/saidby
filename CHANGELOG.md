@@ -7,6 +7,11 @@ All notable changes are documented here, following
 ## [Unreleased]
 
 ### Added
+- `saidby review` shows the doubtful span among its neighbouring words (dimmed, with the span
+  highlighted) and asks `Text for "akme"?`. `p` plays the span with `ffplay` (from the kept work
+  audio, the speaker's track or the original recording, in that order). If the text you type
+  repeats the words next to the span, it asks whether to replace only the span instead of
+  duplicating them silently.
 - `saidby process -i` shows a plan before running (glossary, language, speakers, output and extra
   terms, each with where the value comes from) and waits for one key: Enter to start, `t` to add
   terms for this recording, `e` to change a value, `q` to quit. It asks only what nothing else

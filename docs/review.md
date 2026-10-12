@@ -18,15 +18,27 @@ the same counts. Nothing is merged: the first diarizer stays the one that is use
 3. `low_confidence`: runs of words whose recognizer probability is under `--low-confidence`
    (0.6 by default).
 
-For each span you see the current text and the speakers, and you answer with:
+For each span you see the words around it (dimmed) with the span itself in brackets and
+highlighted, who spoke, and a question that names it, such as `Text for "akme"?`. You answer
+with:
 
 | Input | Effect |
 |---|---|
 | Enter | Keep the text (not asked again) |
 | corrected text | Replace the span; new words get `source: review` |
+| `p` | Play the span (a little before and after) and ask again |
 | `@SPEAKER_01` or `@ana` | Set who spoke (optionally followed by the corrected text) |
 | `/s` | Skip for now |
 | `/q` | Quit |
+
+Playing needs `ffplay` (it comes with ffmpeg). The audio is the kept `.work/audio.wav` when the
+run used `--keep-intermediates`; otherwise the track of the voice that speaks most in the span;
+otherwise the original recording, if it is still where the run found it. If none is there,
+`p` says so.
+
+Type only what the span should say. If your text starts or ends with the words that sit next to
+the span (as when you retype the whole phrase), saidby notices, tells you which words repeat and
+asks whether to replace only the span; answer `n` to keep your text exactly as typed.
 
 The corrected text keeps the original word timings when the number of words is the same, and
 spreads the words evenly over the span otherwise. Every change is appended to

@@ -3,7 +3,9 @@
 
 import json
 import shutil
+import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 import yaml
@@ -156,3 +158,90 @@ def test_review_directory_prompt_can_be_declined(tmp_path: Path) -> None:
     )
     assert result.exit_code == 0, result.output
     assert directory.read_text() == before
+
+
+def _review(folder: Path, answers: str, *extra: str) -> Any:
+    return runner.invoke(
+        app,
+        ["review", str(folder), "--kinds", "diarization", "--limit", "1", *extra],
+        input=answers,
+    )
+
+
+def test_review_shows_the_span_among_its_neighbours_and_asks_about_it(tmp_path: Path) -> None:
+    folder = _folder(tmp_path)
+    result = _review(folder, "/q\n")
+    assert result.exit_code == 0, result.output
+    assert "word0 word1 word2 word3 word4 [word5] word6 word7 word8 word9" in result.output
+    assert "word12 word13 …" in result.output
+    assert 'Text for "word5"?' in result.output
+    assert "p plays the span" in result.output
+
+
+class Player:
+    def __init__(self, found: bool = True) -> None:
+        self.calls: list[tuple[Path, float, float]] = []
+        self.found = found
+
+    def __call__(self, path: Path, start: float, duration: float) -> bool:
+        self.calls.append((path, start, duration))
+        return self.found
+
+
+def test_p_plays_the_span_and_asks_again(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    folder = _folder(tmp_path)
+    player = Player()
+    monkeypatch.setattr(sys.modules["saidby.cli.review"], "play", player)
+    result = _review(folder, "p\n/p\n/s\n")
+    assert result.exit_code == 0, result.output
+    assert len(player.calls) == 2
+    path, start, duration = player.calls[0]
+    assert path.parent.name == "speakers"
+    assert start == pytest.approx(2.0)
+    assert duration == pytest.approx(1.4)
+    assert result.output.count('Text for "word5"?') == 3
+
+
+def test_p_prefers_the_kept_work_audio(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    folder = _folder(tmp_path)
+    (folder / ".work").mkdir(exist_ok=True)
+    (folder / ".work" / "audio.wav").write_bytes(b"x")
+    player = Player()
+    monkeypatch.setattr(sys.modules["saidby.cli.review"], "play", player)
+    _review(folder, "p\n/s\n")
+    assert player.calls[0][0] == folder / ".work" / "audio.wav"
+
+
+def test_p_says_what_is_missing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    folder = _folder(tmp_path)
+    module = sys.modules["saidby.cli.review"]
+    monkeypatch.setattr(module, "play", Player(found=False))
+    result = _review(folder, "p\n/s\n")
+    assert "ffplay not found; open" in result.output
+    monkeypatch.setattr(module, "audio_source", lambda *args: None)
+    result = _review(folder, "p\n/s\n")
+    assert "no audio to play" in result.output
+
+
+def test_retyping_the_neighbours_asks_to_replace_only_the_span(tmp_path: Path) -> None:
+    folder = _folder(tmp_path)
+    result = _review(folder, "word4 Acme word6\ny\n")
+    assert result.exit_code == 0, result.output
+    assert 'Your text repeats "word4 word6" from next to the span' in result.output
+    assert [c.to for c in read_corrections(folder / "corrections.jsonl")] == ["Acme"]
+    text = (folder / "transcript.txt").read_text()
+    assert "word4 Acme word6" in text
+    assert "word4 word4" not in text
+
+
+def test_the_repeated_neighbours_can_be_kept_when_that_is_what_you_meant(tmp_path: Path) -> None:
+    folder = _folder(tmp_path)
+    result = _review(folder, "word4 Acme word6\nn\n")
+    assert result.exit_code == 0, result.output
+    assert [c.to for c in read_corrections(folder / "corrections.jsonl")] == ["word4 Acme word6"]
+
+
+def test_a_plain_replacement_asks_nothing_extra(tmp_path: Path) -> None:
+    folder = _folder(tmp_path)
+    result = _review(folder, "Acme\n")
+    assert "repeats" not in result.output
