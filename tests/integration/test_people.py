@@ -247,3 +247,56 @@ def test_the_run_records_why_it_used_the_cpu_and_forgets_a_forced_choice(tmp_pat
     device = read_manifest(folder / "manifest.json").device
     assert (device.used, device.reason) == ("cpu", "requested_cpu")
     assert read_cache() is None
+
+
+def test_enroll_accepts_a_name_and_each_person_keeps_their_own_declarant(tmp_path: Path) -> None:
+    folder = _run(tmp_path, None)
+    directory = _directory(tmp_path, enrolled=False)
+    result = runner.invoke(
+        app,
+        [
+            "enroll",
+            str(folder),
+            "--speaker",
+            "SPEAKER_00=Alice",
+            "--speaker",
+            "SPEAKER_01=bob",
+            "--directory",
+            str(directory),
+            "--embedder",
+            "fake",
+            "--device",
+            "cpu",
+            "--consent-source",
+            "signed form",
+            "--consent-declared-by",
+            "the team lead",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    saved = yaml.safe_load(directory.read_text())
+    assert [p["id"] for p in saved["people"] if "voiceprint" in p] == ["alice", "bob"]
+    consent = yaml.safe_load((tmp_path / "consent.yaml").read_text())
+    assert [(c["person"], c["declared_by"]) for c in consent] == [
+        ("alice", "the team lead"),
+        ("bob", "the team lead"),
+    ]
+
+
+def test_enroll_says_how_to_add_a_missing_person(tmp_path: Path) -> None:
+    folder = _run(tmp_path, None)
+    directory = _directory(tmp_path, enrolled=False)
+    result = runner.invoke(
+        app,
+        [
+            "enroll",
+            str(folder),
+            "--speaker",
+            "SPEAKER_00=Carla",
+            "--directory",
+            str(directory),
+            "--embedder",
+            "fake",
+        ],
+    )
+    assert "saidby directory add-person" in str(result.exception)

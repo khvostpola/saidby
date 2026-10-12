@@ -3,56 +3,18 @@
 
 import datetime as dt
 from pathlib import Path
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 import typer
 
 from saidby.config.settings import Settings
-from saidby.errors import ConsentMissingError, InputError, UsageError
-from saidby.formats.audio import read_audio
-from saidby.formats.consent_yaml import append_consent, find_consent, load_consents
-from saidby.formats.directory_yaml import load_directory, save_directory
-from saidby.formats.manifest import read_manifest
-from saidby.formats.rttm import read_rttm
-from saidby.formats.words_json import read_transcript
-from saidby.ports.registry import make_embedder
-from saidby.runtime import prepare
-from saidby.runtime.device import resolve_device
-from saidby.schema.directory import ConsentRecord, Directory
-from saidby.stages.identify import make_voiceprint, speaker_centroids
-from saidby.stages.ingest import ingest
+from saidby.errors import UsageError
+from saidby.formats.directory_yaml import load_directory
+from saidby.speakers.enrollment import ConsentInput, enroll_voices, resolve_consents
+from saidby.speakers.people import find_person
 
-
-def _resolve_consents(
-    person_ids: list[str],
-    dir_model: Directory,
-    consent_path: Path,
-    source: str | None,
-    declared_by: str | None,
-    date: str | None,
-) -> dict[str, ConsentRecord]:
-    records, raw = load_consents(consent_path)
-    resolved: dict[str, ConsentRecord] = {}
-    for person_id in person_ids:
-        person = dir_model.person(person_id)
-        if person is None:
-            raise UsageError(f"{person_id!r} is not in the directory; add the person first")
-        record = find_consent(records, person.id, person.name)
-        if record is None and source and declared_by:
-            record = ConsentRecord(
-                person=person.id,
-                source=source,
-                declared_by=declared_by,
-                date=dt.date.fromisoformat(date) if date else dt.date.today(),
-            )
-            append_consent(consent_path, raw, record)
-        if record is None:
-            raise ConsentMissingError(
-                f"no voiceprint consent recorded for {person.id}; pass --consent-source and "
-                f"--consent-declared-by or add it to {consent_path}"
-            )
-        resolved[person_id] = record
-    return resolved
+if TYPE_CHECKING:
+    from saidby.schema.directory import Person
 
 
 def _configured_directory() -> Path:
@@ -67,7 +29,7 @@ def enroll(
         Path,
         typer.Argument(help="Output folder of a finished run (the one `saidby process` wrote)."),
     ],
-    speaker: Annotated[list[str], typer.Option("--speaker", help="LABEL=PERSON_ID")],
+    speaker: Annotated[list[str], typer.Option("--speaker", help="LABEL=PERSON (an id or a name)")],
     directory: Annotated[
         Path | None,
         typer.Option(help="Directory file to update (default: the last configured one)"),
@@ -87,50 +49,38 @@ def enroll(
     """Store voiceprints of people who spoke in a finished run. Requires recorded consent."""
     parsed = [item.partition("=") for item in speaker]
     if any(not label or not person for label, _, person in parsed):
-        raise UsageError("expected --speaker LABEL=PERSON_ID")
+        raise UsageError("expected --speaker LABEL=PERSON (an id or a name)")
     directory = directory or _configured_directory()
     dir_model, raw = load_directory(directory)
-    consent_path = consent_file or directory.with_name("consent.yaml")
-    resolved = _resolve_consents(
-        [person for _, _, person in parsed],
-        dir_model,
-        consent_path,
-        consent_source,
-        consent_declared_by,
-        consent_date,
+    chosen: list[tuple[str, Person]] = []
+    for label, _, key in parsed:
+        person = find_person(dir_model, key)
+        if person is None:
+            raise UsageError(
+                f"{key!r} is not in the directory; add the person first "
+                "(saidby directory add-person)"
+            )
+        chosen.append((label, person))
+    given = {}
+    if consent_source and consent_declared_by:
+        when = dt.date.fromisoformat(consent_date) if consent_date else None
+        entry = ConsentInput(consent_source, consent_declared_by, when)
+        given = {person.id: entry for _, person in chosen}
+    consents = resolve_consents(
+        [person for _, person in chosen],
+        consent_file or directory.with_name("consent.yaml"),
+        given,
     )
-
-    prepare(offline=True, want_cuda=device != "cpu")
-    settings = Settings.load(overrides={"device": device})
-    manifest = read_manifest(out_dir / "manifest.json")
-    transcript = read_transcript(out_dir / "transcript.words.json")
-    wav = out_dir / ".work" / "audio.wav"
-    if wav.exists():
-        audio = read_audio(wav)
-    else:
-        source = Path(manifest.source.path)
-        if not source.is_file():
-            raise InputError(f"original recording not found: {source}")
-        audio = ingest(source, out_dir / ".work").audio
-    by_key = {key: s.label for s in transcript.speakers for key in (s.label, s.id) if key}
-    ids = {s.label: s.file_id for s in transcript.speakers}
-    spans: dict[str, list[tuple[float, float]]] = {}
-    for turn in read_rttm(out_dir / "diarization.rttm"):
-        label = by_key.get(turn.label)
-        if label:
-            spans.setdefault(label, []).append((turn.start, turn.end))
-    embedder = make_embedder(embedder_name, device=resolve_device(settings.device))
-    centroids = speaker_centroids(audio, spans, embedder)
-    people = {p["id"]: p for p in raw["people"]}
-    for label_arg, _, person_id in parsed:
-        label = by_key.get(label_arg)
-        if label is None or label not in centroids:
-            raise UsageError(f"no usable speech for speaker {label_arg!r} (known: {sorted(ids)})")
-        voiceprint = make_voiceprint(
-            centroids[label], embedder, channel=channel, consent=resolved[person_id]
-        )
-        people[person_id]["voiceprint"] = voiceprint.model_dump(mode="json", exclude_none=True)
-        typer.echo(f"{person_id}: {centroids[label].seconds} s of speech")
-    backup = save_directory(directory, raw)
+    backup = enroll_voices(
+        out_dir,
+        [(label, person.id) for label, person in chosen],
+        directory,
+        raw,
+        consents,
+        embedder_name=embedder_name,
+        device=device,
+        channel=channel,
+        echo=typer.echo,
+    )
     if backup:
         typer.echo(f"backup: {backup}")

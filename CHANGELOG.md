@@ -7,6 +7,8 @@ All notable changes are documented here, following
 ## [Unreleased]
 
 ### Added
+- `saidby enroll --speaker LABEL=PERSON` takes a person's id or name, and tells you to run
+  `saidby directory add-person` when the person is not in the directory yet.
 - `saidby speakers map --set LABEL=PERSON` finds the person by id, name or alias, and a new name
   is offered for the directory: it asks on a terminal, or use `--add-missing`. Ids made from names
   no longer break on accents.

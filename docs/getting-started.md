@@ -115,12 +115,13 @@ people:
     name: Ben Ruiz
 ```
 
-Enroll each voice from a finished run, recording that the person agreed:
+Enroll each voice from a finished run, recording that the person agreed. `--speaker` takes the
+person's id or name:
 
 ```bash
 saidby enroll out/call --speaker SPEAKER_00=ana --directory directory.yaml \
   --consent-source "signed form" --consent-declared-by "Ana Gómez"
-saidby enroll out/call --speaker SPEAKER_01=ben --directory directory.yaml \
+saidby enroll out/call --speaker SPEAKER_01="Ben Ruiz" --directory directory.yaml \
   --consent-source "signed form" --consent-declared-by "Ben Ruiz"
 ```
 

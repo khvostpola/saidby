@@ -77,7 +77,7 @@ Arguments:
 
 | Option | Type | Default | What it does |
 |---|---|---|---|
-| `--speaker` | str |  | LABEL=PERSON_ID (required) |
+| `--speaker` | str |  | LABEL=PERSON (an id or a name) (required) |
 | `--directory` | path |  | Directory file to update (default: the last configured one) |
 | `--consent-file` | path |  | consent.yaml (default: next to the directory) |
 | `--consent-source` | str |  | How consent was given |
