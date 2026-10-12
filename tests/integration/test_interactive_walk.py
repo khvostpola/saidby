@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import io
+import os
 import sys
 import tomllib
 from pathlib import Path
@@ -194,7 +195,7 @@ def test_chosen_defaults_are_saved_into_the_project_file(work: Path) -> None:
     text = (work / "saidby.toml").read_text(encoding="utf-8")
     assert text.startswith("# mine")
     assert tomllib.loads(text) == {"saidby": {"device": "cpu", "language": "es", "out": "results"}}
-    assert "settings  saved to ./saidby.toml" in out.getvalue()
+    assert f"settings  saved to .{os.sep}saidby.toml" in out.getvalue()
 
 
 def test_declining_the_defaults_writes_nothing(work: Path) -> None:
