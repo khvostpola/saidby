@@ -11,6 +11,7 @@ from saidby.pipeline.job import Recording
 from saidby.ports.diarizer import Diarizer
 from saidby.ports.registry import make_diarizer
 from saidby.schema.diarization import Diarization
+from saidby.schema.telemetry import NOT_REQUESTED
 from saidby.stages.compare import DEFAULT_MARGIN_S, compare_diarizations
 from saidby.telemetry.vram import VramPeak
 
@@ -38,7 +39,7 @@ class CompareStage:
 
     def run(self, rec: Recording) -> dict[str, Any]:
         if not self.p.settings.compare:
-            return {"skipped": True}
+            return {"skipped": NOT_REQUESTED}
         engine = self._engine()
         diar_key = (cache.read_marker(rec.work_dir, "diarize") or {})["key"]
         key = cache.stage_key(

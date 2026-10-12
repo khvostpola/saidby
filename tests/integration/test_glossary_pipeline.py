@@ -120,6 +120,15 @@ def _words(folder: Path) -> list[str]:
     return [w.word.strip() for w in read_transcript(folder / "transcript.words.json").words()]
 
 
+def _stage_events(folder: Path) -> list[dict[str, Any]]:
+    lines = (folder / "logs" / "telemetry.jsonl").read_text(encoding="utf-8").splitlines()
+    return [json.loads(line) for line in lines]
+
+
+def _skips(folder: Path) -> dict[str, str]:
+    return {e["stage"]: e["reason"] for e in _stage_events(folder) if e["event"] == "stage.skip"}
+
+
 def test_bias_pass_transplant_and_dialect(tmp_path: Path) -> None:
     transcriber = ScriptedTranscriber()
     folder = _run(tmp_path, transcriber, _directory(tmp_path))
@@ -164,6 +173,24 @@ def test_without_directory_nothing_glossary_related_runs(tmp_path: Path) -> None
     assert transcriber.hotwords_seen == [None]
     assert not (folder / "corrections.jsonl").exists()
     assert read_manifest(folder / "manifest.json").glossary is None
+    assert _skips(folder) == dict.fromkeys(
+        ["asr_bias", "transplant", "compare", "identify", "correct"], "not_requested"
+    )
+
+
+def test_every_started_stage_is_closed_and_a_skip_says_why(tmp_path: Path) -> None:
+    folder = _run(tmp_path, ScriptedTranscriber(), _directory(tmp_path))
+    events = _stage_events(folder)
+    opened = [e["stage"] for e in events if e["event"] == "stage.start"]
+    closed = [
+        e["stage"] for e in events if e["event"] in {"stage.end", "stage.skip", "stage.error"}
+    ]
+    assert opened == closed
+    assert _skips(folder) == {
+        "compare": "not_requested",
+        "identify": "nothing_to_do",
+        "correct": "not_requested",
+    }
 
 
 def test_llm_correction_runs_after_bias_and_logs(tmp_path: Path) -> None:
@@ -246,6 +273,7 @@ def test_windows_mode_without_candidates_skips_second_pass(
     assert _words(folder)[1] == "akme"
     stages = [s.stage for s in read_manifest(folder / "manifest.json").stages]
     assert "asr_bias" not in stages
+    assert _skips(folder)["asr_bias"] == "nothing_to_do"
 
 
 def test_extra_terms_alone_drive_the_bias_pass_and_the_transplant(tmp_path: Path) -> None:

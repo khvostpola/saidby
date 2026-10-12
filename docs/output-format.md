@@ -26,7 +26,8 @@ and, on failure, `failed_stage` and `error_type`.
 ## `logs/telemetry.jsonl`
 
 One event per line with a closed set of fields: stage, engine, model, revision, device,
-timings, real-time factor, memory peak and counts. It never contains transcript text,
+timings, real-time factor, memory peak, counts and, for a stage that did not run, the reason. Every
+`stage.start` is followed by a `stage.end`, `stage.skip` or `stage.error`. It never contains transcript text,
 names, glossary terms, voiceprints or file names. The GPU memory peak is `null` on Windows,
 where the driver does not report memory per process.
 

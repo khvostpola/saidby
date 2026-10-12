@@ -17,6 +17,9 @@ EventName = Literal[
     "model.load",
     "model.unload",
 ]
+SkipReason = Literal["not_requested", "nothing_to_do"]
+NOT_REQUESTED: SkipReason = "not_requested"
+NOTHING_TO_DO: SkipReason = "nothing_to_do"
 StageName = Literal[
     "ingest",
     "asr",
@@ -54,6 +57,7 @@ ALLOWED_FIELDS = (
     "status",
     "error_type",
     "exit_code",
+    "reason",
     "segments",
     "words",
     "speakers",
@@ -107,6 +111,7 @@ class TelemetryEvent(BaseModel):
     status: Literal["ok", "failed", "interrupted"] | None = None
     error_type: str | None = Field(default=None, pattern=r"^[A-Za-z_][A-Za-z0-9_.]*$")
     exit_code: int | None = None
+    reason: SkipReason | None = None
     segments: int | None = None
     words: int | None = None
     speakers: int | None = None

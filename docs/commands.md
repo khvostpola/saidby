@@ -99,12 +99,16 @@ or nothing (`process`). Nothing is drawn when stderr is not a terminal, with `--
 | `device` | the device is chosen | `requested`, `used`, `name`, `vram_total_mb`, `reason` |
 | `stage.start` | a stage begins | `file`, `stage` |
 | `stage.loading` | a stage starts loading its model (once per model, not per file) | `file`, `stage`, `model` |
-| `stage.end`, `stage.skip` | a stage finishes, or was already done | `file`, `stage`, `wall_s`, `rtf` |
+| `stage.end`, `stage.skip` | a stage finishes, was already done, or does not apply to this run | `file`, `stage`, `wall_s`, `rtf`; `reason` when it does not apply |
 | `stage.error` | a stage fails | `file`, `stage`, `error_type` |
 | `file.end` | a file finishes | `file`, `status`, `out` |
 | `run.end` | the run ends | `started`, `finished`, `wall_s`, `audio_s`, `rtf`, `files`, `failed` |
 
 `reason` is `requested_cpu`, `no_gpu`, `gpu_unusable` or `null` when the GPU is used.
+
+Every `stage.start` is followed by `stage.end`, `stage.skip` or `stage.error` for the same stage.
+A stage that does not apply ends with `stage.skip` and a `reason`: `not_requested` (the option or the
+directory that turns it on is missing) or `nothing_to_do` (it is on, but there is nothing for it to act on).
 
 ## Configuration
 

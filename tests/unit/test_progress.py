@@ -86,6 +86,25 @@ def test_json_mode_announces_the_start(capsys: pytest.CaptureFixture[str]) -> No
     assert event == {"event": "stage.start", "file": "call", "stage": "asr"}
 
 
+def test_json_mode_closes_a_skipped_stage(capsys: pytest.CaptureFixture[str]) -> None:
+    progress = Progress("json")
+    progress.stage_start(index=1, total=1, slug="call", stage="correct")
+    progress.stage_skipped(slug="call", stage="correct", reason="not_requested")
+    events = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
+    assert events == [
+        {"event": "stage.start", "file": "call", "stage": "correct"},
+        {"event": "stage.skip", "file": "call", "stage": "correct", "reason": "not_requested"},
+    ]
+
+
+def test_human_mode_says_nothing_about_a_skipped_stage() -> None:
+    stream = io.StringIO()
+    progress = Progress("human", stream=stream)
+    progress.stage_start(index=1, total=1, slug="call", stage="correct")
+    progress.stage_skipped(slug="call", stage="correct", reason="not_requested")
+    assert stream.getvalue() == ""
+
+
 def _times() -> tuple[datetime, datetime]:
     start = datetime(2026, 10, 11, 21, 27, 10, tzinfo=UTC)
     return start, start + timedelta(seconds=35)

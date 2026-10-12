@@ -15,6 +15,7 @@ from saidby.i18n import _, ngettext
 from saidby.pipeline import cache
 from saidby.pipeline.job import Recording, TextArtifact
 from saidby.ports.corrector import LlmClient
+from saidby.schema.telemetry import NOT_REQUESTED, NOTHING_TO_DO
 from saidby.stages.correct import llm_correct
 from saidby.stages.glossary.bias import Hotwords, build_hotwords
 from saidby.stages.glossary.dialect import apply_dialect, dialect_map
@@ -90,16 +91,16 @@ class GlossaryStages:
     def asr_bias(self, rec: Recording) -> dict[str, Any]:
         directory = self.p._directory
         if directory is None or not self.p.settings.bias:
-            return {"skipped": True}
+            return {"skipped": NOT_REQUESTED}
         hot = self.hotwords()
         if not hot.text:
-            return {"skipped": True}
+            return {"skipped": NOTHING_TO_DO}
         windows: list[tuple[float, float]] | None = None
         if self.p.settings.bias_mode == "windows":
             windows = find_windows(read_transcript(self.p.text[rec.slug].path), directory)
             rec.glossary.update(bias_windows=len(windows), bias_window_s=total_seconds(windows))
             if not windows:
-                return {"skipped": True}
+                return {"skipped": NOTHING_TO_DO}
         engine = self.p._transcriber_engine()
         window_part = json.dumps(windows) if windows is not None else "full"
         key = cache.stage_key(
@@ -164,12 +165,12 @@ class GlossaryStages:
     def transplant(self, rec: Recording) -> dict[str, Any]:
         directory = self.p._directory
         if directory is None:
-            return {"skipped": True}
+            return {"skipped": NOT_REQUESTED}
         base = self.p.text[rec.slug]
         bias = self.bias.get(rec.slug) if self.p.settings.transplant else None
         mapping = dialect_map(directory)
         if bias is None and not mapping:
-            return {"skipped": True}
+            return {"skipped": NOTHING_TO_DO}
         vocab = sorted(vocabulary(directory))
         key = cache.stage_key(
             "transplant",
@@ -216,7 +217,7 @@ class GlossaryStages:
     def correct(self, rec: Recording) -> dict[str, Any]:
         directory = self.p._directory
         if directory is None or not self.p.settings.correct:
-            return {"skipped": True}
+            return {"skipped": NOT_REQUESTED}
         base = self.p.text[rec.slug]
         settings = self.p.settings
         entries = _sha(directory.model_dump_json(exclude={"people": {"__all__": {"voiceprint"}}}))

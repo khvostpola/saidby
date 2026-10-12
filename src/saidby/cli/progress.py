@@ -215,6 +215,12 @@ class Progress:
                 f"[{index}/{total}] {status_label(status):<{label_width()}} {out} · {detail}"
             )
 
+    def stage_skipped(self, *, slug: str, stage: str, reason: str) -> None:
+        self.stop()
+        if self.mode == "json":
+            event = {"event": "stage.skip", "file": slug, "stage": stage, "reason": reason}
+            print(json.dumps(event), flush=True)
+
     def stage_error(
         self, *, index: int, total: int, slug: str, stage: str, error_type: str
     ) -> None:

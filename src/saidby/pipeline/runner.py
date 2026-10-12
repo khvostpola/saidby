@@ -45,7 +45,7 @@ from saidby.schema.directory import Directory, Term
 from saidby.schema.ids import unique_slugs
 from saidby.schema.manifest import AudioInfo, DeviceRecord, Manifest, SourceInfo, StageRecord
 from saidby.schema.speakers import IdentificationResult, SpeakerEntry
-from saidby.schema.telemetry import StageName
+from saidby.schema.telemetry import NOT_REQUESTED, NOTHING_TO_DO, StageName
 from saidby.schema.transcript import Transcript
 from saidby.stages.align import assign_speakers
 from saidby.stages.identify import identify as run_identify
@@ -251,8 +251,12 @@ class Pipeline:
                 index=rec.index, total=total, slug=rec.slug, stage=stage, error_type=rec.error_type
             )
             return
-        if info.pop("skipped", False):
-            self.progress.stop()
+        reason = info.pop("skipped", None)
+        if reason:
+            rec.telemetry.emit(
+                "stage.skip", stage=telemetry_stage, file_index=rec.index, reason=reason
+            )
+            self.progress.stage_skipped(slug=rec.slug, stage=stage, reason=reason)
             return
         wall = round(time.perf_counter() - started, 3)
         engine: EngineInfo | None = info.pop("engine", None)
@@ -509,12 +513,10 @@ class Pipeline:
 
     def _identify(self, rec: Recording) -> dict[str, Any]:
         directory = self._directory
-        if (
-            directory is None
-            or not self.settings.identify
-            or not any(p.voiceprint for p in directory.people)
-        ):
-            return {"skipped": True}
+        if directory is None or not self.settings.identify:
+            return {"skipped": NOT_REQUESTED}
+        if not any(p.voiceprint for p in directory.people):
+            return {"skipped": NOTHING_TO_DO}
         engine = self._embedder_engine()
         diar_key = (cache.read_marker(rec.work_dir, "diarize") or {})["key"]
         prints = "".join(f"{p.id}:{p.voiceprint.vector}" for p in directory.people if p.voiceprint)

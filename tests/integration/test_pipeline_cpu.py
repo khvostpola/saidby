@@ -227,6 +227,25 @@ def test_json_progress_announces_each_model_load_once(
     assert asr[:3] == ["stage.start", "stage.loading", "stage.end"]
 
 
+def test_json_progress_closes_every_stage_it_opens(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    pipeline = Pipeline(
+        Settings(device="cpu", language="es"),
+        transcriber=FakeTranscriber(),
+        diarizer=FakeDiarizer(rttm=RTTM),
+        progress=Progress("json"),
+    )
+    pipeline.run([FIXTURE], tmp_path)
+    events = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
+    opened = [e["stage"] for e in events if e["event"] == "stage.start"]
+    closed = [
+        e["stage"] for e in events if e["event"] in {"stage.end", "stage.skip", "stage.error"}
+    ]
+    assert opened == closed
+    assert {"asr_bias", "transplant", "compare", "identify", "correct"} <= set(closed)
+
+
 def test_human_progress_folds_the_instant_stages_into_the_done_line(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
