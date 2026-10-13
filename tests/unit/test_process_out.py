@@ -10,6 +10,7 @@ from typer.testing import CliRunner
 
 from saidby.cli import app
 from saidby.config.settings import Settings
+from saidby.errors import InputError
 from saidby.runtime import host
 
 runner = CliRunner()
@@ -34,6 +35,12 @@ def recording(monkeypatch: pytest.MonkeyPatch) -> type[_RecordingPipeline]:
     _RecordingPipeline.settings_seen = []
     monkeypatch.setattr(sys.modules["saidby.cli.process"], "Pipeline", _RecordingPipeline)
     return _RecordingPipeline
+
+
+@pytest.fixture(autouse=True)
+def recordings(tmp_path: Path) -> None:
+    for name in ("call.m4a", "a.m4a", "b.m4a"):
+        (tmp_path / name).touch()
 
 
 def _output_folder(recording: type[_RecordingPipeline]) -> Path:
@@ -135,3 +142,34 @@ def test_process_shows_the_compact_banner_unless_progress_is_for_machines(
     for mode in ("json", "none"):
         assert runner.invoke(app, ["process", "a.m4a", "--progress", mode]).exit_code == 0
     assert len(shown) == 1
+
+
+def test_a_name_typed_without_quotes_is_one_input(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, recording: type[_RecordingPipeline]
+) -> None:
+    (tmp_path / "WhatsApp Ptt 12.12.13 PM.ogg").touch()
+    monkeypatch.chdir(tmp_path)
+    result = runner.invoke(app, ["process", "WhatsApp", "Ptt", "12.12.13", "PM.ogg", "a.m4a"])
+    assert result.exit_code == 0, result.output
+    assert recording.runs[0][0] == [Path("WhatsApp Ptt 12.12.13 PM.ogg"), Path("a.m4a")]
+    assert "one file with spaces in its name: ." in result.output
+
+
+def test_a_missing_input_stops_the_run_before_it_starts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, recording: type[_RecordingPipeline]
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    result = runner.invoke(app, ["process", "call.m4a", "missing.m4a"])
+    assert isinstance(result.exception, InputError)
+    assert str(result.exception) == "input file not found: missing.m4a"
+    assert recording.runs == []
+
+
+def test_several_missing_inputs_suggest_quotes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, recording: type[_RecordingPipeline]
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    result = runner.invoke(app, ["process", "my", "call 2.m4a"])
+    assert isinstance(result.exception, InputError)
+    assert "input files not found: my, call 2.m4a; if a name has spaces" in str(result.exception)
+    assert recording.runs == []

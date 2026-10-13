@@ -45,6 +45,11 @@ Each input gets its own folder (`out/monday`, `out/tuesday`; duplicates get `-2`
 are loaded once, and each stage runs for all the files before the next stage starts. If one file
 fails, the others finish and the exit code tells you; `--fail-fast` stops at the first failure.
 
+Every input must be a file before anything starts: a name that is not one stops the run with
+exit code 3. A name with spaces goes in quotes (`saidby process 'my call.m4a'`). Typed without
+them, the shell splits it into several words; saidby joins the words back when together they
+name a file, and says so.
+
 ## Guided and unattended runs
 
 On a terminal, `saidby process` shows its plan and starts on Enter; when the run ends it plays

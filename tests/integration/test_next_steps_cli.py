@@ -70,7 +70,7 @@ class _StubPipeline:
 def _process(monkeypatch: pytest.MonkeyPatch, results: list[RecordingResult], *flags: str) -> str:
     _StubPipeline.results = results
     monkeypatch.setattr(sys.modules["saidby.cli.process"], "Pipeline", _StubPipeline)
-    result = runner.invoke(app, ["process", "call.m4a", *flags])
+    result = runner.invoke(app, ["process", str(FIXTURE), *flags])
     assert result.exit_code == 0, result.output
     return result.output
 
@@ -98,5 +98,5 @@ def test_a_failed_file_gets_no_footer(tmp_path: Path, monkeypatch: pytest.Monkey
     folder = _folder(tmp_path)
     _StubPipeline.results = [RecordingResult("tones", folder, "failed", 6, "StageError")]
     monkeypatch.setattr(sys.modules["saidby.cli.process"], "Pipeline", _StubPipeline)
-    result = runner.invoke(app, ["process", "call.m4a"])
+    result = runner.invoke(app, ["process", str(FIXTURE)])
     assert "saidby speakers map" not in result.output

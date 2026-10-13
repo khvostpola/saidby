@@ -21,6 +21,7 @@ file that failed.
 | The first lines (`starting`, `device`) take a few seconds | Loading PyTorch takes about a second, and the first GPU query of the day wakes a laptop GPU (about two seconds) | Nothing to fix; later runs are quicker. `saidby doctor` shows the same device check |
 | `CUDA failed with error out of memory` | Less than about 6 GB of free GPU memory | Close other GPU programs, or `--device cpu`, or `--asr-model tiny` |
 | Very slow on the CPU | large-v3 is big | `--asr-model tiny`; on a modern 20-thread CPU large-v3 runs at about 0.4 times real time |
+| `input files not found: my, call.m4a` (`input`) | A name with spaces typed without quotes, and the words do not name a file once joined (a typo, or two spaces in a row) | Put the name in quotes: `saidby process 'my call.m4a'` |
 | `output folder holds results for a different input` (`input`) | The folder name collides with an earlier, different file | Use another `--out`, or `--force` to overwrite |
 | `words could not be assigned to a speaker` (warning) | Some words fell outside every diarized turn | Usually a few at the edges; if many, try `--num-speakers` |
 | `saidby process` stops and waits in a script | It found a terminal and asked its questions | `--no-interactive`, or `interactive = false` in `saidby.toml`; see [commands](commands.md#guided-and-unattended-runs) |

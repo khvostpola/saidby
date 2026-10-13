@@ -45,6 +45,11 @@ def _directory(path: Path) -> Path:
     return path
 
 
+@pytest.fixture(autouse=True)
+def recording(tmp_path: Path) -> None:
+    (tmp_path / "call.m4a").touch()
+
+
 @pytest.fixture
 def project(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     _directory(tmp_path / "directory.yaml")

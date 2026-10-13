@@ -9,11 +9,12 @@ import typer
 
 from saidby.cli.banner import show_compact
 from saidby.cli.next_steps import next_steps, read_state
+from saidby.cli.paths import join_split_names, show_path
 from saidby.cli.progress import Progress
 from saidby.cli.term import detect
 from saidby.cli.ui import Ui, auto_interactive, ensure_terminal
 from saidby.config.settings import Settings
-from saidby.errors import StageError, UsageError
+from saidby.errors import InputError, StageError, UsageError
 from saidby.i18n import _
 from saidby.interactive.plan import RunPlan, plan_run
 from saidby.interactive.walk import finish_run, walk_folders
@@ -283,11 +284,15 @@ def process(
             "interactive": interactive,
         },
     )
+    found = join_split_names(inputs)
+    inputs = [path for path, _words in found]
+    _check_inputs(inputs)
     if interactive:
         _check_interactive(inputs, settings)
     guided = bool(interactive) or (interactive is None and auto_interactive(settings))
     if settings.progress == "human":
         show_compact(len(inputs), settings.out)
+        _say_joined([path for path, words in found if words > 1])
     ui = _ui() if guided else None
     plan: RunPlan | None = None
     if ui is not None:
@@ -311,6 +316,22 @@ def process(
 
 def _ui() -> Ui:
     return Ui()
+
+
+def _check_inputs(inputs: list[Path]) -> None:
+    missing = [path for path in inputs if not path.is_file()]
+    if len(missing) == 1:
+        raise InputError(_("input file not found: {media}").format(media=missing[0]))
+    if missing:
+        message = _("input files not found: {names}; if a name has spaces, put it in quotes")
+        raise InputError(message.format(names=", ".join(str(path) for path in missing)))
+
+
+def _say_joined(paths: list[Path]) -> None:
+    term = detect(sys.stderr)
+    for path in paths:
+        note = _("one file with spaces in its name: {name}").format(name=show_path(path))
+        print(f"  {term.paint('→', 'yellow')} {note}", file=sys.stderr)
 
 
 def _check_interactive(inputs: list[Path], settings: Settings) -> None:

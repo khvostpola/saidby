@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from saidby.cli.paths import show_path, typed_path, unquote
+from saidby.cli.paths import join_split_names, show_path, typed_path, unquote
 from saidby.config.writer import display_path, portable_path
 from saidby.formats.yaml_io import save_yaml
 from saidby.runtime import host
@@ -66,6 +66,36 @@ def test_quotes_around_typed_paths_are_dropped() -> None:
     assert unquote('"') == '"'
     assert unquote("plain.m4a") == "plain.m4a"
     assert typed_path(' "~/x.yaml" ') == Path("~/x.yaml").expanduser()
+
+
+def test_a_name_split_at_its_spaces_is_put_back_together(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "WhatsApp Ptt at 12.12.13 PM.ogg").touch()
+    (tmp_path / "other call.m4a").touch()
+    (tmp_path / "plain.m4a").touch()
+    words = ["WhatsApp", "Ptt", "at", "12.12.13", "PM.ogg", "plain.m4a", "other", "call.m4a"]
+    assert join_split_names([Path(w) for w in words]) == [
+        (Path("WhatsApp Ptt at 12.12.13 PM.ogg"), 5),
+        (Path("plain.m4a"), 1),
+        (Path("other call.m4a"), 2),
+    ]
+
+
+def test_arguments_that_name_no_file_stay_apart(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "a b.m4a").mkdir()
+    (tmp_path / "c.m4a").touch()
+    words = [Path("a"), Path("b.m4a"), Path("c.m4a"), Path("missing.m4a")]
+    assert join_split_names(words) == [
+        (Path("a"), 1),
+        (Path("b.m4a"), 1),
+        (Path("c.m4a"), 1),
+        (Path("missing.m4a"), 1),
+    ]
 
 
 def test_portable_paths_use_slashes_and_shown_paths_the_native_separator(

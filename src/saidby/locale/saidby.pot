@@ -505,7 +505,22 @@ msgstr[1] ""
 msgid "review"
 msgstr ""
 
-#: src/saidby/cli/process.py:320
+#: src/saidby/cli/process.py:324 src/saidby/pipeline/runner.py:341 src/saidby/stages/ingest.py:36
+#, python-brace-format
+msgid "input file not found: {media}"
+msgstr ""
+
+#: src/saidby/cli/process.py:326
+#, python-brace-format
+msgid "input files not found: {names}; if a name has spaces, put it in quotes"
+msgstr ""
+
+#: src/saidby/cli/process.py:333
+#, python-brace-format
+msgid "one file with spaces in its name: {name}"
+msgstr ""
+
+#: src/saidby/cli/process.py:341
 msgid "-i needs the human progress output; do not combine it with --progress"
 msgstr ""
 
@@ -724,17 +739,17 @@ msgstr ""
 msgid "{language!r} is not a language code such as es, en or pt"
 msgstr ""
 
-#: src/saidby/engines/llm/llama_server.py:31
+#: src/saidby/engines/llm/llama_server.py:34
 #, python-brace-format
 msgid "llama-server not found: install llama.cpp and put llama-server on PATH or set {ENV_BINARY}"
 msgstr ""
 
-#: src/saidby/engines/llm/llama_server.py:49
+#: src/saidby/engines/llm/llama_server.py:77
 #, python-brace-format
 msgid "llama-server exited early with code {returncode}"
 msgstr ""
 
-#: src/saidby/engines/llm/llama_server.py:60
+#: src/saidby/engines/llm/llama_server.py:88
 msgid "llama-server did not become healthy in time"
 msgstr ""
 
@@ -1323,11 +1338,6 @@ msgstr ""
 
 #: src/saidby/pipeline/runner.py:112
 msgid "checking the GPU"
-msgstr ""
-
-#: src/saidby/pipeline/runner.py:341 src/saidby/stages/ingest.py:36
-#, python-brace-format
-msgid "input file not found: {media}"
 msgstr ""
 
 #: src/saidby/pipeline/runner.py:352

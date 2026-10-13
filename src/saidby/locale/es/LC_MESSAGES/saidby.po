@@ -528,7 +528,22 @@ msgstr[1] "{n} tramos dudosos"
 msgid "review"
 msgstr "revisar"
 
-#: src/saidby/cli/process.py:320
+#: src/saidby/cli/process.py:324 src/saidby/pipeline/runner.py:341 src/saidby/stages/ingest.py:36
+#, python-brace-format
+msgid "input file not found: {media}"
+msgstr "no se encontró el archivo de entrada: {media}"
+
+#: src/saidby/cli/process.py:326
+#, python-brace-format
+msgid "input files not found: {names}; if a name has spaces, put it in quotes"
+msgstr "no se encontraron los archivos de entrada: {names}; si un nombre tiene espacios, ponlo entre comillas"
+
+#: src/saidby/cli/process.py:333
+#, python-brace-format
+msgid "one file with spaces in its name: {name}"
+msgstr "un solo archivo con espacios en el nombre: {name}"
+
+#: src/saidby/cli/process.py:341
 msgid "-i needs the human progress output; do not combine it with --progress"
 msgstr "-i necesita la salida de progreso `human`; no la combines con --progress"
 
@@ -753,17 +768,17 @@ msgstr "; escribe las rutas de Windows con barras diagonales o entre comillas si
 msgid "{language!r} is not a language code such as es, en or pt"
 msgstr "{language!r} no es un código de idioma como es, en o pt"
 
-#: src/saidby/engines/llm/llama_server.py:31
+#: src/saidby/engines/llm/llama_server.py:34
 #, python-brace-format
 msgid "llama-server not found: install llama.cpp and put llama-server on PATH or set {ENV_BINARY}"
 msgstr "no se encontró llama-server: instala llama.cpp y pon llama-server en el PATH o define {ENV_BINARY}"
 
-#: src/saidby/engines/llm/llama_server.py:49
+#: src/saidby/engines/llm/llama_server.py:77
 #, python-brace-format
 msgid "llama-server exited early with code {returncode}"
 msgstr "llama-server terminó antes de tiempo con el código {returncode}"
 
-#: src/saidby/engines/llm/llama_server.py:60
+#: src/saidby/engines/llm/llama_server.py:88
 msgid "llama-server did not become healthy in time"
 msgstr "llama-server no estuvo listo a tiempo"
 
@@ -1357,11 +1372,6 @@ msgstr "cargando PyTorch y CTranslate2"
 #: src/saidby/pipeline/runner.py:112
 msgid "checking the GPU"
 msgstr "comprobando la GPU"
-
-#: src/saidby/pipeline/runner.py:341 src/saidby/stages/ingest.py:36
-#, python-brace-format
-msgid "input file not found: {media}"
-msgstr "no se encontró el archivo de entrada: {media}"
 
 #: src/saidby/pipeline/runner.py:352
 msgid "output folder holds results for a different input; use --force to overwrite"
