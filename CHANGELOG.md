@@ -6,12 +6,6 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
-### Fixed
-- `saidby process` took a name with spaces typed without quotes as several files ("Ready to
-  process 6 files"). The words are joined back when together they name a file, and the run says
-  so. An input that is not a file now stops the run before anything starts, instead of after
-  loading the models and leaving an empty output folder behind.
-
 ## [0.7.0] - 2026-10-12
 
 ### Added
@@ -56,6 +50,10 @@ All notable changes are documented here, following
   `cpu`, or nothing for GPU backends it does not name.
 - `transcript.vtt`: a long block of words with no pause between them is cut after punctuation or
   near its middle. It used to leave one cue of 8 s followed by one cue per word.
+- `saidby process` took a name with spaces typed without quotes as several files ("Ready to
+  process 6 files"). The words are joined back when together they name a file, and the run says
+  so. An input that is not a file now stops the run before anything starts, instead of after
+  loading the models and leaving an empty output folder behind.
 
 ## [0.6.0] - 2026-10-12
 
