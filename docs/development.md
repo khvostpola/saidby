@@ -16,6 +16,8 @@ adds about 1 GB of NVIDIA libraries that a CPU machine does not need).
 
 Fixtures: `uv run python tools/build_fixtures.py synthetic` regenerates the tone fixture.
 
+Releases: `uv run python tools/release.py X.Y.Z` (see [releasing](release.md)).
+
 ## Windows
 
 The same commands work in PowerShell once `uv` and ffmpeg are installed (`winget install ffmpeg`,
